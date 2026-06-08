@@ -1,0 +1,36 @@
+# Payloads for schema bypass testing (MCP05)
+# Tests whether tools reject out-of-schema inputs
+
+wrong_type_for_integer:
+  - "not_a_number"
+  - "true"
+  - "null"
+  - "[]"
+  - "{}"
+  - "1.5.2"
+
+wrong_type_for_boolean:
+  - "yes"
+  - "on"
+  - "1"
+  - "null"
+  - "TRUE"
+
+boundary_integers:
+  - -1
+  - 0
+  - 2147483647
+  - 2147483648
+  - -2147483648
+  - 9999999999
+
+oversized_string_length: 65536
+
+deep_nesting_depth: 50
+
+extra_fields:
+  - __proto__
+  - constructor
+  - prototype
+  - __class__
+  - __import__

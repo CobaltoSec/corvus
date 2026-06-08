@@ -1,0 +1,35 @@
+# Patterns indicating tool description poisoning (MCP01)
+# Used by the tool-poisoning static analysis module
+
+regex_patterns:
+  - "ignore (all )?(previous|prior) instructions?"
+  - "disregard (your )?(previous|prior|above)"
+  - "you are now"
+  - "new (system )?prompt"
+  - "act as (a )?(different|new|another)"
+  - "SYSTEM\\s*:"
+  - "\\[INST\\]"
+  - "###[A-Z_]+###"
+  - "new instructions? follow"
+  - "override (previous|all|your)"
+  - "forget (everything|all|your instructions)"
+  - "your (new|updated|real) (role|purpose|goal|mission)"
+  - "\\<\\|im_start\\|\\>"
+  - "\\[SYSTEM\\]"
+
+# Zero-width and directional override characters
+unicode_suspicious:
+  - "​"   # zero-width space
+  - "‌"   # zero-width non-joiner
+  - "‍"   # zero-width joiner
+  - "‬"   # pop directional formatting
+  - "‮"   # right-to-left override
+  - "﻿"   # BOM / zero-width no-break space
+  - "⁠"   # word joiner
+  - "­"   # soft hyphen (invisible)
+
+# Description longer than this is flagged for review
+max_description_length: 1000
+
+# Shannon entropy above this threshold may indicate obfuscation
+high_entropy_threshold: 4.5

