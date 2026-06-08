@@ -17,8 +17,10 @@ from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
 from .modules.dynamic.info_disclosure import InfoDisclosureModule
 from .modules.dynamic.param_injection import ParamInjectionModule
+from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
+from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
@@ -33,13 +35,15 @@ _ALL_MODULES = {
     "tool-poisoning": ToolPoisoningModule,
     "schema-audit":   SchemaAuditModule,
     "shadow-tool":    ShadowToolModule,
+    "auth-audit":     AuthAuditModule,
     "param-injection": ParamInjectionModule,
     "info-disclosure": InfoDisclosureModule,
     "schema-bypass":   SchemaBypassModule,
+    "response-flood":  ResponseFloodModule,
     "rug-pull":        RugPullModule,
 }
-_STATIC = {"tool-poisoning", "schema-audit", "shadow-tool"}
-_DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "rug-pull"}
+_STATIC = {"tool-poisoning", "schema-audit", "shadow-tool", "auth-audit"}
+_DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "response-flood", "rug-pull"}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
 _SEV_COLOR = {

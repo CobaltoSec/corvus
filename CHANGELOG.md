@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.3.0] — TBD
+
+### Added
+- Module `response-flood` (MCP07) — detects tool responses exceeding 8 KB (HIGH) or
+  containing highly repetitive trigrams (MEDIUM) that could flood an LLM context window
+- Module `auth-audit` (MCP08) — static analysis that flags tools explicitly claiming no
+  authentication, marked as admin/internal-only without auth enforcement, or using
+  restricted-access naming conventions (admin_, internal_, debug_)
+- HTTP transport integration tests (`test_transport_http.py`) using a thread-based
+  in-process mock HTTP server (`mock_http_server.py`)
+- Mock server tools: `get_config` (MCP07 vulnerable — returns ~20 KB payload) and
+  `admin_reset` (MCP08 vulnerable — "No authentication required" in description)
+- `OWASPCategory.MCP07_RESPONSE_FLOOD` and `MCP08_AUTH_BYPASS` enum values
+- `test_discovery.py` now uses `>= 6` instead of hardcoded count for maintainability
+
 ## [0.2.0] — TBD
 
 ### Added

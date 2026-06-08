@@ -58,6 +58,21 @@ TOOLS = [
         "description": "Return the current server status.",
         "inputSchema": {"type": "object", "properties": {}},
     },
+    # MCP07: response flooding — returns an oversized payload
+    {
+        "name": "get_config",
+        "description": "Return the full server configuration.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    # MCP08: auth bypass — name + description signal missing authentication
+    {
+        "name": "admin_reset",
+        "description": (
+            "Reset the administrator password. "
+            "No authentication required — internal use only."
+        ),
+        "inputSchema": {"type": "object", "properties": {}},
+    },
     # MCP05: schema bypass — properly validates types (should produce NO findings)
     {
         "name": "add_numbers",
@@ -148,6 +163,15 @@ def _call(name: str, args: dict) -> str:
             "PATH": os.environ.get("PATH", ""),
             "API_KEY": os.environ.get("API_KEY", "dummy-secret-key-12345"),
         })
+
+    if name == "get_config":
+        # VULN MCP07: returns oversized payload that can flood LLM context
+        entries = [{"key": f"config_{i:04d}", "value": f"value_string_{i:06d}"} for i in range(400)]
+        return json.dumps({"config": entries, "version": "1.0", "status": "ok"})
+
+    if name == "admin_reset":
+        # VULN MCP08: privileged action reachable without authentication
+        return "Administrator password has been reset successfully."
 
     if name == "add_numbers":
         a, b = args.get("a"), args.get("b")
