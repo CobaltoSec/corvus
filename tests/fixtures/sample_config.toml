@@ -1,0 +1,11 @@
+# Sample corvus.toml used by config tests.
+
+[scan]
+transport = "stdio"
+modules = ["tool-poisoning", "schema-audit"]
+timeout = 15
+sarif = true
+
+[scan.headers]
+X-Custom-Header = "test-value"
+X-Api-Version = "2"

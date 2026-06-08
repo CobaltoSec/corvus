@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-06-08
+
+### Added
+- **Config file support** (`corvus.toml`) — define targets, modules, headers, timeout, SARIF,
+  and plugin directories without repeating CLI flags. Load with `--config path/to/corvus.toml`.
+  Merge semantics: CLI args override config; config fills what CLI omits.
+- **Plugin system** — external scan modules loadable from two sources:
+  - `--plugin-dir <path>` (or `scan.plugin_dirs` in config): loads `*.py` files defining
+    `ScanModule` subclasses from any directory; malformed files are silently skipped
+  - `entry_points` group `corvus.modules`: pip-installable plugins registered via
+    `project.entry-points."corvus.modules"` in the plugin package's pyproject.toml
+  - Plugins override built-in modules of the same name (enables built-in replacement)
+- `list-modules --plugin-dir <path>` now shows a **Source** column (built-in / plugin)
+- `pydantic`-validated config model (`corvus.config.CorvusConfig`) exported for programmatic use
+
+### Changed
+- CLI `--transport`, `--module`, `--timeout` are now `Optional` (default `None`); value falls
+  back to config file, then to built-in defaults. Behaviour is unchanged when no config is used.
+
 ## [0.4.0] — 2026-06-08
 
 ### Added

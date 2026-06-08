@@ -12,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from . import __version__
+from .config import CorvusConfig, load_config
 from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
@@ -25,6 +26,7 @@ from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
+from .plugins import discover_plugins
 from .reporting.report import ReportGenerator
 from .transport.http import HttpTransport
 from .transport.stdio import StdioTransport
@@ -32,6 +34,7 @@ from .transport.stdio import StdioTransport
 app = typer.Typer(name="corvus", help="MCP server security testing framework", add_completion=False)
 console = Console()
 
+# Built-in modules in canonical OWASP order. Plugins are merged at runtime.
 _ALL_MODULES = {
     "tool-poisoning":  ToolPoisoningModule,
     "schema-audit":    SchemaAuditModule,
@@ -59,89 +62,137 @@ _SEV_COLOR = {
 
 @app.command()
 def scan(
-    transport: Annotated[str, typer.Option("--transport", "-t", help="stdio | http")] = "stdio",
-    cmd: Annotated[Optional[str], typer.Option("--cmd", help="Command to launch MCP server (stdio)")] = None,
-    url: Annotated[Optional[str], typer.Option("--url", help="URL of MCP server (http)")] = None,
-    module: Annotated[str, typer.Option("--module", "-m",
-        help="all | static | dynamic | <module-name>")] = "all",
+    transport: Annotated[Optional[str], typer.Option(
+        "--transport", "-t", help="stdio | http (overrides config)")] = None,
+    cmd: Annotated[Optional[str], typer.Option(
+        "--cmd", help="Command to launch MCP server (stdio)")] = None,
+    url: Annotated[Optional[str], typer.Option(
+        "--url", help="URL of MCP server (http)")] = None,
+    module: Annotated[Optional[str], typer.Option(
+        "--module", "-m",
+        help="all | static | dynamic | <module-name> (overrides config)")] = None,
     output_dir: Annotated[Optional[Path], typer.Option("--output-dir", "-o")] = None,
-    fail_on: Annotated[Optional[str], typer.Option("--fail-on",
-        help="Exit 1 if any findings at this severity or above (critical|high|medium|low)")] = None,
-    timeout: Annotated[int, typer.Option("--timeout")] = 30,
-    sarif: Annotated[bool, typer.Option("--sarif", help="Also write SARIF 2.1.0 report")] = False,
+    fail_on: Annotated[Optional[str], typer.Option(
+        "--fail-on",
+        help="Exit 1 if findings at this severity or above (critical|high|medium|low)")] = None,
+    timeout: Annotated[Optional[int], typer.Option(
+        "--timeout", help="Request timeout in seconds (overrides config)")] = None,
+    sarif: Annotated[bool, typer.Option(
+        "--sarif", help="Also write SARIF 2.1.0 report")] = False,
     header: Annotated[Optional[list[str]], typer.Option(
-        "--header", help='HTTP header "Key: Value" (repeatable, for http transport)'
-    )] = None,
+        "--header", help='HTTP header "Key: Value" (repeatable, for http transport)')] = None,
+    config_file: Annotated[Optional[Path], typer.Option(
+        "--config", "-c", help="Path to corvus.toml config file")] = None,
+    plugin_dir: Annotated[Optional[list[str]], typer.Option(
+        "--plugin-dir", help="Directory to load external modules from (repeatable)")] = None,
 ):
     """Scan an MCP server for security vulnerabilities."""
-    asyncio.run(_scan(transport, cmd, url, module, output_dir, fail_on, timeout, sarif, header))
+    asyncio.run(_scan(
+        transport, cmd, url, module, output_dir, fail_on, timeout,
+        sarif, header, config_file, plugin_dir,
+    ))
 
 
 async def _scan(
-    transport_name: str,
-    cmd: str | None,
-    url: str | None,
-    module_filter: str,
+    cli_transport: str | None,
+    cli_cmd: str | None,
+    cli_url: str | None,
+    cli_module: str | None,
     output_dir: Path | None,
-    fail_on: str | None,
-    timeout: int,
-    write_sarif: bool,
+    cli_fail_on: str | None,
+    cli_timeout: int | None,
+    cli_sarif: bool,
     raw_headers: list[str] | None,
+    config_file: Path | None,
+    cli_plugin_dirs: list[str] | None,
 ) -> None:
-    if output_dir is None:
-        ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        output_dir = Path("corvus-sessions") / f"scan-{ts}"
+    # --- Load config (all fields have defaults) ---
+    cfg: CorvusConfig
+    if config_file:
+        try:
+            cfg = load_config(config_file)
+        except FileNotFoundError:
+            console.print(f"[red]Config file not found: {config_file}[/red]")
+            raise typer.Exit(1)
+        except Exception as exc:
+            console.print(f"[red]Invalid config file: {exc}[/red]")
+            raise typer.Exit(1)
+    else:
+        cfg = CorvusConfig()
 
-    # Parse --header "Key: Value" pairs
-    parsed_headers: dict[str, str] = {}
+    # --- Merge: CLI overrides config; config fills what CLI omits ---
+    transport_name = cli_transport or cfg.scan.transport
+    cmd            = cli_cmd or cfg.scan.cmd
+    url            = cli_url or cfg.scan.url
+    timeout        = cli_timeout if cli_timeout is not None else cfg.scan.timeout
+    fail_on        = cli_fail_on or cfg.scan.fail_on
+    write_sarif    = cli_sarif or cfg.scan.sarif
+    output_dir_str = str(output_dir) if output_dir else cfg.scan.output_dir
+
+    # Modules: CLI string takes full precedence; config can be str or list
+    if cli_module:
+        module_filter: str | list[str] = cli_module
+    else:
+        module_filter = cfg.scan.modules  # "all" | "static" | "dynamic" | list[str]
+
+    # Headers: start from config, then CLI overrides per key
+    merged_headers: dict[str, str] = dict(cfg.scan.headers)
     for h in (raw_headers or []):
         if ":" in h:
             k, _, v = h.partition(":")
-            parsed_headers[k.strip()] = v.strip()
+            merged_headers[k.strip()] = v.strip()
 
-    # Build transport
+    # Plugin dirs: union of CLI dirs + config dirs
+    all_plugin_dirs = list(cli_plugin_dirs or []) + cfg.scan.plugin_dirs
+
+    # Output directory
+    if output_dir_str:
+        resolved_output_dir = Path(output_dir_str)
+    else:
+        ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        resolved_output_dir = Path("corvus-sessions") / f"scan-{ts}"
+
+    # --- Build transport ---
     if transport_name == "stdio":
         if not cmd:
-            console.print("[red]--cmd is required for stdio transport[/red]")
+            console.print("[red]--cmd is required for stdio transport (or set scan.cmd in config)[/red]")
             raise typer.Exit(1)
         xport = StdioTransport(shlex.split(cmd, posix=(sys.platform != "win32")), timeout=timeout)
         target = cmd
     elif transport_name == "http":
         if not url:
-            console.print("[red]--url is required for http transport[/red]")
+            console.print("[red]--url is required for http transport (or set scan.url in config)[/red]")
             raise typer.Exit(1)
-        xport = HttpTransport(url, timeout=timeout, headers=parsed_headers or None)
+        xport = HttpTransport(url, timeout=timeout, headers=merged_headers or None)
         target = url
     else:
         console.print(f"[red]Unknown transport: {transport_name}[/red]")
         raise typer.Exit(1)
 
-    # Resolve modules
-    if module_filter == "all":
-        names = list(_ALL_MODULES.keys())
-    elif module_filter == "static":
-        names = list(_STATIC)
-    elif module_filter == "dynamic":
-        names = list(_DYNAMIC)
-    elif module_filter in _ALL_MODULES:
-        names = [module_filter]
-    else:
-        console.print(f"[red]Unknown module: {module_filter}[/red]")
-        console.print(f"Available: {', '.join(_ALL_MODULES)}")
+    # --- Discover plugins and build final module registry ---
+    plugins = discover_plugins(plugin_dirs=all_plugin_dirs or None)
+    modules_registry = {**_ALL_MODULES, **plugins}  # plugins override built-ins by name
+    if plugins:
+        console.print(f"[dim]Loaded {len(plugins)} plugin(s): {', '.join(plugins)}[/dim]")
+
+    # --- Resolve module list ---
+    names = _resolve_modules(module_filter, modules_registry)
+    if names is None:
         raise typer.Exit(1)
 
-    session = ScanSession(target=target, transport=transport_name, output_dir=output_dir)
+    session = ScanSession(target=target, transport=transport_name, output_dir=resolved_output_dir)
 
     console.print(f"\n[bold cyan]Corvus v{__version__}[/bold cyan]  MCP Security Scanner")
     console.print(f"Target     : {target}")
     console.print(f"Transport  : {transport_name}")
     console.print(f"Modules    : {', '.join(names)}")
+    if config_file:
+        console.print(f"Config     : {config_file}")
     console.print()
 
     async with xport:
         console.print("[bold]Enumerating surface...[/bold]")
-        enumerator = MCPEnumerator(xport)
-        surface = await enumerator.enumerate()
+        surface = await MCPEnumerator(xport).enumerate()
         console.print(f"  Tools      : {len(surface.tools)}")
         console.print(f"  Resources  : {len(surface.resources)}")
         console.print(f"  Prompts    : {len(surface.prompts)}")
@@ -150,7 +201,7 @@ async def _scan(
         console.print()
 
         for name in names:
-            mod = _ALL_MODULES[name]()
+            mod = modules_registry[name]()
             label = "static" if mod.is_static else "dynamic"
             console.print(f"[bold yellow][{mod.owasp_id}][/bold yellow] {mod.category} ({label})")
             findings = await mod.run(surface, xport, session)
@@ -165,7 +216,7 @@ async def _scan(
             console.print()
 
     result = session.to_result(surface, names)
-    gen = ReportGenerator(output_dir)
+    gen = ReportGenerator(resolved_output_dir)
     report_path = gen.write(result)
 
     _print_summary(result)
@@ -186,6 +237,38 @@ async def _scan(
             raise typer.Exit(1)
 
 
+def _resolve_modules(
+    module_filter: str | list[str],
+    registry: dict[str, type],
+) -> list[str] | None:
+    """Resolve a module filter to an ordered list of names, or None on error."""
+    # Config-provided list of specific names
+    if isinstance(module_filter, list):
+        names: list[str] = []
+        for m in module_filter:
+            if m in registry:
+                names.append(m)
+            else:
+                console.print(f"[red]Unknown module: {m}[/red]")
+                console.print(f"Available: {', '.join(registry)}")
+                return None
+        return names
+
+    # String selectors
+    if module_filter == "all":
+        return list(registry.keys())
+    if module_filter == "static":
+        return [n for n in registry if n in _STATIC or getattr(registry[n](), "is_static", False)]
+    if module_filter == "dynamic":
+        return [n for n in registry if n in _DYNAMIC or not getattr(registry[n](), "is_static", True)]
+    if module_filter in registry:
+        return [module_filter]
+
+    console.print(f"[red]Unknown module: {module_filter}[/red]")
+    console.print(f"Available: {', '.join(registry)}")
+    return None
+
+
 def _print_summary(result) -> None:
     table = Table(title="Summary", show_header=True)
     table.add_column("Severity")
@@ -197,16 +280,25 @@ def _print_summary(result) -> None:
 
 
 @app.command("list-modules")
-def list_modules():
-    """List available scan modules."""
+def list_modules(
+    plugin_dir: Annotated[Optional[list[str]], typer.Option(
+        "--plugin-dir", help="Also list plugins from this directory")] = None,
+):
+    """List available scan modules (built-ins + any discovered plugins)."""
+    plugins = discover_plugins(plugin_dirs=plugin_dir or None)
+    combined = {**_ALL_MODULES, **plugins}
     table = Table(title="Modules")
     table.add_column("Name")
     table.add_column("OWASP")
     table.add_column("Type")
+    table.add_column("Source")
     table.add_column("Description")
-    for name, cls in _ALL_MODULES.items():
+    for name, cls in combined.items():
         m = cls()
-        table.add_row(name, m.owasp_id, "static" if m.is_static else "dynamic", m.description)
+        source = "plugin" if name in plugins else "built-in"
+        table.add_row(
+            name, m.owasp_id, "static" if m.is_static else "dynamic", source, m.description
+        )
     console.print(table)
 
 
