@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V06] — 2026-06-08
+
+- PyPI publish `cobaltosec-corvus==0.5.0` — live en https://pypi.org/project/cobaltosec-corvus/0.5.0/
+- E2E contra kestrel-mcp (74 tools): 28 static findings (entropy) + 27 HIGH injection reflections + schema bypass masivo
+- E2E contra llamascope-mcp (10 tools): 3 LOW static + 6 HIGH injection reflections + schema bypass
+- README completo: 10 módulos, transports HTTP/stdio, corvus.toml, plugin system, SARIF, CI examples
+
 ## [0.5.0] — 2026-06-08
 
 ### Added
