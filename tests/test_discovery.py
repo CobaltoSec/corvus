@@ -10,7 +10,7 @@ async def test_enumerate_surface():
         surface = await MCPEnumerator(t).enumerate()
 
     assert surface.server_name == "mock-vulnerable-server"
-    assert len(surface.tools) == 5
+    assert len(surface.tools) == 6
     tool_names = [t.name for t in surface.tools]
     assert "echo" in tool_names
     assert "get_time" in tool_names

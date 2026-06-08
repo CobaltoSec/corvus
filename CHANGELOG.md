@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.2.0] — TBD
+
+### Added
+- Module `shadow-tool` (MCP03) — static analysis that flags tool names shadowing common
+  built-ins (`bash`, `execute`, `read_file`, etc.) or matching dangerous-operation patterns
+- Module `rug-pull` (MCP06) — re-enumerates the server surface after dynamic testing and diffs
+  against the initial snapshot; detects tools added, removed, or mutated mid-session
+- `HttpTransport` — full HTTP JSON-RPC transport (`--transport http --url <endpoint>`);
+  replaces the previous `NotImplementedError` stub
+- `OWASPCategory.MCP03_SHADOW_TOOL` enum value
+- Mutating mock server (`tests/mock_mutating_server.py`) for MCP06 integration tests
+
+### Fixed
+- `pyproject.toml` build backend: `setuptools.backends.legacy` → `setuptools.build_meta`
+- `info_disclosure`: credential regex now handles JSON-encoded responses (`"KEY": "value"`)
+- `cli`: `shlex.split` uses `posix=False` on Windows to preserve backslash paths
+
 ## [0.1.0] — TBD
 
 ### Added

@@ -17,11 +17,13 @@ from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
 from .modules.dynamic.info_disclosure import InfoDisclosureModule
 from .modules.dynamic.param_injection import ParamInjectionModule
+from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
 from .modules.static.schema_audit import SchemaAuditModule
+from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .reporting.report import ReportGenerator
-from .transport.sse import SSETransport
+from .transport.http import HttpTransport
 from .transport.stdio import StdioTransport
 
 app = typer.Typer(name="corvus", help="MCP server security testing framework", add_completion=False)
@@ -30,12 +32,14 @@ console = Console()
 _ALL_MODULES = {
     "tool-poisoning": ToolPoisoningModule,
     "schema-audit":   SchemaAuditModule,
+    "shadow-tool":    ShadowToolModule,
     "param-injection": ParamInjectionModule,
     "info-disclosure": InfoDisclosureModule,
     "schema-bypass":   SchemaBypassModule,
+    "rug-pull":        RugPullModule,
 }
-_STATIC = {"tool-poisoning", "schema-audit"}
-_DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass"}
+_STATIC = {"tool-poisoning", "schema-audit", "shadow-tool"}
+_DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "rug-pull"}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
 _SEV_COLOR = {
@@ -87,7 +91,7 @@ async def _scan(
         if not url:
             console.print("[red]--url is required for http transport[/red]")
             raise typer.Exit(1)
-        xport = SSETransport(url, timeout=timeout)
+        xport = HttpTransport(url, timeout=timeout)
         target = url
     else:
         console.print(f"[red]Unknown transport: {transport_name}[/red]")
