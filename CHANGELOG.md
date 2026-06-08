@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
-## [0.3.0] — TBD
+## [0.4.0] — 2026-06-08
+
+### Added
+- Module `log-audit` (MCP10) — completes OWASP MCP Top 10 coverage; static analysis that detects
+  tools capable of destroying the audit trail (CRITICAL — anti-forensic risk) or exposing raw
+  log data (HIGH — logs commonly contain credentials, session tokens, and PII)
+- SARIF 2.1.0 output via `--sarif` flag; produces `report.sarif` alongside the JSON+Markdown
+  reports, compatible with GitHub Advanced Security and any SARIF-aware CI tool
+- `--header "Key: Value"` CLI option for HTTP transport (repeatable); enables Bearer token and
+  API key authentication against protected MCP servers
+- GitHub Actions CI (`.github/workflows/ci.yml`) — pytest + ruff lint on Python 3.11 and 3.12
+
+### Changed
+- Mock server has two new vulnerable tools: `clear_audit_log` (MCP10 CRITICAL) and
+  `get_access_log` (MCP10 HIGH) for integration test coverage
+- `_ALL_MODULES` now lists 10 modules (full OWASP MCP Top 10)
+
+## [0.3.0] — 2026-06-08
 
 ### Added
 - Module `response-flood` (MCP07) — detects tool responses exceeding 8 KB (HIGH) or
@@ -17,7 +34,7 @@
 - `OWASPCategory.MCP07_RESPONSE_FLOOD` and `MCP08_AUTH_BYPASS` enum values
 - `test_discovery.py` now uses `>= 6` instead of hardcoded count for maintainability
 
-## [0.2.0] — TBD
+## [0.2.0] — 2026-06-08
 
 ### Added
 - Module `shadow-tool` (MCP03) — static analysis that flags tool names shadowing common
@@ -34,7 +51,7 @@
 - `info_disclosure`: credential regex now handles JSON-encoded responses (`"KEY": "value"`)
 - `cli`: `shlex.split` uses `posix=False` on Windows to preserve backslash paths
 
-## [0.1.0] — TBD
+## [0.1.0] — 2026-06-08
 
 ### Added
 - `stdio` transport — spawn MCP server as subprocess, communicate via stdin/stdout JSON-RPC

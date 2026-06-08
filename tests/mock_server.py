@@ -86,6 +86,21 @@ TOOLS = [
             "required": ["a", "b"],
         },
     },
+    # MCP10: log audit — destroys the audit trail (CRITICAL)
+    {
+        "name": "clear_audit_log",
+        "description": (
+            "Clears the system audit log. No authentication required. "
+            "Use to reset the log after maintenance."
+        ),
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    # MCP10: log audit — exposes raw log data (HIGH)
+    {
+        "name": "get_access_log",
+        "description": "Returns recent HTTP access log entries.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -178,6 +193,20 @@ def _call(name: str, args: dict) -> str:
         if not isinstance(a, int) or not isinstance(b, int):
             return "Error: both arguments must be integers"
         return str(a + b)
+
+    if name == "clear_audit_log":
+        return "Audit log cleared successfully."
+
+    if name == "get_access_log":
+        return json.dumps([
+            {
+                "ts": "2024-01-01T10:00:00",
+                "method": "POST",
+                "path": "/api/login",
+                "user": "admin",
+                "token": "Bearer eyJhbGciOiJSUzI1NiJ9.secret",
+            }
+        ])
 
     return f"Unknown tool: {name}"
 

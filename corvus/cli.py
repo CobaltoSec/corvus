@@ -21,6 +21,7 @@ from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
 from .modules.static.auth_audit import AuthAuditModule
+from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
@@ -32,17 +33,18 @@ app = typer.Typer(name="corvus", help="MCP server security testing framework", a
 console = Console()
 
 _ALL_MODULES = {
-    "tool-poisoning": ToolPoisoningModule,
-    "schema-audit":   SchemaAuditModule,
-    "shadow-tool":    ShadowToolModule,
-    "auth-audit":     AuthAuditModule,
+    "tool-poisoning":  ToolPoisoningModule,
+    "schema-audit":    SchemaAuditModule,
+    "shadow-tool":     ShadowToolModule,
+    "auth-audit":      AuthAuditModule,
+    "log-audit":       LogAuditModule,
     "param-injection": ParamInjectionModule,
     "info-disclosure": InfoDisclosureModule,
     "schema-bypass":   SchemaBypassModule,
     "response-flood":  ResponseFloodModule,
     "rug-pull":        RugPullModule,
 }
-_STATIC = {"tool-poisoning", "schema-audit", "shadow-tool", "auth-audit"}
+_STATIC  = {"tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
 _DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "response-flood", "rug-pull"}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
@@ -66,9 +68,13 @@ def scan(
     fail_on: Annotated[Optional[str], typer.Option("--fail-on",
         help="Exit 1 if any findings at this severity or above (critical|high|medium|low)")] = None,
     timeout: Annotated[int, typer.Option("--timeout")] = 30,
+    sarif: Annotated[bool, typer.Option("--sarif", help="Also write SARIF 2.1.0 report")] = False,
+    header: Annotated[Optional[list[str]], typer.Option(
+        "--header", help='HTTP header "Key: Value" (repeatable, for http transport)'
+    )] = None,
 ):
     """Scan an MCP server for security vulnerabilities."""
-    asyncio.run(_scan(transport, cmd, url, module, output_dir, fail_on, timeout))
+    asyncio.run(_scan(transport, cmd, url, module, output_dir, fail_on, timeout, sarif, header))
 
 
 async def _scan(
@@ -79,10 +85,19 @@ async def _scan(
     output_dir: Path | None,
     fail_on: str | None,
     timeout: int,
+    write_sarif: bool,
+    raw_headers: list[str] | None,
 ) -> None:
     if output_dir is None:
         ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         output_dir = Path("corvus-sessions") / f"scan-{ts}"
+
+    # Parse --header "Key: Value" pairs
+    parsed_headers: dict[str, str] = {}
+    for h in (raw_headers or []):
+        if ":" in h:
+            k, _, v = h.partition(":")
+            parsed_headers[k.strip()] = v.strip()
 
     # Build transport
     if transport_name == "stdio":
@@ -95,7 +110,7 @@ async def _scan(
         if not url:
             console.print("[red]--url is required for http transport[/red]")
             raise typer.Exit(1)
-        xport = HttpTransport(url, timeout=timeout)
+        xport = HttpTransport(url, timeout=timeout, headers=parsed_headers or None)
         target = url
     else:
         console.print(f"[red]Unknown transport: {transport_name}[/red]")
@@ -155,6 +170,10 @@ async def _scan(
 
     _print_summary(result)
     console.print(f"\nReport: {report_path}")
+
+    if write_sarif:
+        sarif_path = gen.write_sarif(result)
+        console.print(f"SARIF  : {sarif_path}")
 
     if fail_on:
         try:

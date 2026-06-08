@@ -13,6 +13,9 @@ from tests.mock_server import handle
 
 class _Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
+        # Capture headers (lowercased keys) so tests can verify custom headers were forwarded
+        self.server.last_headers = {k.lower(): v for k, v in self.headers.items()}  # type: ignore[attr-defined]
+
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length)
         try:
@@ -41,7 +44,12 @@ class MockHTTPServer:
     def __init__(self) -> None:
         # Port 0 lets the OS pick a free port
         self._server = HTTPServer(("127.0.0.1", 0), _Handler)
+        self._server.last_headers: dict[str, str] = {}  # type: ignore[attr-defined]
         self._thread: threading.Thread | None = None
+
+    @property
+    def last_headers(self) -> dict[str, str]:
+        return self._server.last_headers  # type: ignore[attr-defined]
 
     @property
     def url(self) -> str:

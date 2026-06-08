@@ -24,6 +24,7 @@ class OWASPCategory(str, Enum):
     MCP07_RESPONSE_FLOOD = "MCP07"
     MCP08_AUTH_BYPASS = "MCP08"
     MCP09_SCHEMA_AUDIT = "MCP09"
+    MCP10_LOG_AUDIT = "MCP10"
 
 
 class ToolSpec(BaseModel):

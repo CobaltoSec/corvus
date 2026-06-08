@@ -52,3 +52,15 @@ async def test_http_enumerate_surface(http_server):
     assert len(surface.tools) >= 6
     tool_names = {t.name for t in surface.tools}
     assert {"echo", "bash", "get_time", "run_diagnostic"}.issubset(tool_names)
+
+
+@pytest.mark.asyncio
+async def test_http_custom_headers_forwarded(http_server):
+    """Custom headers passed to HttpTransport must reach the server."""
+    async with HttpTransport(
+        http_server.url,
+        headers={"Authorization": "Bearer test-token-xyz"},
+    ) as t:
+        await t.initialize()
+    # http.server lowercases header names
+    assert http_server.last_headers.get("authorization") == "Bearer test-token-xyz"
