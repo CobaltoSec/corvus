@@ -81,7 +81,7 @@ async def _scan(
         if not cmd:
             console.print("[red]--cmd is required for stdio transport[/red]")
             raise typer.Exit(1)
-        xport = StdioTransport(shlex.split(cmd), timeout=timeout)
+        xport = StdioTransport(shlex.split(cmd, posix=(sys.platform != "win32")), timeout=timeout)
         target = cmd
     elif transport_name == "http":
         if not url:

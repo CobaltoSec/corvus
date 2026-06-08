@@ -11,7 +11,7 @@ from ...transport.base import MCPTransport
 
 # Each entry: (compiled pattern, label, severity)
 _SIGNALS: list[tuple[re.Pattern[str], str, Severity]] = [
-    (re.compile(r"(API_KEY|TOKEN|SECRET|PASSWORD|PASSWD|AUTH_KEY)\s*[=:]\s*\S+", re.I),
+    (re.compile(r'"?(API_KEY|TOKEN|SECRET|PASSWORD|PASSWD|AUTH_KEY)"?\s*[=:]\s*"?\S+', re.I),
      "credential in response", Severity.CRITICAL),
     (re.compile(r"postgres://|mysql://|mongodb://|redis://", re.I),
      "database connection string", Severity.CRITICAL),
