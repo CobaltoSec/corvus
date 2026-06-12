@@ -44,6 +44,11 @@ class ParamInjectionModule(ScanModule):
                         result = await transport.send_request(
                             "tools/call", {"name": tool.name, "arguments": args}
                         )
+                        # Skip if the tool returned a validation/error response.
+                        # pydantic-based servers set isError=True on ValidationError;
+                        # echoing the payload inside an error message is not an injection signal.
+                        if isinstance(result, dict) and result.get("isError"):
+                            continue
                         text = _extract_text(result)
 
                         if _reflected(payload, text):

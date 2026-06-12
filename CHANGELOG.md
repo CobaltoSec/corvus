@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-06-12
+
+### Fixed
+- `schema-bypass` (MCP05): false positives on pydantic v2-based MCP servers — `_accepted()` now
+  checks for `isError: true` in the tool result, so validation failures (missing required fields)
+  are correctly treated as rejections rather than successes. This eliminates ~10 spurious MEDIUM
+  findings per tool with a required field (e.g. kestrel-mcp, llamascope-mcp).
+- `param-injection` (MCP02): false positive injection reflections — payloads echoed back inside
+  error responses (`isError: true`) are no longer reported as HIGH findings. Only payloads
+  reflected in successful responses count as injection signals.
+
+### Added
+- README: CLI Reference section with full `corvus scan --help` flag reference and `list-modules`
+  / `version` command examples.
+
 ## [RT-CORVUS-V06] — 2026-06-08
 
 - PyPI publish `cobaltosec-corvus==0.5.0` — live en https://pypi.org/project/cobaltosec-corvus/0.5.0/

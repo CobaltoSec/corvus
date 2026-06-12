@@ -3,7 +3,7 @@
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
-Corvus v0.5.0  MCP Security Scanner
+Corvus v0.5.1  MCP Security Scanner
 Target     : python my_mcp_server.py
 Transport  : stdio
 Modules    : tool-poisoning, schema-audit, shadow-tool, auth-audit, log-audit,
@@ -155,6 +155,37 @@ corvus scan --config corvus.toml
 ```
 
 CLI flags override config file values. The `--config` flag also accepts absolute paths.
+
+## CLI Reference
+
+```
+Usage: corvus scan [OPTIONS]
+
+ Scan an MCP server for security vulnerabilities.
+
+Options:
+  -t, --transport  TEXT     stdio | http  (overrides config)
+  --cmd            TEXT     Command to launch MCP server (stdio)
+  --url            TEXT     URL of MCP server (http)
+  -m, --module     TEXT     all | static | dynamic | <module-name>  (overrides config)
+  -o, --output-dir PATH
+  --fail-on        TEXT     Exit 1 if findings at this severity or above
+                            (critical|high|medium|low)
+  --timeout        INTEGER  Request timeout in seconds (overrides config)
+  --sarif                   Also write SARIF 2.1.0 report
+  --header         TEXT     HTTP header "Key: Value" (repeatable, for http transport)
+  -c, --config     PATH     Path to corvus.toml config file
+  --plugin-dir     TEXT     Directory to load external modules from (repeatable)
+  --help                    Show this message and exit.
+```
+
+Other commands:
+
+```bash
+corvus list-modules              # list available modules with OWASP ID and type
+corvus list-modules --plugin-dir ./plugins/   # include external plugins
+corvus version                   # print version
+```
 
 ## Output
 

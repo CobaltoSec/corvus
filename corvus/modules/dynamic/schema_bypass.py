@@ -85,9 +85,16 @@ class SchemaBypassModule(ScanModule):
         return findings
 
     async def _accepted(self, transport: MCPTransport, tool_name: str, args: dict) -> bool:
-        """Return True if the tool call succeeded without an error response."""
+        """Return True if the tool call succeeded without an error response.
+
+        Checks both JSON-RPC protocol errors (raises JSONRPCError) and MCP-level
+        tool errors (isError=True in the result dict, used by pydantic-based servers
+        for validation failures).
+        """
         try:
-            await transport.send_request("tools/call", {"name": tool_name, "arguments": args})
+            result = await transport.send_request("tools/call", {"name": tool_name, "arguments": args})
+            if isinstance(result, dict) and result.get("isError"):
+                return False
             return True
         except Exception:
             return False
