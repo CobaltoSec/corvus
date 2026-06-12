@@ -7,7 +7,7 @@ from corvus.core.session import ScanSession
 from corvus.core.models import OWASPCategory, Severity
 from corvus.modules.static.tool_poisoning import ToolPoisoningModule
 from corvus.modules.static.schema_audit import SchemaAuditModule
-from corvus.modules.dynamic.param_injection import ParamInjectionModule
+from corvus.modules.dynamic.param_injection import ParamInjectionModule, _reflected, _is_json_key_echo
 from corvus.modules.dynamic.info_disclosure import InfoDisclosureModule
 
 
@@ -80,3 +80,30 @@ async def test_schema_audit_missing_descriptions():
 
     # add_numbers has no parameter descriptions → should flag INFO or LOW
     assert isinstance(findings, list)
+
+
+def test_reflected_basic():
+    assert _reflected("'; DROP TABLE", "error: '; DROP TABLE users; --")
+    assert not _reflected("'; DROP TABLE", "no matching content here")
+    assert not _reflected("", "anything")
+
+
+def test_is_json_key_echo_match():
+    text = '{"host": "file:///etc/passwd", "latency_ms": 100, "error": ""}'
+    assert _is_json_key_echo("host", "file:///etc/passwd", text)
+
+
+def test_is_json_key_echo_no_match_wrong_key():
+    text = '{"url": "file:///etc/passwd", "error": ""}'
+    assert not _is_json_key_echo("host", "file:///etc/passwd", text)
+
+
+def test_is_json_key_echo_no_match_not_json():
+    text = "error: 'file:///etc/passwd' is not valid"
+    assert not _is_json_key_echo("host", "file:///etc/passwd", text)
+
+
+def test_is_json_key_echo_partial_value():
+    # payload must be the exact value, not just a substring
+    text = '{"host": "file:///etc/passwd/extra"}'
+    assert not _is_json_key_echo("host", "file:///etc/passwd", text)

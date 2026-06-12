@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from ..base import ScanModule
@@ -52,9 +53,16 @@ class ParamInjectionModule(ScanModule):
                         text = _extract_text(result)
 
                         if _reflected(payload, text):
+                            # Downgrade if the payload is simply echoed as a named field in a
+                            # JSON result (common in tools that log their own inputs).
+                            severity = (
+                                Severity.LOW
+                                if _is_json_key_echo(param, payload, text)
+                                else Severity.HIGH
+                            )
                             findings.append(Finding(
                                 owasp_category=OWASPCategory.MCP02_PARAM_INJECTION,
-                                severity=Severity.HIGH,
+                                severity=severity,
                                 title=f"Injection reflected — '{tool.name}.{param}'",
                                 description=(
                                     f"Payload was reflected verbatim in the response without sanitization "
@@ -85,3 +93,15 @@ def _extract_text(result: Any) -> str:
 
 def _reflected(payload: str, response: str) -> bool:
     return bool(payload) and payload in response
+
+
+def _is_json_key_echo(param: str, payload: str, text: str) -> bool:
+    """Return True if the payload appears as the value of a top-level JSON key named after
+    the parameter — typical of tools that echo their own inputs in the result record."""
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict) and data.get(param) == payload:
+            return True
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return False
