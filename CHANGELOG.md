@@ -9,9 +9,10 @@
   checks for `isError: true` in the tool result, so validation failures (missing required fields)
   are correctly treated as rejections rather than successes. This eliminates ~10 spurious MEDIUM
   findings per tool with a required field (e.g. kestrel-mcp, llamascope-mcp).
-- `param-injection` (MCP02): false positive injection reflections — payloads echoed back inside
-  error responses (`isError: true`) are no longer reported as HIGH findings. Only payloads
-  reflected in successful responses count as injection signals.
+- `param-injection` (MCP02): two false-positive patterns eliminated:
+  1. Payloads echoed inside error responses (`isError: true`) are no longer reported at all.
+  2. Payloads reflected as a named JSON field in the result (e.g. `{"host": "<payload>"}`) are
+     downgraded from HIGH to LOW — tools that log their own inputs are not injection vectors.
 
 ### Added
 - README: CLI Reference section with full `corvus scan --help` flag reference and `list-modules`
