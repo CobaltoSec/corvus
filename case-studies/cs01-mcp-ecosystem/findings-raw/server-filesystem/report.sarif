@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.5.1",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP03",
+              "name": "MCP03",
+              "shortDescription": {
+                "text": "MCP03"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'read_file' conflicts with a high-value built-in name. Tool 'read_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "read_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'write_file' conflicts with a high-value built-in name. Tool 'write_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "write_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'edit_file' conflicts with a high-value built-in name. Tool 'edit_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "edit_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

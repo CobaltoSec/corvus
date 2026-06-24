@@ -101,6 +101,16 @@ TOOLS = [
         "description": "Returns recent HTTP access log entries.",
         "inputSchema": {"type": "object", "properties": {}},
     },
+    # C3 exploitation confirmation: reads a file path — vulnerable to path traversal
+    {
+        "name": "read_file",
+        "description": "Read a file from the filesystem by path.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"path": {"type": "string", "description": "file path to read"}},
+            "required": ["path"],
+        },
+    },
 ]
 
 
@@ -207,6 +217,13 @@ def _call(name: str, args: dict) -> str:
                 "token": "Bearer eyJhbGciOiJSUzI1NiJ9.secret",
             }
         ])
+
+    if name == "read_file":
+        path = str(args.get("path", ""))
+        if any(m in path for m in ("../", "..\\", "/etc/", "/proc/")):
+            # Simulates a successful traversal — returns /etc/passwd-style content
+            return "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n"
+        return f"[content of {path}]"
 
     return f"Unknown tool: {name}"
 

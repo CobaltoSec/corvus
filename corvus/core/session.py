@@ -24,7 +24,12 @@ class ScanSession:
         finding.id = f"CORVUS-{self._counter:03d}"
         self.findings.append(finding)
 
-    def to_result(self, surface: MCPSurface, modules_run: list[str]) -> ScanResult:
+    def to_result(
+        self,
+        surface: MCPSurface,
+        modules_run: list[str],
+        exchanges: list | None = None,
+    ) -> ScanResult:
         return ScanResult(
             target=self.target,
             transport=self.transport,
@@ -32,4 +37,5 @@ class ScanSession:
             findings=self.findings,
             modules_run=modules_run,
             duration_seconds=time.monotonic() - self._start,
+            exchanges=exchanges or [],
         )

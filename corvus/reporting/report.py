@@ -31,6 +31,12 @@ class ReportGenerator:
         json_path = self.output_dir / "report.json"
         json_path.write_text(result.model_dump_json(indent=2), encoding="utf-8")
 
+        if result.exchanges:
+            jsonl_path = self.output_dir / "exchanges.jsonl"
+            with jsonl_path.open("w", encoding="utf-8") as f:
+                for ex in result.exchanges:
+                    f.write(ex.model_dump_json() + "\n")
+
         md_path = self.output_dir / "report.md"
         tpl = self.env.get_template("report.md.j2")
         md_path.write_text(

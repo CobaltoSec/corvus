@@ -1,0 +1,106 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.5.1",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP01",
+              "name": "MCP01",
+              "shortDescription": {
+                "text": "MCP01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP06",
+              "name": "MCP06",
+              "shortDescription": {
+                "text": "MCP06"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'sequentialthinking'. Description is 2781 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "sequentialthinking",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "note",
+          "message": {
+            "text": "High entropy description in 'sequentialthinking'. Unusual character distribution may indicate obfuscated content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "sequentialthinking",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP06",
+          "level": "error",
+          "message": {
+            "text": "Rug Pull \u2014 tool 'sequentialthinking' disappeared mid-session. Tool 'sequentialthinking' was present at session start but is no longer listed. The server may be hiding evidence of malicious tool calls."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "sequentialthinking",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

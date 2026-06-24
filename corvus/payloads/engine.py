@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,8 @@ class PayloadEngine:
         payloads = self._injection.get(category, self._injection["generic_string"])
         if category == "path":
             payloads = payloads + self._traversal.get("unix", [])
+            if sys.platform == "win32":
+                payloads = payloads + self._traversal.get("windows", [])
         return payloads
 
     def benign_default(self, field_type: str) -> Any:

@@ -7,7 +7,10 @@ from corvus.core.session import ScanSession
 from corvus.core.models import OWASPCategory, Severity
 from corvus.modules.static.tool_poisoning import ToolPoisoningModule
 from corvus.modules.static.schema_audit import SchemaAuditModule
-from corvus.modules.dynamic.param_injection import ParamInjectionModule, _reflected, _is_json_key_echo
+from corvus.modules.dynamic.param_injection import (
+    ParamInjectionModule, _reflected, _is_json_key_echo,
+    _traversal_confirmed, _is_traversal_payload,
+)
 from corvus.modules.dynamic.info_disclosure import InfoDisclosureModule
 
 
@@ -107,3 +110,67 @@ def test_is_json_key_echo_partial_value():
     # payload must be the exact value, not just a substring
     text = '{"host": "file:///etc/passwd/extra"}'
     assert not _is_json_key_echo("host", "file:///etc/passwd", text)
+
+
+# C3 — Exploitation Confirmation (unit tests)
+
+def test_traversal_confirmed_detects_passwd_content():
+    content = "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:\nnobody:x:65534:\n"
+    assert _traversal_confirmed("../../etc/passwd", content)
+
+
+def test_traversal_confirmed_ignores_echo_only():
+    assert not _traversal_confirmed("../../etc/passwd", "error: ../../etc/passwd not found")
+
+
+def test_traversal_confirmed_ignores_non_traversal_payload():
+    # Content signatures present but payload is not a traversal payload
+    assert not _traversal_confirmed("'; DROP TABLE users--", "root:x:0:0:root:/root:/bin/bash")
+
+
+def test_is_traversal_payload_matches():
+    assert _is_traversal_payload("../../etc/passwd")
+    assert _is_traversal_payload("..\\..\\windows\\win.ini")
+    assert _is_traversal_payload("/etc/shadow")
+
+
+def test_is_traversal_payload_no_match():
+    assert not _is_traversal_payload("'; DROP TABLE users--")
+    assert not _is_traversal_payload("http://evil.com")
+
+
+# C3 — Exploitation Confirmation (E2E integration)
+
+@pytest.mark.asyncio
+async def test_read_file_traversal_reports_critical():
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ParamInjectionModule().run(surface, t, session)
+
+    critical = [
+        f for f in findings
+        if f.severity == Severity.CRITICAL and f.exploitation_confirmed
+    ]
+    assert len(critical) >= 1, "Expected at least one CRITICAL confirmed finding from read_file"
+    assert any(f.tool_name == "read_file" for f in critical)
+
+
+@pytest.mark.asyncio
+async def test_traversal_reflection_without_content_is_medium():
+    # run_diagnostic echoes the host in ping output but doesn't read /etc/passwd content
+    # so traversal payloads that get reflected should be MEDIUM, not HIGH
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ParamInjectionModule().run(surface, t, session)
+
+    # Any traversal finding that is NOT confirmed should be MEDIUM
+    traversal_findings = [
+        f for f in findings
+        if f.payload and _is_traversal_payload(f.payload) and not f.exploitation_confirmed
+    ]
+    for f in traversal_findings:
+        assert f.severity == Severity.MEDIUM, (
+            f"Unconfirmed traversal reflection should be MEDIUM, got {f.severity} for {f.payload!r}"
+        )

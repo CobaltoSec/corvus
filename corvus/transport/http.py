@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import datetime
+import time
 from typing import Any
 
 import httpx
 
 from .base import JSONRPCError, MCPTransport
+from ..core.models import RawExchange
 
 
 class HttpTransport(MCPTransport):
@@ -21,12 +24,19 @@ class HttpTransport(MCPTransport):
         url: str,
         timeout: float = 30.0,
         headers: dict[str, str] | None = None,
+        log_requests: bool = False,
     ):
         self.url = url
         self.timeout = timeout
         self._extra_headers = headers or {}
+        self._log_requests = log_requests
         self._client: httpx.AsyncClient | None = None
         self._req_id = 0
+        self._exchanges: list[RawExchange] = []
+
+    @property
+    def exchanges(self) -> list[RawExchange]:
+        return self._exchanges
 
     async def connect(self) -> None:
         self._client = httpx.AsyncClient(
@@ -50,6 +60,7 @@ class HttpTransport(MCPTransport):
         if params is not None:
             msg["params"] = params
 
+        t0 = time.monotonic()
         try:
             resp = await self._client.post(self.url, json=msg)
             resp.raise_for_status()
@@ -62,15 +73,34 @@ class HttpTransport(MCPTransport):
         except httpx.RequestError as exc:
             raise RuntimeError(f"HTTP request failed: {exc}") from exc
 
+        duration_ms = (time.monotonic() - t0) * 1000
         data = resp.json()
         if "error" in data:
             err = data["error"]
+            if self._log_requests:
+                self._exchanges.append(RawExchange(
+                    ts=datetime.datetime.now().isoformat(),
+                    method=method,
+                    params=params or {},
+                    error=err.get("message", "unknown"),
+                    duration_ms=duration_ms,
+                ))
             raise JSONRPCError(
                 err.get("code", -1),
                 err.get("message", "unknown"),
                 err.get("data"),
             )
-        return data.get("result")
+
+        result = data.get("result")
+        if self._log_requests:
+            self._exchanges.append(RawExchange(
+                ts=datetime.datetime.now().isoformat(),
+                method=method,
+                params=params or {},
+                result=result,
+                duration_ms=duration_ms,
+            ))
+        return result
 
     async def send_notification(self, method: str, params: dict[str, Any] | None = None) -> None:
         if self._client is None:

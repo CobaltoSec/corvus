@@ -6,6 +6,16 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class RawExchange(BaseModel):
+    """Raw JSON-RPC request/response pair captured during a scan."""
+    ts: str
+    method: str
+    params: dict[str, Any]
+    result: Any | None = None
+    error: str | None = None
+    duration_ms: float
+
+
 class Severity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -66,6 +76,7 @@ class Finding(BaseModel):
     payload: str | None = None
     evidence: str | None = None
     remediation: str = ""
+    exploitation_confirmed: bool = False
 
 
 class ScanResult(BaseModel):
@@ -75,6 +86,7 @@ class ScanResult(BaseModel):
     findings: list[Finding] = Field(default_factory=list)
     modules_run: list[str] = Field(default_factory=list)
     duration_seconds: float = 0.0
+    exchanges: list[RawExchange] = Field(default_factory=list)
 
     @property
     def finding_count(self) -> dict[str, int]:

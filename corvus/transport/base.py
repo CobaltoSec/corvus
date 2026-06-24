@@ -15,6 +15,11 @@ class JSONRPCError(Exception):
 class MCPTransport(ABC):
     """Abstract base for MCP JSON-RPC transports."""
 
+    @property
+    def exchanges(self) -> list:
+        """Raw request/response log. Populated only when log_requests=True."""
+        return []
+
     @abstractmethod
     async def connect(self) -> None: ...
 

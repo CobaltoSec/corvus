@@ -9,6 +9,15 @@ from ...core.session import ScanSession
 from ...payloads.engine import PayloadEngine
 from ...transport.base import MCPTransport
 
+_TRAVERSAL_MARKERS = ("../", "..\\", "/etc/", "/proc/", "win.ini", "C:\\Windows")
+
+_TRAVERSAL_SIGNATURES = [
+    "root:x:0:0", "daemon:x:", "nobody:x:",  # /etc/passwd
+    "HOME=", "PATH=/", "USER=", "SHELL=",    # /proc/self/environ
+    "localhost\t127", "127.0.0.1\t",         # /etc/hosts
+    "[fonts]", "[extensions]",               # win.ini
+]
+
 
 class ParamInjectionModule(ScanModule):
     owasp_id = "MCP02"
@@ -52,32 +61,57 @@ class ParamInjectionModule(ScanModule):
                             continue
                         text = _extract_text(result)
 
-                        if _reflected(payload, text):
-                            # Downgrade if the payload is simply echoed as a named field in a
-                            # JSON result (common in tools that log their own inputs).
-                            severity = (
-                                Severity.LOW
-                                if _is_json_key_echo(param, payload, text)
-                                else Severity.HIGH
+                        # Traversal confirmation is independent of reflection:
+                        # file content signatures in the response are a stronger signal
+                        # than the payload appearing verbatim.
+                        if _traversal_confirmed(payload, text):
+                            severity = Severity.CRITICAL
+                            confirmed = True
+                            desc = (
+                                f"File content signatures detected in response — file was "
+                                f"successfully read via path traversal (field: {category})."
                             )
-                            findings.append(Finding(
-                                owasp_category=OWASPCategory.MCP02_PARAM_INJECTION,
-                                severity=severity,
-                                title=f"Injection reflected — '{tool.name}.{param}'",
-                                description=(
-                                    f"Payload was reflected verbatim in the response without sanitization "
-                                    f"(field classification: {category})."
-                                ),
-                                tool_name=tool.name,
-                                parameter=param,
-                                payload=payload,
-                                evidence=text[:300],
-                                remediation=(
-                                    "Sanitize and validate all input parameters. "
-                                    "Never pass raw user input to shell commands, file paths, or SQL queries."
-                                ),
-                            ))
-                            break  # one finding per parameter is enough
+                        elif _reflected(payload, text):
+                            if _is_json_key_echo(param, payload, text):
+                                severity = Severity.LOW
+                                confirmed = False
+                                desc = (
+                                    f"Payload was echoed back as a named JSON field — likely "
+                                    f"input logging, not a vulnerability (field: {category})."
+                                )
+                            elif _is_traversal_payload(payload):
+                                severity = Severity.MEDIUM
+                                confirmed = False
+                                desc = (
+                                    f"Traversal payload was reflected verbatim but no file content "
+                                    f"signatures found — unconfirmed (field: {category})."
+                                )
+                            else:
+                                severity = Severity.HIGH
+                                confirmed = False
+                                desc = (
+                                    f"Payload was reflected verbatim in the response without "
+                                    f"sanitization (field classification: {category})."
+                                )
+                        else:
+                            continue  # no signal — skip this payload
+
+                        findings.append(Finding(
+                            owasp_category=OWASPCategory.MCP02_PARAM_INJECTION,
+                            severity=severity,
+                            title=f"Injection reflected — '{tool.name}.{param}'",
+                            description=desc,
+                            tool_name=tool.name,
+                            parameter=param,
+                            payload=payload,
+                            evidence=text[:300],
+                            exploitation_confirmed=confirmed,
+                            remediation=(
+                                "Sanitize and validate all input parameters. "
+                                "Never pass raw user input to shell commands, file paths, or SQL queries."
+                            ),
+                        ))
+                        break  # one finding per parameter is enough
                     except Exception:
                         pass  # transport/server errors are not injection signals
 
@@ -93,6 +127,17 @@ def _extract_text(result: Any) -> str:
 
 def _reflected(payload: str, response: str) -> bool:
     return bool(payload) and payload in response
+
+
+def _is_traversal_payload(payload: str) -> bool:
+    return any(m in payload for m in _TRAVERSAL_MARKERS)
+
+
+def _traversal_confirmed(payload: str, text: str) -> bool:
+    """Return True if a traversal payload triggered actual file content in the response."""
+    if not _is_traversal_payload(payload):
+        return False
+    return any(sig in text for sig in _TRAVERSAL_SIGNATURES)
 
 
 def _is_json_key_echo(param: str, payload: str, text: str) -> bool:

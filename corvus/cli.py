@@ -79,6 +79,8 @@ def scan(
         "--timeout", help="Request timeout in seconds (overrides config)")] = None,
     sarif: Annotated[bool, typer.Option(
         "--sarif", help="Also write SARIF 2.1.0 report")] = False,
+    log_requests: Annotated[bool, typer.Option(
+        "--log-requests", help="Write raw JSON-RPC exchanges to exchanges.jsonl")] = False,
     header: Annotated[Optional[list[str]], typer.Option(
         "--header", help='HTTP header "Key: Value" (repeatable, for http transport)')] = None,
     config_file: Annotated[Optional[Path], typer.Option(
@@ -89,7 +91,7 @@ def scan(
     """Scan an MCP server for security vulnerabilities."""
     asyncio.run(_scan(
         transport, cmd, url, module, output_dir, fail_on, timeout,
-        sarif, header, config_file, plugin_dir,
+        sarif, log_requests, header, config_file, plugin_dir,
     ))
 
 
@@ -102,6 +104,7 @@ async def _scan(
     cli_fail_on: str | None,
     cli_timeout: int | None,
     cli_sarif: bool,
+    cli_log_requests: bool,
     raw_headers: list[str] | None,
     config_file: Path | None,
     cli_plugin_dirs: list[str] | None,
@@ -157,13 +160,17 @@ async def _scan(
         if not cmd:
             console.print("[red]--cmd is required for stdio transport (or set scan.cmd in config)[/red]")
             raise typer.Exit(1)
-        xport = StdioTransport(shlex.split(cmd, posix=(sys.platform != "win32")), timeout=timeout)
+        xport = StdioTransport(
+            shlex.split(cmd, posix=(sys.platform != "win32")),
+            timeout=timeout,
+            log_requests=cli_log_requests,
+        )
         target = cmd
     elif transport_name == "http":
         if not url:
             console.print("[red]--url is required for http transport (or set scan.url in config)[/red]")
             raise typer.Exit(1)
-        xport = HttpTransport(url, timeout=timeout, headers=merged_headers or None)
+        xport = HttpTransport(url, timeout=timeout, headers=merged_headers or None, log_requests=cli_log_requests)
         target = url
     else:
         console.print(f"[red]Unknown transport: {transport_name}[/red]")
@@ -215,7 +222,10 @@ async def _scan(
                 console.print("  [green]No findings[/green]")
             console.print()
 
-    result = session.to_result(surface, names)
+    result = session.to_result(
+        surface, names,
+        exchanges=list(xport.exchanges) if cli_log_requests else [],
+    )
     gen = ReportGenerator(resolved_output_dir)
     report_path = gen.write(result)
 
