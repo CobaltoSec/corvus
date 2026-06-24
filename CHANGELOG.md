@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V06b] — 2026-06-24
+
+### Added — C1/C2/C3 Framework Improvements
+- **C1 Request/Response Capture**: `RawExchange` model, `log_requests=True` en ambos transports, `--log-requests` CLI flag escribe `exchanges.jsonl` junto al reporte
+- **C2 Startup Validation**: `ServerStartupError` con contenido de stderr cuando un server crashea antes del primer request (300ms crash detection). Fix Windows: `shutil.which()` detecta `.cmd`/`.bat` scripts y usa `create_subprocess_shell` automáticamente
+- **C3 Exploitation Confirmation**: `_traversal_confirmed()` detecta firmas de contenido real (`root:x:0:0`, `HOME=`, etc.) independientemente de reflection — CRITICAL sin echo; traversal unconfirmed → MEDIUM
+- **A5 Windows payloads**: `PayloadEngine.get_payloads("path")` incluye sección `windows` de `traversal.yaml` en `sys.platform == "win32"`
+- Tests: 64 → 78 (+14: 4 C1, 3 C2, 7 C3)
+
+### Added — CS01 First Real Scans
+- `case-studies/cs01-mcp-ecosystem/` con methodology, targets, findings-raw y findings-curated
+- 4 servers oficiales `@modelcontextprotocol` escaneados:
+  - `server-filesystem 0.2.0`: 3 HIGH MCP03 (shadow tool: read_file/write_file/edit_file)
+  - `server-memory 0.6.3`: 9 LOW MCP05 (schema bypass, sin `additionalProperties: false`)
+  - `server-sequential-thinking 0.2.0`: 1 HIGH MCP06 rug pull (FP stateful) + 2 MCP01 FPs
+  - `server-everything 2.0.0`: 0 tools (usa `listChanged` dinámico — gap de cobertura documentado)
+- 5 TRUE POSITIVES confirmados, 3 FP identificados con candidatos de fix (A7/A9)
+
 ## [0.5.1] — 2026-06-12
 
 ### Fixed

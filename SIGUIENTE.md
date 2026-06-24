@@ -161,6 +161,27 @@ Prerequisito para que CS01 produzca evidencia válida y la charla sea presentabl
 - **Archivos:** `corvus/modules/dynamic/info_disclosure.py`
 - **Esfuerzo:** 1h
 
+**A7 — Rug Pull FP: stateful servers**
+- `server-sequential-thinking` dispara MCP06 HIGH porque su tool list cambia por diseño (el server es stateful)
+- Fix: en `rug_pull.py`, si el segundo `tools/list` devuelve 0 tools (server vacío por estado) en lugar de una lista diferente → downgrade a MEDIUM o skip
+- Alternativa: añadir `--rug-pull-delay N` para esperar entre los dos `tools/list` calls y confirmar estabilidad
+- **Motivo:** CS01 ya expuso este FP en server-sequential-thinking 0.2.0
+- **Archivos:** `corvus/modules/dynamic/rug_pull.py`
+- **Esfuerzo:** 1h
+
+**A8 — CS01 Tier A: server-github con GITHUB_TOKEN**
+- Escanear `npx -y @modelcontextprotocol/server-github` con token real (read-only scope)
+- Superficie esperada: tools con repo names en descriptions → candidato MCP01 (tool poisoning vía markdown)
+- Setup: crear GitHub token con scope `repo:read` para cuenta de prueba
+- **Esfuerzo:** 30min setup + scan
+
+**A9 — Enumeración con notificaciones listChanged**
+- `server-everything` (y futuros servers dinámicos) expone 0 tools en el `tools/list` inicial
+- El server anuncia que puede cambiar su lista via `tools.listChanged: true` en capabilities
+- Fix: si el server declara `listChanged: true`, suscribirse a `notifications/tools/list_changed` y esperar hasta 5s antes de emitir surface vacía
+- **Archivos:** `corvus/discovery/enumerator.py`, `corvus/transport/base.py`
+- **Esfuerzo:** 2h
+
 ### Medias — para después de CS01
 
 **M1 — SQLi error-based confirmation**
@@ -180,12 +201,13 @@ Prerequisito para que CS01 produzca evidencia válida y la charla sea presentabl
 
 ### Resumen de esfuerzo
 
-| Grupo | Mejoras | Total |
-|-------|---------|-------|
-| Críticas (C1-C3) | 3 | ~5.5h |
-| Quick wins (A3+A5) | 2 | ~1h |
-| Resto altas (A1+A2+A4+A6) | 4 | ~7h |
-| Medias (M1-M3) | 3 | ~4h |
+| Grupo | Mejoras | Estado | Total |
+|-------|---------|--------|-------|
+| Críticas (C1-C3) | 3 | ✅ DONE v0.6.0 | — |
+| Quick wins (A3+A5) | 2 | A5 ✅ DONE / A3 pendiente | ~30min |
+| Resto altas (A1+A2+A4+A6) | 4 | Pendiente | ~7h |
+| Nuevas altas (A7+A8+A9) | 3 | Pendiente | ~3.5h |
+| Medias (M1-M3) | 3 | Pendiente | ~4h |
 
 ---
 
