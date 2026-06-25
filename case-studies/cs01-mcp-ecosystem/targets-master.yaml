@@ -123,17 +123,22 @@ targets:
   - npx
   - -y
   - '@modelcontextprotocol/server-puppeteer'
-  status: pending
-  notes: 'Browser automation — vector: SSRF/cmd injection en navigate URLs'
+  status: skip
+  notes: 'Skip en batch — abre Chrome visible. SSRF CONFIRMADO MANUAL: corvus probe
+    causó navigate a 169.254.169.254 (AWS metadata). Scan manual en sesión dedicada.'
+  curation: TP
 - name: mcp-server-fetch
   tier: B
   transport: stdio
   cmd:
-  - npx
-  - -y
-  - '@modelcontextprotocol/server-fetch'
-  status: pending
-  notes: 'HTTP fetch tool — vector: SSRF, response flood, header injection'
+  - uvx
+  - mcp-server-fetch
+  status: done
+  notes: 'HTTP fetch oficial (Python/uvx, no npm). Vector: SSRF, response flood. Corregido
+    de npx → uvx.'
+  last_scanned: '2026-06-25'
+  findings_summary: clean
+  curation: pending
 - name: mcp-server-aws-kb-retrieval
   tier: B
   transport: stdio
@@ -152,3 +157,135 @@ targets:
   - '@modelcontextprotocol/server-slack'
   status: skip
   notes: Necesita SLACK_BOT_TOKEN. Skip.
+- name: filesystem-mcp-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - filesystem-mcp-server
+  - /tmp
+  status: skip
+  notes: Sin campo bin en package.json — npx no puede determinar executable. Skip.
+    Requiere instalación global o invocación node directa.
+- name: agent-infra-mcp-filesystem
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@agent-infra/mcp-server-filesystem'
+  - --allowed-directories
+  - C:\Temp
+  status: skip
+  notes: 'CLI arg parsing ignora path en Windows — Allowed directories siempre [].
+    Skip. Bytedance impl, incompatible con Windows paths.'
+  last_scanned: '2026-06-25'
+  findings_summary: ERROR (no report.json)
+- name: mcp-fetch-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-fetch-server
+  status: done
+  notes: 'Fetch web con readability/Markdown/JSON/YouTube. Vector: SSRF, response
+    flood, content injection'
+  last_scanned: '2026-06-25'
+  findings_summary: 1H
+  curation: pending
+- name: playwright-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@playwright/mcp'
+  status: skip
+  notes: 'Microsoft Playwright browser automation. Skip en batch — lanza Chrome headless.
+    Scan manual en sesión dedicada. Vector: SSRF via navigate URLs, JS injection.'
+- name: npm-search-mcp-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - npm-search-mcp-server
+  status: done
+  notes: 'npm registry search. Sin creds. Vector: query injection, schema validation'
+  last_scanned: '2026-06-25'
+  findings_summary: 1H 1L
+  curation: pending
+- name: n8n-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - n8n-mcp
+  status: done
+  notes: 'n8n workflow docs. Sin creds, many tools (~816+ nodes). Vector: tool poisoning
+    en descriptions, schema bypass'
+  last_scanned: '2026-06-25'
+  findings_summary: 1H 1M 6L 2I
+  curation: pending
+- name: shell-command-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - shell-command-mcp
+  status: done
+  notes: 'Shell exec con allowlist configurable (egoist). Puede error sin config.
+    Vector: cmd injection, allowlist bypass'
+  last_scanned: '2026-06-25'
+  findings_summary: 1H
+  curation: pending
+- name: mcp-cli-exec
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@jakenuts/mcp-cli-exec'
+  status: skip
+  notes: Paquete no publicado en npm (404). Solo en GitHub/Glama. Skip.
+- name: notion-mcp-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@notionhq/notion-mcp-server'
+  status: skip
+  notes: Necesita NOTION_API_KEY. Servidor oficial Notion. Alta visibilidad — target
+    futuro si conseguimos key trial.
+- name: tavily-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - tavily-mcp
+  status: skip
+  notes: Necesita TAVILY_API_KEY. Popular en ecosistema LLM agent.
+- name: exa-mcp-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - exa-mcp-server
+  status: skip
+  notes: Necesita EXA_API_KEY. Exa AI search — muy usado en agentes.
+- name: server-gitlab
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-gitlab'
+  status: skip
+  notes: Necesita GITLAB_TOKEN + GITLAB_URL. Servidor oficial GitLab.

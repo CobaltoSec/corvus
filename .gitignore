@@ -9,6 +9,8 @@ build/
 .ruff_cache/
 corvus-sessions/
 case-studies/cs01-mcp-ecosystem/batch-scans/
+case-studies/cs01-mcp-ecosystem/%2e*
+case-studies/cs01-mcp-ecosystem/.playwright-mcp/
 *.log
 .env
 SIGUIENTE.md

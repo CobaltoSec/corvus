@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V11] — 2026-06-25 — CS01 Tier B scan + curation
+
+- Poblado `targets-master.yaml` con 12 nuevos servers Tier B (8 scannable, 4 skip por creds)
+- Batch scan Tier B ejecutado: 9 done, 4 errores resueltos
+- 18 TPs confirmados (8 HIGH) — 62% servers con ≥1 HIGH finding
+- `findings-curated.md` actualizado: F14–F28 (Tier B), notas de análisis por finding
+- Finding notable: SSRF confirmado en `mcp-server-puppeteer` → navega a `169.254.169.254` (AWS metadata)
+- Supply chain ecosistémico: `@modelcontextprotocol/sdk` advisory detectado en múltiples servers
+- Diagnóstico de errores: `@modelcontextprotocol/server-fetch` es Python/uvx (no npm); `@jakenuts/mcp-cli-exec` no publicado
+- `.gitignore` actualizado: excluye artefactos de scan (`%2e*`, `.playwright-mcp/`)
+
 ## [RT-CORVUS-V10] — 2026-06-24 — v0.8.0 OWASP Remap + B1/B2 CS01
 
 ### Breaking changes (SARIF rule IDs and module names changed)
