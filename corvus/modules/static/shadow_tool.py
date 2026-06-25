@@ -77,6 +77,7 @@ class ShadowToolModule(ScanModule):
                     "Avoid generic names like 'bash', 'execute', or 'read_file' that clash "
                     "with well-known tool namespaces."
                 ),
+                confidence=90,
             ))
             return found  # no need to check further patterns for the same tool
 
@@ -92,6 +93,7 @@ class ShadowToolModule(ScanModule):
                     ),
                     tool_name=name,
                     remediation="Use precise, scoped tool names that reflect the exact operation performed.",
+                    confidence=85,
                 ))
                 return found
 
@@ -107,6 +109,7 @@ class ShadowToolModule(ScanModule):
                     ),
                     tool_name=name,
                     remediation="Use plain, descriptive tool names without special prefixes or suffixes.",
+                    confidence=70,
                 ))
                 return found
 

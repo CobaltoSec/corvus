@@ -1,4 +1,6 @@
 """Integration tests for HttpTransport against a live mock HTTP server."""
+import os
+
 import pytest
 
 from tests.mock_http_server import MockHTTPServer
@@ -64,3 +66,22 @@ async def test_http_custom_headers_forwarded(http_server):
         await t.initialize()
     # http.server lowercases header names
     assert http_server.last_headers.get("authorization") == "Bearer test-token-xyz"
+
+
+@pytest.mark.asyncio
+async def test_proxy_env_var_accepted(http_server):
+    """CORVUS_PROXY env var must be read and passed to httpx without raising an error.
+
+    We verify the proxy is accepted at construction time (connect()) by inspecting
+    the underlying httpx.AsyncClient rather than making a full request through a
+    non-existent proxy server.
+    """
+    os.environ["CORVUS_PROXY"] = "http://127.0.0.1:9999"
+    try:
+        t = HttpTransport(http_server.url)
+        await t.connect()
+        # Verify the client was created (proxy URL accepted by httpx constructor)
+        assert t._client is not None, "AsyncClient should be initialised after connect()"
+        await t.disconnect()
+    finally:
+        del os.environ["CORVUS_PROXY"]

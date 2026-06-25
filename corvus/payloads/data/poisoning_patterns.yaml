@@ -32,4 +32,6 @@ unicode_suspicious:
 max_description_length: 1000
 
 # Shannon entropy above this threshold may indicate obfuscation
-high_entropy_threshold: 4.5
+# Min description length before entropy check applies (short strings give FP)
+high_entropy_threshold: 5.0
+min_entropy_length: 200

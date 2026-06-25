@@ -33,6 +33,7 @@ class SchemaAuditModule(ScanModule):
                     description="Tools without descriptions cannot be audited for hidden intent.",
                     tool_name=tool.name,
                     remediation="Add a clear, concise description to every tool.",
+                    confidence=80,
                 ))
 
             # additionalProperties: true — accepts arbitrary keys
@@ -44,6 +45,7 @@ class SchemaAuditModule(ScanModule):
                     description="additionalProperties: true allows unexpected parameters that may bypass validation logic.",
                     tool_name=tool.name,
                     remediation="Set additionalProperties: false and enumerate all expected parameters explicitly.",
+                    confidence=80,
                 ))
 
             # Parameters without type constraints
@@ -57,6 +59,7 @@ class SchemaAuditModule(ScanModule):
                         tool_name=tool.name,
                         parameter=param,
                         remediation=f"Add an explicit type to parameter '{param}'.",
+                        confidence=80,
                     ))
 
             # Tool has properties but no required field
@@ -68,6 +71,7 @@ class SchemaAuditModule(ScanModule):
                     description="All parameters are implicitly optional. Verify this is intentional.",
                     tool_name=tool.name,
                     remediation="Declare required parameters explicitly to enforce correct usage.",
+                    confidence=70,
                 ))
 
         return findings

@@ -66,6 +66,7 @@ class ResponseFloodModule(ScanModule):
                         ),
                         tool_name=tool.name,
                         evidence=f"{byte_size:,} bytes — preview: {text[:200]}",
+                        confidence=85,
                         remediation=(
                             "Paginate or cap tool responses. Never return unbounded data. "
                             "Aim for responses under 4 KB to preserve LLM context budget."
@@ -84,6 +85,7 @@ class ResponseFloodModule(ScanModule):
                         ),
                         tool_name=tool.name,
                         evidence=text[:300],
+                        confidence=80,
                         remediation=(
                             "Deduplicate response data. Avoid returning the same value or phrase "
                             "more than a handful of times in a single response."

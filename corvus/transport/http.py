@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import os
 import time
 from typing import Any
 
@@ -39,8 +40,11 @@ class HttpTransport(MCPTransport):
         return self._exchanges
 
     async def connect(self) -> None:
+        # M3: honour CORVUS_PROXY env var for routing through Tor/Burp/upstream proxy
+        proxy = os.environ.get("CORVUS_PROXY")
         self._client = httpx.AsyncClient(
             timeout=self.timeout,
+            proxy=proxy,
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json",

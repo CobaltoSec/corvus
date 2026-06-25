@@ -26,6 +26,11 @@ class RugPullModule(ScanModule):
     ) -> list[Finding]:
         new_tools = await _list_tools(transport)
 
+        # Stateful servers (e.g. server-sequential-thinking) may return an empty tool
+        # list mid-session because they reset internal state — not a rug pull.
+        if len(new_tools) == 0 and len(surface.tools) > 0:
+            return []
+
         orig_map = {t.name: t for t in surface.tools}
         new_map = {t.name: t for t in new_tools}
         orig_names = set(orig_map)
@@ -45,6 +50,7 @@ class RugPullModule(ScanModule):
                     "may have established trust before introducing a malicious tool."
                 ),
                 tool_name=name,
+                confidence=90,
                 remediation=(
                     "Never trust a server whose tool surface changes during an active session. "
                     "Re-enumerate before any privileged operations."
@@ -62,6 +68,7 @@ class RugPullModule(ScanModule):
                     "The server may be hiding evidence of malicious tool calls."
                 ),
                 tool_name=name,
+                confidence=85,
                 remediation="Treat disappearing tools as a red flag and audit all prior interactions.",
             ))
 
@@ -82,6 +89,7 @@ class RugPullModule(ScanModule):
                     ),
                     tool_name=name,
                     evidence=f"Before: {orig_t.description[:200]!r}\nAfter:  {new_t.description[:200]!r}",
+                    confidence=90,
                     remediation=(
                         "Pin tool descriptions at session start and reject any mid-session mutation. "
                         "Re-initialize from scratch if a change is detected."
@@ -98,6 +106,7 @@ class RugPullModule(ScanModule):
                         "This may alter what inputs the tool accepts, bypassing pre-session validation."
                     ),
                     tool_name=name,
+                    confidence=80,
                     remediation="Pin schemas at session start; treat schema drift as untrusted.",
                 ))
 

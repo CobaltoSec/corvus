@@ -41,6 +41,7 @@ class SchemaBypassModule(ScanModule):
                         description=f"Tool succeeded with empty arguments despite required: {required}",
                         tool_name=tool.name,
                         remediation="Validate that all required parameters are present before processing.",
+                        confidence=80,
                     ))
 
             # Test 2: wrong type on first required param
@@ -62,6 +63,7 @@ class SchemaBypassModule(ScanModule):
                             parameter=param,
                             payload=str(payload),
                             remediation="Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+                            confidence=80,
                         ))
                         break  # one finding per param
 
@@ -80,6 +82,7 @@ class SchemaBypassModule(ScanModule):
                         description="Tool accepted arguments containing '__proto__' without error.",
                         tool_name=tool.name,
                         remediation="Reject calls containing parameters not declared in inputSchema.",
+                        confidence=80,
                     ))
 
         return findings

@@ -87,11 +87,14 @@ def scan(
         "--config", "-c", help="Path to corvus.toml config file")] = None,
     plugin_dir: Annotated[Optional[list[str]], typer.Option(
         "--plugin-dir", help="Directory to load external modules from (repeatable)")] = None,
+    min_confidence: Annotated[Optional[int], typer.Option(
+        "--min-confidence",
+        help="Exclude findings below this confidence score (0-100)")] = None,
 ):
     """Scan an MCP server for security vulnerabilities."""
     asyncio.run(_scan(
         transport, cmd, url, module, output_dir, fail_on, timeout,
-        sarif, log_requests, header, config_file, plugin_dir,
+        sarif, log_requests, header, config_file, plugin_dir, min_confidence,
     ))
 
 
@@ -108,6 +111,7 @@ async def _scan(
     raw_headers: list[str] | None,
     config_file: Path | None,
     cli_plugin_dirs: list[str] | None,
+    min_confidence: int | None = None,
 ) -> None:
     # --- Load config (all fields have defaults) ---
     cfg: CorvusConfig
@@ -222,6 +226,9 @@ async def _scan(
                 console.print("  [green]No findings[/green]")
             console.print()
 
+    if min_confidence is not None:
+        session.findings = [f for f in session.findings if f.confidence >= min_confidence]
+
     result = session.to_result(
         surface, names,
         exchanges=list(xport.exchanges) if cli_log_requests else [],
@@ -287,6 +294,80 @@ def _print_summary(result) -> None:
         color = _SEV_COLOR.get(sev, "white")
         table.add_row(f"[{color}]{sev.upper()}[/{color}]", str(count))
     console.print(table)
+
+
+@app.command()
+def batch(
+    config: Annotated[Path, typer.Argument(help="Path to targets YAML file")],
+    output_dir: Annotated[Optional[Path], typer.Option("--output-dir", "-o")] = None,
+    fail_on: Annotated[Optional[str], typer.Option(
+        "--fail-on",
+        help="Exit 1 if any target has findings at this severity or above")] = None,
+    timeout: Annotated[Optional[int], typer.Option(
+        "--timeout", help="Request timeout in seconds per target")] = None,
+    sarif: Annotated[bool, typer.Option("--sarif", help="Also write SARIF for each target")] = False,
+    min_confidence: Annotated[Optional[int], typer.Option(
+        "--min-confidence", help="Exclude findings below this confidence score (0-100)")] = None,
+):
+    """Scan multiple MCP servers from a targets YAML file."""
+    asyncio.run(_batch(config, output_dir, fail_on, timeout, sarif, min_confidence))
+
+
+async def _batch(
+    config_path: Path,
+    output_dir: Path | None,
+    fail_on: str | None,
+    timeout: int | None,
+    sarif: bool,
+    min_confidence: int | None,
+) -> None:
+    from .batch import load_batch_targets, run_batch
+
+    try:
+        targets = load_batch_targets(config_path)
+    except (FileNotFoundError, ValueError) as e:
+        console.print(f"[red]Error loading batch config: {e}[/red]")
+        raise typer.Exit(1)
+
+    import datetime
+    if output_dir is None:
+        ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        output_dir = Path("corvus-sessions") / f"batch-{ts}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    console.print(f"\n[bold cyan]Corvus Batch Scan[/bold cyan]  {len(targets)} target(s)")
+    console.print(f"Output dir : {output_dir}\n")
+
+    result = await run_batch(
+        targets,
+        output_dir,
+        timeout=timeout or 30,
+        min_confidence=min_confidence,
+        sarif=sarif,
+    )
+
+    summary_path = output_dir / "summary.md"
+    summary_path.write_text(result.summary_md())
+
+    console.print(result.summary_md())
+    console.print(f"\nSummary: {summary_path}")
+
+    if fail_on:
+        try:
+            threshold = Severity(fail_on)
+        except ValueError:
+            console.print(f"[red]Invalid severity: {fail_on}[/red]")
+            raise typer.Exit(1)
+        tidx = _SEVERITY_ORDER.index(threshold)
+        for t in result.targets:
+            fc = t["finding_count"]
+            for sev_str, count in fc.items():
+                try:
+                    sev = Severity(sev_str)
+                    if count > 0 and _SEVERITY_ORDER.index(sev) <= tidx:
+                        raise typer.Exit(1)
+                except ValueError:
+                    pass
 
 
 @app.command("list-modules")

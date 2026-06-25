@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import asyncio
+
 from ..core.models import MCPSurface, PromptSpec, ResourceSpec, ToolSpec
 from ..transport.base import MCPTransport
+
+# A9: delay before retrying tools/list on servers that declare listChanged=true
+_LIST_CHANGED_RETRY_DELAY = 2.0
 
 
 class MCPEnumerator:
@@ -13,26 +18,38 @@ class MCPEnumerator:
     async def enumerate(self) -> MCPSurface:
         init = await self.transport.initialize()
         info = init.get("serverInfo", {})
+        capabilities = init.get("capabilities", {})
+        list_changed = capabilities.get("tools", {}).get("listChanged", False)
+
         surface = MCPSurface(
             server_name=info.get("name", ""),
             server_version=info.get("version", ""),
             protocol_version=init.get("protocolVersion", ""),
         )
-        surface.tools = await self._list_tools()
+        surface.tools = await self._list_tools(list_changed=list_changed)
         surface.resources = await self._list_resources()
         surface.prompts = await self._list_prompts()
         return surface
 
-    async def _list_tools(self) -> list[ToolSpec]:
+    async def _list_tools(self, list_changed: bool = False) -> list[ToolSpec]:
         try:
             result = await self.transport.send_request("tools/list") or {}
+            tools = result.get("tools", [])
+
+            # A9: if server declared listChanged capability and returned no tools,
+            # wait briefly and retry once — tools may appear asynchronously.
+            if list_changed and len(tools) == 0:
+                await asyncio.sleep(_LIST_CHANGED_RETRY_DELAY)
+                result = await self.transport.send_request("tools/list") or {}
+                tools = result.get("tools", [])
+
             return [
                 ToolSpec(
                     name=t["name"],
                     description=t.get("description", ""),
                     input_schema=t.get("inputSchema", {}),
                 )
-                for t in result.get("tools", [])
+                for t in tools
             ]
         except Exception:
             return []

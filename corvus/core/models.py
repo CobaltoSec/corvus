@@ -77,6 +77,7 @@ class Finding(BaseModel):
     evidence: str | None = None
     remediation: str = ""
     exploitation_confirmed: bool = False
+    confidence: int = 50  # 0-100; how confident we are this is a real finding
 
 
 class ScanResult(BaseModel):

@@ -18,6 +18,21 @@ _TRAVERSAL_SIGNATURES = [
     "[fonts]", "[extensions]",               # win.ini
 ]
 
+# M1: SQL error keywords that confirm exploitation (error-based SQLi)
+_SQL_ERROR_SIGNATURES = [
+    "sqlite3.OperationalError",
+    "pg_exception_detail",
+    "SQLSTATE",
+    "syntax error near",
+    "You have an error in your SQL syntax",
+    "ORA-",          # Oracle
+    "SQL Server",    # MSSQL
+]
+
+# M2: sanitization signals — presence of these in a reflection response means the
+# server is explicitly sanitizing/escaping, so the reflection is not exploitable
+_SANITIZATION_SIGNALS = ("sanitized", "filtered", "escaped", "blocked")
+
 
 class ParamInjectionModule(ScanModule):
     owasp_id = "MCP02"
@@ -67,14 +82,24 @@ class ParamInjectionModule(ScanModule):
                         if _traversal_confirmed(payload, text):
                             severity = Severity.CRITICAL
                             confirmed = True
+                            confidence = 95
                             desc = (
                                 f"File content signatures detected in response — file was "
                                 f"successfully read via path traversal (field: {category})."
+                            )
+                        elif _sql_error_confirmed(text):  # M1: error-based SQLi confirmation
+                            severity = Severity.CRITICAL
+                            confirmed = True
+                            confidence = 92
+                            desc = (
+                                f"SQL error keywords detected in response — error-based SQLi "
+                                f"confirmed (field: {category})."
                             )
                         elif _reflected(payload, text):
                             if _is_json_key_echo(param, payload, text):
                                 severity = Severity.LOW
                                 confirmed = False
+                                confidence = 30
                                 desc = (
                                     f"Payload was echoed back as a named JSON field — likely "
                                     f"input logging, not a vulnerability (field: {category})."
@@ -82,13 +107,23 @@ class ParamInjectionModule(ScanModule):
                             elif _is_traversal_payload(payload):
                                 severity = Severity.MEDIUM
                                 confirmed = False
+                                confidence = 50
                                 desc = (
                                     f"Traversal payload was reflected verbatim but no file content "
                                     f"signatures found — unconfirmed (field: {category})."
                                 )
+                            elif _deny_in_context(text):  # M2: explicit sanitization signal
+                                severity = Severity.LOW
+                                confirmed = False
+                                confidence = 30
+                                desc = (
+                                    f"Payload reflected but response contains sanitization keywords "
+                                    f"— server appears to sanitize input (field: {category})."
+                                )
                             else:
                                 severity = Severity.HIGH
                                 confirmed = False
+                                confidence = 85
                                 desc = (
                                     f"Payload was reflected verbatim in the response without "
                                     f"sanitization (field classification: {category})."
@@ -106,6 +141,7 @@ class ParamInjectionModule(ScanModule):
                             payload=payload,
                             evidence=text[:300],
                             exploitation_confirmed=confirmed,
+                            confidence=confidence,
                             remediation=(
                                 "Sanitize and validate all input parameters. "
                                 "Never pass raw user input to shell commands, file paths, or SQL queries."
@@ -138,6 +174,17 @@ def _traversal_confirmed(payload: str, text: str) -> bool:
     if not _is_traversal_payload(payload):
         return False
     return any(sig in text for sig in _TRAVERSAL_SIGNATURES)
+
+
+def _sql_error_confirmed(text: str) -> bool:
+    """Return True if the response contains a database error keyword (M1)."""
+    return any(sig in text for sig in _SQL_ERROR_SIGNATURES)
+
+
+def _deny_in_context(text: str) -> bool:
+    """Return True if the response explicitly signals that sanitization occurred (M2)."""
+    lower = text.lower()
+    return any(kw in lower for kw in _SANITIZATION_SIGNALS)
 
 
 def _is_json_key_echo(param: str, payload: str, text: str) -> bool:

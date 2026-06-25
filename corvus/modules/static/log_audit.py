@@ -84,6 +84,7 @@ class LogAuditModule(ScanModule):
                         "Remove log-manipulation tools from the MCP surface. If required, "
                         "restrict them behind strong authentication and a write-once audit store."
                     ),
+                    confidence=90,
                 )]
 
         for pattern in _CRITICAL_DESC:
@@ -102,6 +103,7 @@ class LogAuditModule(ScanModule):
                     remediation=(
                         "Do not expose log-deletion or log-disabling operations through the MCP surface."
                     ),
+                    confidence=85,
                 )]
 
         # HIGH: tool exposes raw log data (audit logs contain credentials, PII, internal paths)
@@ -119,6 +121,7 @@ class LogAuditModule(ScanModule):
                     "Restrict log-access tools to authorised principals only. "
                     "Redact or mask sensitive fields before returning log data via MCP."
                 ),
+                confidence=90,
             )]
 
         for pattern in _HIGH_DESC:
@@ -138,6 +141,7 @@ class LogAuditModule(ScanModule):
                         "Apply field-level masking before returning log entries through MCP. "
                         "Restrict log access to authenticated, authorised callers."
                     ),
+                    confidence=85,
                 )]
 
         # MEDIUM: logging explicitly stated as absent (unaudited tool calls)
@@ -155,6 +159,7 @@ class LogAuditModule(ScanModule):
                     tool_name=name,
                     evidence=description[:300],
                     remediation="Enable structured audit logging for all tool invocations.",
+                    confidence=80,
                 )]
 
         return []

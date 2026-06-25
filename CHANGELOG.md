@@ -2,6 +2,49 @@
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-06-25
+
+### Added — RT-CORVUS-V08: Detection Quality + Batch Scan
+
+**A1 — Batch Scan Mode**
+- New `corvus batch targets.yaml` CLI command — scan multiple MCP servers in one invocation
+- `BatchTarget` model: name, transport, cmd/url per target
+- Per-target output directories with individual `report.json`/SARIF; top-level `summary.md` (Markdown table)
+- `--min-confidence`, `--fail-on`, `--sarif`, `--output-dir` flags pass through to each scan
+- New module: `corvus/batch.py` (`load_batch_targets`, `run_batch`, `BatchResult`)
+
+**A2 — Confidence Score**
+- `Finding.confidence: int = 50` (0-100) — added to all findings across 10 modules
+- Canonical values: exploitation_confirmed → 95, SQL error confirmed → 92, rug_pull appeared → 90, shadow tool name → 90, regex/keyword match → 85, schema presence → 80, traversal unconfirmed → 50, JSON key echo → 30, entropy signal → 20
+- New `--min-confidence N` flag in both `corvus scan` and `corvus batch` — filters findings before writing report
+
+**A3 — Entropy Threshold Fix**
+- `tool_poisoning`: Shannon entropy threshold raised `4.5 → 5.0`; guard added: only check entropy if `len(description) > 200` — eliminates FPs on short base64 identifiers
+
+**A4 — Error-Provoking Info-Disclosure**
+- `info_disclosure`: now probes each tool with (1) missing required args `{}` and (2) oversized 10k-char string, in addition to the standard benign call — surfaces stack traces and error messages that only appear under bad input
+
+**A6 — HTML Catch-All FP Filter**
+- `info_disclosure`: responses starting with `<!DOCTYPE` or `<html` are skipped — eliminates FPs on HTTP servers returning SPA index pages for every route
+
+**A7 — Rug Pull Stateful FP Fix**
+- `rug_pull`: if second `tools/list` returns empty list (not shrunken, but zero tools), no finding is emitted — eliminates FP on stateful servers like `server-sequential-thinking`
+
+**A9 — listChanged Retry**
+- `enumerator`: if server declares `capabilities.tools.listChanged = true` and first `tools/list` returns empty, waits 2s and retries once — covers servers like `server-everything` that populate tools asynchronously
+
+**M1 — SQL Error-Based Injection Confirmation**
+- `param_injection`: detects `sqlite3.OperationalError`, `SQLSTATE`, `syntax error near`, etc. in response → upgrades to CRITICAL + `exploitation_confirmed = True` (confidence = 92)
+
+**M2 — Deny-In-Context Severity Downgrade**
+- `param_injection`: if reflected payload response contains "sanitized", "filtered", "escaped", or "blocked" → downgrade to LOW (confidence = 30) instead of HIGH
+
+**M3 — CORVUS_PROXY Env Var**
+- `HttpTransport`: reads `CORVUS_PROXY` env var and passes to `httpx.AsyncClient(proxy=...)` — enables routing through Tor, Burp, or upstream proxy without CLI changes
+
+### Tests
+- 78 → 97 tests (+19 across `test_modules_v5.py`, `test_enumerator_listchanged.py`, `test_batch.py`, `test_transport_http.py`)
+
 ## [RT-CORVUS-V06b] — 2026-06-24
 
 ### Added — C1/C2/C3 Framework Improvements

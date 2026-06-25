@@ -80,6 +80,7 @@ class AuthAuditModule(ScanModule):
                         "Remove documentation of auth bypasses. All privileged tools must enforce "
                         "authentication and authorization at the server layer, not rely on callers."
                     ),
+                    confidence=85,
                 ))
                 return found  # one critical per tool is enough
 
@@ -101,6 +102,7 @@ class AuthAuditModule(ScanModule):
                         "Explicitly document the authentication mechanism for restricted tools, "
                         "or remove them from the public tool surface entirely."
                     ),
+                    confidence=85,
                 ))
                 return found
 
@@ -120,6 +122,7 @@ class AuthAuditModule(ScanModule):
                         "Restrict access-controlled tools using server-side auth checks. "
                         "Do not rely on naming conventions as a security boundary."
                     ),
+                    confidence=75,
                 ))
                 return found
 
@@ -138,6 +141,7 @@ class AuthAuditModule(ScanModule):
                     tool_name=name,
                     evidence=description[:300],
                     remediation="Enforce authentication unconditionally. Remove conditional auth paths.",
+                    confidence=70,
                 ))
                 return found
 

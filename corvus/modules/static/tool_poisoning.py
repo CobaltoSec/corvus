@@ -28,7 +28,8 @@ class ToolPoisoningModule(ScanModule):
         self._patterns = [re.compile(p, re.IGNORECASE) for p in data["regex_patterns"]]
         self._unicode = data["unicode_suspicious"]
         self._max_len = data.get("max_description_length", 1000)
-        self._entropy_threshold = data.get("high_entropy_threshold", 4.5)
+        self._entropy_threshold = data.get("high_entropy_threshold", 5.0)
+        self._min_entropy_length = data.get("min_entropy_length", 200)
 
     async def run(
         self,
@@ -56,6 +57,7 @@ class ToolPoisoningModule(ScanModule):
                     tool_name=tool_name,
                     evidence=description[:300],
                     remediation="Remove any LLM-directed instructions from tool descriptions.",
+                    confidence=85,
                 ))
                 break
 
@@ -70,6 +72,7 @@ class ToolPoisoningModule(ScanModule):
                     tool_name=tool_name,
                     evidence=f"Character U+{ord(char):04X} at position {description.index(char)}",
                     remediation="Strip all zero-width and directional override unicode characters.",
+                    confidence=90,
                 ))
                 break
 
@@ -82,10 +85,12 @@ class ToolPoisoningModule(ScanModule):
                 description=f"Description is {len(description)} chars (limit {self._max_len}). May contain hidden content.",
                 tool_name=tool_name,
                 remediation="Keep descriptions concise; review for hidden instructions.",
+                confidence=80,
             ))
 
-        # High entropy (possible obfuscation)
-        if description and _entropy(description) > self._entropy_threshold:
+        # High entropy (possible obfuscation) — only fires on descriptions long enough
+        # to rule out naturally random short identifiers
+        if len(description) > self._min_entropy_length and _entropy(description) > self._entropy_threshold:
             found.append(Finding(
                 owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
                 severity=Severity.LOW,
@@ -93,6 +98,7 @@ class ToolPoisoningModule(ScanModule):
                 description="Unusual character distribution may indicate obfuscated content.",
                 tool_name=tool_name,
                 remediation="Review description for base64-encoded or otherwise obfuscated payloads.",
+                confidence=20,
             ))
 
         return found

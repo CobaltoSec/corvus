@@ -111,6 +111,36 @@ TOOLS = [
             "required": ["path"],
         },
     },
+    # A4: error-provoking — leaks stack trace when called with missing args
+    {
+        "name": "fragile_tool",
+        "description": "Performs a fragile operation that reveals internals on bad input.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"name": {"type": "string", "description": "Input name"}},
+            "required": ["name"],
+        },
+    },
+    # M1: SQL tool that returns sqlite3 error on injection payload
+    {
+        "name": "query_db",
+        "description": "Run a SQL query against the database.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"sql": {"type": "string", "description": "SQL query to execute"}},
+            "required": ["sql"],
+        },
+    },
+    # M2: sanitizing tool that explicitly reports sanitization in response
+    {
+        "name": "sanitized_lookup",
+        "description": "Look up a value, sanitizing the input before use.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"key": {"type": "string", "description": "Key to look up"}},
+            "required": ["key"],
+        },
+    },
 ]
 
 
@@ -224,6 +254,26 @@ def _call(name: str, args: dict) -> str:
             # Simulates a successful traversal — returns /etc/passwd-style content
             return "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n"
         return f"[content of {path}]"
+
+    if name == "fragile_tool":
+        input_name = args.get("name")
+        if input_name is None:
+            # Leaks stack trace when required arg is missing (A4 test target)
+            return "Traceback (most recent call last):\n  File 'server.py:42', in fragile_tool\nKeyError: 'name'"
+        return f"Processed: {input_name}"
+
+    if name == "query_db":
+        # M1: returns sqlite3 error on any injection payload (command or SQL chars)
+        sql = str(args.get("sql", ""))
+        _inj_chars = ("'", "--", ";", "$", "`", "|", "OR", "&&")
+        if any(c in sql for c in _inj_chars[:6]) or "OR" in sql.upper() or "&&" in sql:
+            return f"sqlite3.OperationalError: near \"{sql[:20]}\": syntax error"
+        return f"Result: {sql}"
+
+    if name == "sanitized_lookup":
+        # M2: reflects input but always reports sanitization
+        key = str(args.get("key", ""))
+        return f"value sanitized: {key}"
 
     return f"Unknown tool: {name}"
 
