@@ -1,0 +1,12 @@
+targets:
+  - name: server-github
+    transport: stdio
+    cmd: ["npx", "-y", "@modelcontextprotocol/server-github"]
+
+  - name: server-pdf
+    transport: stdio
+    cmd: ["npx", "-y", "@modelcontextprotocol/server-pdf"]
+
+  - name: server-everything
+    transport: stdio
+    cmd: ["npx", "-y", "@modelcontextprotocol/server-everything"]

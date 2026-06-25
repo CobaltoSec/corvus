@@ -2,6 +2,45 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V09] — 2026-06-25
+
+### Added — MCP02 scope-audit + MCP04 supply-chain + CS01 Batch Tier A
+
+**MCP02 — `scope_audit.py` (nuevo módulo estático)**
+- Detecta privilege escalation via scope creep en tool names y descriptions
+- HIGH: nombre contiene `admin`/`root`/`superuser`/`elevated`/`privileged`
+- HIGH: description contiene `unrestricted access`/`without restriction`/`full access`/`any path`/`all files`
+- MEDIUM: nombre con prefijo read-only (`read_`/`get_`/`fetch_`/`list_`) pero description menciona escritura
+- MEDIUM: keywords `override`/`escalate`/`all_access`/`unlimited` en description
+- Registrado en `_ALL_MODULES` y `_STATIC` (cli.py + batch.py)
+
+**MCP04 — `supply_chain.py` (nuevo módulo estático)**
+- Pre-scan: extrae package npm del cmd stdio, crea tmpdir, `npm install --package-lock-only`, `npm audit --json`
+- Mapeo de severidad: `critical` → CRITICAL, `high` → HIGH, `moderate` → MEDIUM
+- Solo aplica a transport=stdio con comandos npx/npm; HTTP y non-npm → skip
+- `_run_npm_audit()` separada para monkeypatching en tests
+- Fix Windows: `shutil.which("npm")` resuelve `npm.cmd` en lugar de `npm` bare
+- Registrado en `_ALL_MODULES` y `_STATIC`
+
+**Tests: 97 → 111 (+14)**
+- 2 E2E tests `scope_audit` en `test_modules.py`
+- 12 tests `supply_chain` en `test_supply_chain.py` nuevo (5 unit helpers + 4 E2E monkeypatched + 3 negativos)
+- `tests/mock_server.py`: +`admin_read_all` (HIGH scope creep), +`read_config` (clean, negativo)
+
+**Bug fix — `batch.py` summary_md**
+- `sum(finding_count.values())` crashaba cuando un target fallaba con `{"error": str(e)}`
+- Fix: detecta key `"error"` y muestra `ERROR` en la tabla en lugar de crashear
+- `session.target` corregido a `" ".join(target.cmd)` (antes era solo `cmd[0]`)
+
+**CS01 Batch Tier A**
+- `case-studies/cs01-mcp-ecosystem/targets-cs01-tier-a.yaml` — batch config (server-github, server-pdf, server-everything)
+- `server-github v0.6.2`: 2 HIGH supply chain (`@modelcontextprotocol/sdk` + `server-github` advisories)
+- `server-everything`: 13 findings (1H info-disclosure get-env + 2M + 6L + 4I schema issues)
+- `findings-curated.md` actualizado: CS01-F09 a F13 agregados, totales actualizados
+
+**env**
+- `GITHUB_TOKEN` agregado a `.env`
+
 ## [0.7.0] — 2026-06-25
 
 ### Added — RT-CORVUS-V08: Detection Quality + Batch Scan

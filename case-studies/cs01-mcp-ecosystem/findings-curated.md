@@ -12,6 +12,11 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F06 | server-sequential-thinking | 0.2.0 | MCP06 Rug Pull | HIGH | Tool `sequentialthinking` desapareció mid-session | ⚠️ FP probable | Server stateful — tool list cambia por diseño |
 | CS01-F07 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | MEDIUM | Descripción excesivamente larga en `sequentialthinking` | ⚠️ FP probable | Descripción larga es el propósito del server |
 | CS01-F08 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | LOW | Alta entropía en descripción de `sequentialthinking` | ⚠️ FP probable | Base64/estructura esperada en el prompt del server |
+| CS01-F09 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` tiene vulnerabilidad high | ⚠️ Revisar | npm advisory sin CVE asignado — verificar si es real |
+| CS01-F10 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/server-github@*` tiene vulnerabilidad high | ⚠️ Revisar | npm advisory sin CVE asignado — puede ser el mismo advisory |
+| CS01-F11 | server-everything | — | MCP04 Info Disclosure | HIGH | `get-env` expone sensitive system file path | ⚠️ Revisar | Evidence del report muestra error de gzip-file-as-resource — verificar manualmente |
+| CS01-F12 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | 🔲 Pendiente | schema_bypass module — probable TP |
+| CS01-F13 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | 🔲 Pendiente | schema_bypass module — probable TP |
 
 ---
 
@@ -36,23 +41,22 @@ El server por diseño tiene un solo tool con descripción larga (protocolo de ra
 
 ## Estadísticas
 
-- Servers escaneados: 4 (`server-filesystem`, `server-memory`, `server-sequential-thinking`, `server-everything`)
-- Findings totales (raw): 13
+- Servers escaneados: 6 (`server-filesystem`, `server-memory`, `server-sequential-thinking`, `server-everything`, `server-github`, `server-pdf[ERROR]`)
+- Findings totales (raw): ~28+
 - Findings confirmados (TRUE POSITIVE): 5 (CS01-F01 a CS01-F05)
 - Findings FP probable: 3 (CS01-F06 a CS01-F08)
+- Findings pendientes de revisión: 5 (CS01-F09 a CS01-F13)
 - Findings confirmados CRITICAL: 0
-- Findings confirmados HIGH: 3 (MCP03 en filesystem)
+- Findings confirmados HIGH: 3 (MCP03 en filesystem) + 2 pendientes (supply chain github) + 1 pendiente (info disclosure everything)
 - Findings confirmados LOW: 2 (MCP05 en memory)
-- % con ≥1 finding: 75% (3/4 servers)
-- % con ≥1 HIGH: 50% (server-filesystem + sequential-thinking con FP)
-- % con schema issues (MCP05): 25% (server-memory)
-- % con shadow tool (MCP03): 25% (server-filesystem)
+- Batch Tier A: server-github 2H supply-chain | server-everything 1H+2M+6L+4I | server-pdf ERROR
 
 ## Servers pendientes
 
 | Server | Estado | Bloqueante |
 |--------|--------|-----------|
-| server-git | No testeado | Necesita repo git local + Python/uvx |
-| server-github | No testeado | Necesita `GITHUB_TOKEN` |
+| server-git | No testeado | `@modelcontextprotocol/server-git` no existe en npm — es Python (uvx). Pendiente. |
+| server-github | ✅ Escaneado (2H) | 2 HIGH supply chain — pendiente revisión CVE |
 | server-postgres | No testeado | Necesita connection string |
-| server-everything | Escaneado — 0 tools | Usa `tools.listChanged: true` + notificaciones dinámicas. Corvus enumera solo el estado inicial (0 tools). Gap de cobertura documentado. |
+| server-pdf | ERROR | `@modelcontextprotocol/server-pdf` crashea en startup — investigar |
+| server-everything | ✅ Escaneado (13 findings) | v0.7.0 listChanged retry funcionó — 1H+2M+6L+4I. Pendiente curation manual. |

@@ -12,6 +12,7 @@ from corvus.modules.dynamic.param_injection import (
     _traversal_confirmed, _is_traversal_payload,
 )
 from corvus.modules.dynamic.info_disclosure import InfoDisclosureModule
+from corvus.modules.static.scope_audit import ScopeAuditModule
 
 
 @pytest.fixture
@@ -174,3 +175,27 @@ async def test_traversal_reflection_without_content_is_medium():
         assert f.severity == Severity.MEDIUM, (
             f"Unconfirmed traversal reflection should be MEDIUM, got {f.severity} for {f.payload!r}"
         )
+
+
+@pytest.mark.asyncio
+async def test_scope_audit_detects_admin_tool():
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ScopeAuditModule().run(surface, t, session)
+
+    assert findings, "Expected at least one scope creep finding"
+    high = [f for f in findings if f.severity == Severity.HIGH]
+    assert high, "Expected HIGH finding for admin_read_all"
+    assert any(f.tool_name == "admin_read_all" for f in high)
+
+
+@pytest.mark.asyncio
+async def test_scope_audit_clean_tool_no_finding():
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ScopeAuditModule().run(surface, t, session)
+
+    tool_names = [f.tool_name for f in findings]
+    assert "read_config" not in tool_names, "Clean tool read_config should not produce a finding"

@@ -20,13 +20,16 @@ from .modules.dynamic.schema_bypass import SchemaBypassModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
+from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
+from .modules.static.supply_chain import SupplyChainModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .reporting.report import ReportGenerator
 from .transport.http import HttpTransport
 from .transport.stdio import StdioTransport
 
 _ALL_MODULES = [
+    ScopeAuditModule, SupplyChainModule,
     ToolPoisoningModule, SchemaAuditModule, ShadowToolModule,
     AuthAuditModule, LogAuditModule, ParamInjectionModule,
     InfoDisclosureModule, SchemaBypassModule, ResponseFloodModule, RugPullModule,
@@ -58,6 +61,9 @@ class BatchResult:
         lines.append("|--------|----------|------|--------|-----|------|-------|")
         for t in self.targets:
             fc = t["finding_count"]
+            if "error" in fc:
+                lines.append(f"| {t['name']} | ERROR | — | — | — | — | — |")
+                continue
             total = sum(fc.values())
             lines.append(
                 f"| {t['name']} "
@@ -133,7 +139,7 @@ async def run_batch(
         try:
             async with xport:
                 session = ScanSession(
-                    target=target.cmd[0] if target.cmd else target.url or "",
+                    target=" ".join(target.cmd) if target.cmd else target.url or "",
                     transport=target.transport,
                     output_dir=target_dir,
                 )

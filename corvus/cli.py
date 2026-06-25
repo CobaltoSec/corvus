@@ -24,7 +24,9 @@ from .modules.dynamic.schema_bypass import SchemaBypassModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
+from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
+from .modules.static.supply_chain import SupplyChainModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .plugins import discover_plugins
 from .reporting.report import ReportGenerator
@@ -36,6 +38,8 @@ console = Console()
 
 # Built-in modules in canonical OWASP order. Plugins are merged at runtime.
 _ALL_MODULES = {
+    "scope-audit":     ScopeAuditModule,
+    "supply-chain":    SupplyChainModule,
     "tool-poisoning":  ToolPoisoningModule,
     "schema-audit":    SchemaAuditModule,
     "shadow-tool":     ShadowToolModule,
@@ -47,7 +51,7 @@ _ALL_MODULES = {
     "response-flood":  ResponseFloodModule,
     "rug-pull":        RugPullModule,
 }
-_STATIC  = {"tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
+_STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
 _DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "response-flood", "rug-pull"}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]

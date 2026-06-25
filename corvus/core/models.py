@@ -35,6 +35,8 @@ class OWASPCategory(str, Enum):
     MCP08_AUTH_BYPASS = "MCP08"
     MCP09_SCHEMA_AUDIT = "MCP09"
     MCP10_LOG_AUDIT = "MCP10"
+    MCP02_SCOPE_CREEP   = "MCP02-SCOPE"   # temporal — remap completo en v0.8.0
+    MCP04_SUPPLY_CHAIN  = "MCP04-SUPPLY"  # temporal — remap completo en v0.8.0
 
 
 class ToolSpec(BaseModel):

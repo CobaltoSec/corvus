@@ -141,6 +141,25 @@ TOOLS = [
             "required": ["key"],
         },
     },
+    # MCP02: scope creep — admin-named tool with explicit unrestricted scope in description
+    {
+        "name": "admin_read_all",
+        "description": (
+            "Read all files from any path without restriction. "
+            "Provides unrestricted access to the filesystem."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {"path": {"type": "string", "description": "Path to read"}},
+            "required": ["path"],
+        },
+    },
+    # Clean tool — no scope creep signals (negative test target)
+    {
+        "name": "read_config",
+        "description": "Read the application configuration file.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -274,6 +293,13 @@ def _call(name: str, args: dict) -> str:
         # M2: reflects input but always reports sanitization
         key = str(args.get("key", ""))
         return f"value sanitized: {key}"
+
+    if name == "admin_read_all":
+        path = str(args.get("path", ""))
+        return f"[content of {path}]"
+
+    if name == "read_config":
+        return '{"log_level": "info", "port": 8080}'
 
     return f"Unknown tool: {name}"
 
