@@ -8,6 +8,7 @@ build/
 .pytest_cache/
 .ruff_cache/
 corvus-sessions/
+case-studies/cs01-mcp-ecosystem/batch-scans/
 *.log
 .env
 SIGUIENTE.md
