@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V13-DISC] — 2026-06-25 — Responsible Disclosure + Gap Analysis
+
+- **Responsible disclosure completo**: 4 GHSAs creados en `CobaltoSec/advisories` + MSRC submitido
+  - `GHSA-mf64-cgv4-ppcx` — `@playwright/mcp` path traversal (F33/F34, Microsoft MSRC + CVE pending)
+  - `GHSA-7w27-7xwv-x6x2` — `mcp-server-sqlite` SQL injection (F29, modelcontextprotocol/servers)
+  - `GHSA-7763-c5gf-v5fj` — `mcp-shell-server` injection (F42/F43, mako10k)
+  - `GHSA-pr6r-h66r-m47j` — `server-everything` token exposure (F11, modelcontextprotocol/servers)
+- **MSRC submission**: `@playwright/mcp` path traversal submitido con disclosure date Ekoparty 2026. Acknowledgement: Nicolas Padilla / CobaltoSec.
+- **Gap analysis (3 agentes)**: identificados 8 gaps de detección — superficie MCP no testeada (`resources/read`, `prompts/get`), módulo SSRF faltante, encoding bypass, version string disclosure, hidden param fuzzing, initialize audit, sampling reverse channel, JSON-RPC fuzzing
+- **SIGUIENTE.md**: RT-CORVUS-V13 (implementación completa) + RT-CORVUS-V14 (E2E final) definidos
+
 ## [RT-CORVUS-V12] — 2026-06-25 — CS01 Cierre + SSE fix + Tier C targets
 
 - **CS01 cerrado**: 16 auditados (15 auto + 1 manual), 37 findings curados (F01–F37), 25 TP / 12 FP
