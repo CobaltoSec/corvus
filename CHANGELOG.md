@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V14] — 2026-06-25 — E2E Final Dataset CS01
+
+- **Re-scan**: 20 targets re-escaneados con Corvus v0.9.0 (`--redone` batch)
+- **cs01.py**: flags `--redone` (re-scan done targets) + `--exclude` (skip targets por nombre)
+- **findings-curated.md**: F52–F62 curados (11 findings nuevos: 7 TP + 4 FP); stats 51→62 total, 36→43 TP, 15→19 FP
+- **report.md**: V14 completo — header v0.9.0, metodología 12→21 módulos, secciones server-sqlite/n8n-mcp/shell-servers/db-executeautomation actualizadas, stats table delta v0.8.1→v0.9.0, timeline disclosure
+- **targets-master.yaml**: curation pending→TP/partial en todos los targets; corvus_version 0.9.0; notas V14 integradas
+- **Delta V14**: shadow-tool "conflicts" variant (F56/F57/F58), scope-audit B0 quick win (F52/F53), endpoint-probe response_flood (F59/F62); FP DB shadow tools (F54/F55/F60/F61)
+
 ## [RT-CORVUS-V13] — 2026-06-25 — Detection Quality v0.9.0
 
 - **B0a** — Encoding bypass: `%252e%252e%252f` (double-encode) + `．．／` (unicode fullwidth) en `traversal.yaml`

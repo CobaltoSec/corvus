@@ -137,18 +137,39 @@ Tool declara `nodeType` como required, pero ejecuta sin error con args vacíos y
 
 ---
 
-## Estadísticas finales (post RT-CORVUS-V12 Tier C)
+## RT-CORVUS-V14 — Delta v0.9.0 (re-scan 2026-06-25)
 
-- **Servers auditados**: 23 (16 Tier A+B + 7 Tier C auto; 2 Tier C skip)
-- **Findings curados**: 51 (F01–F51)
-- **TRUE POSITIVE**: 36 (70.6%) — F01/F02/F03/F04/F05/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35/F38/F39/F40/F42/F43/F45/F46/F47/F48/F49/F50
-- **FALSE POSITIVE**: 15 (29.4%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37/F41/F44/F51
+Re-scan con v0.9.0 (21 módulos, nuevos: ssrf, endpoint-probe, param-smuggling, init-audit, proto-fuzz). 18 targets stdio + 2 Docker.
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS01-F52 | server-filesystem | MCP02 Scope Audit | HIGH | Scope Creep — `list_directory` claims unrestricted access scope | ✅ TP | Desc contiene "all files". MCP02 B0 quick win — detección mejorada en v0.9.0. |
+| CS01-F53 | server-filesystem | MCP02 Scope Audit | HIGH | Scope Creep — `list_directory_with_sizes` claims unrestricted access scope | ✅ TP | Mismo patrón que F52. Par de tools con scope claim idéntico. |
+| CS01-F54 | server-sqlite | MCP03 Shadow Tool | HIGH | Shadow Tool — `read_query` description reveals arbitrary execution intent | ❌ FP | DB server — read SQL es by design. Mismo argumento que F30. |
+| CS01-F55 | server-sqlite | MCP03 Shadow Tool | HIGH | Shadow Tool — `write_query` description reveals arbitrary execution intent | ❌ FP | DB server — write SQL es by design. Variante del detector, no nueva superficie. |
+| CS01-F56 | shell-command-mcp | MCP03 Shadow Tool | HIGH | Shadow Tool — `execute_command` conflicts with high-value built-in name | ✅ TP | Variante "conflicts" del detector (v0.9.0). execute_command en shadow name list. Complementa F28. |
+| CS01-F57 | super-shell-mcp | MCP03 Shadow Tool | HIGH | Shadow Tool — `execute_command` conflicts with high-value built-in name | ✅ TP | Variante "conflicts" del detector (v0.9.0). Complementa F39. |
+| CS01-F58 | mcp-shell-server | MCP03 Shadow Tool | HIGH | Shadow Tool — `shell_execute` description reveals arbitrary execution intent | ✅ TP | shell_execute ejecuta comandos de shell arbitrarios. Detección correcta — arbitrary execution confirmado. |
+| CS01-F59 | n8n-mcp | MCP08 Response Flooding | HIGH | Response Flooding — `search_nodes` returns oversized response | ✅ TP | Conf=85. 816+ nodos — search sin paginación retorna dump masivo. Context budget exhaustion. Distinto de F19 (echo reflection). |
+| CS01-F60 | database-server-executeautomation | MCP03 Shadow Tool | HIGH | Shadow Tool — `read_query` description reveals arbitrary execution intent | ❌ FP | Mismo argumento que F54. DB server, SQL por diseño. |
+| CS01-F61 | database-server-executeautomation | MCP03 Shadow Tool | HIGH | Shadow Tool — `write_query` description reveals arbitrary execution intent | ❌ FP | Mismo argumento que F55. DB server, SQL por diseño. |
+| CS01-F62 | database-server-executeautomation | MCP08 Response Flooding | MEDIUM | Response Flooding — `list_insights` retorna contenido altamente repetitivo | ✅ TP | Frase repetida ≥15 veces. Vector adicional sobre F49 (oversized) — repetición para anclar instrucciones en contexto LLM. |
+
+---
+
+## Estadísticas finales (post RT-CORVUS-V14 / v0.9.0)
+
+- **Servers auditados**: 20 re-scaneados con v0.9.0 (+ 3 skip: playwright manual, docker-mcp manual, server-pdf sin cambios)
+- **Findings curados**: 62 (F01–F62)
+- **TRUE POSITIVE**: 43 (69.4%) — F01/F02/F03/F04/F05/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35/F38/F39/F40/F42/F43/F45/F46/F47/F48/F49/F50 + **F52/F53/F56/F57/F58/F59/F62**
+- **FALSE POSITIVE**: 19 (30.6%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37/F41/F44/F51 + **F54/F55/F60/F61**
 - **CRITICAL TP**: 1 (F11 — Token Exposure auto-detectado)
-- **HIGH TP**: 21 (F01/F02/F03/F09/F14/F15/F16/F28/F29/F33/F34/F35/F38/F39/F40/F42/F43/F47/F48/F49/F50)
-- **MEDIUM TP**: 6 (F18/F20/F31/F32/F45/F46)
+- **HIGH TP**: 27 (F01/F02/F03/F09/F14/F15/F16/F28/F29/F33/F34/F35/F38/F39/F40/F42/F43/F47/F48/F49/F50 + F52/F53/F56/F57/F58/F59)
+- **MEDIUM TP**: 7 (F18/F20/F31/F32/F45/F46 + F62)
 - **LOW TP**: 8 (F04/F05/F17/F21/F22/F23/F24/F25)
-- **FP rate**: 29% (15/51)
-- **Servers con ≥1 HIGH**: 15 de 23 (65%)
+- **FP rate**: 30.6% (19/62) — sin variación significativa
+- **Servers con ≥1 HIGH**: 15 de 23 (65%) — sin cambio
+- **Delta detección v0.8.1→v0.9.0**: +11 findings (7 TP nuevos, 4 FP nuevos). Nuevos módulos aportan: scope_audit B0 (F52/F53), shadow tool enhanced (F56/F57/F58), response_flood endpoint-probe (F59/F62).
 - **SDK advisory (@modelcontextprotocol/sdk)**: afecta a ≥5 servers confirmados (F09/F16/F35 + mcp-server-commands + database-server)
 
 ## Servers skip definitivos

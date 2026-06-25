@@ -1,7 +1,7 @@
 meta:
   case_study: CS01
   description: OWASP MCP Ecosystem Audit — @modelcontextprotocol + community servers
-  corvus_version: 0.8.0
+  corvus_version: 0.9.0
 targets:
 - name: server-filesystem
   tier: A
@@ -12,8 +12,8 @@ targets:
   - '@modelcontextprotocol/server-filesystem'
   - /tmp
   status: done
-  last_scanned: '2026-06-24'
-  findings_summary: 3H
+  last_scanned: '2026-06-25'
+  findings_summary: 5H
   curation: TP
   notes: Shadow tool pattern — read_file/write_file/edit_file shadows well-known built-ins
 - name: server-memory
@@ -24,7 +24,7 @@ targets:
   - -y
   - '@modelcontextprotocol/server-memory'
   status: done
-  last_scanned: '2026-06-24'
+  last_scanned: '2026-06-25'
   findings_summary: 9L
   curation: TP
   notes: Schema bypass — 9 tools sin additionalProperties:false, type coercion silencioso
@@ -36,8 +36,8 @@ targets:
   - -y
   - '@modelcontextprotocol/server-sequential-thinking'
   status: done
-  last_scanned: '2026-06-24'
-  findings_summary: 1H 1M 1L (all FP)
+  last_scanned: '2026-06-25'
+  findings_summary: 1M
   curation: FP
   notes: Server stateful by design — rug-pull FP, tool-poisoning FP (desc larga es
     el protocolo)
@@ -50,12 +50,12 @@ targets:
   - '@modelcontextprotocol/server-everything'
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 1C 2H 6L 4I
+  findings_summary: 1C 2H 6L 2I
   curation: partial
-  notes: 'Re-scaneado post transport-fix (v0.8.1). 13 tools capturadas. CRITICAL: get-env
-    Token Exposure auto-detectado (F11 upgrade). HIGH: response flooding get-env (F48).
-    HIGH: echo reflection (FP — by design). F12/F13 resueltos como FP — re-scan no
-    confirma missing-required-fields en echo/get-structured-content.'
+  notes: 'Re-scaneado post transport-fix (v0.8.1). 13 tools capturadas. CRITICAL:
+    get-env Token Exposure auto-detectado (F11 upgrade). HIGH: response flooding get-env
+    (F48). HIGH: echo reflection (FP — by design). F12/F13 resueltos como FP — re-scan
+    no confirma missing-required-fields en echo/get-structured-content.'
 - name: server-github
   tier: A
   transport: stdio
@@ -65,7 +65,7 @@ targets:
   - '@modelcontextprotocol/server-github'
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 1H (supply chain, confidence=65)
+  findings_summary: 1H
   curation: TP
   notes: F09 TP — @modelcontextprotocol/sdk advisory (GHSA, sin CVE). F10 cascade
     FP filtrado
@@ -75,7 +75,7 @@ targets:
   url: http://localhost:3001/mcp
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 1I
+  findings_summary: clean
   curation: FP
   notes: 'SSE fix en Corvus v0.8.1 — Accept: application/json, text/event-stream.
     PDF Server 2.0.0. 4 tools. 1 INFO: display_pdf sin required fields. Warning manual:
@@ -91,7 +91,7 @@ targets:
   - C:/Temp/testrepo
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 5L (schema audit)
+  findings_summary: 5L
   curation: FP
   notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection, supply
     chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no seguridad).
@@ -106,7 +106,7 @@ targets:
   - postgresql://corvus:corvus123@localhost:5434/testdb
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 1H (supply chain)
+  findings_summary: 1H
   curation: TP
   notes: 'Docker postgres:15 en :5434 para test. 1 HIGH: @modelcontextprotocol/sdk
     advisory (mismo F09/F16). 1 INFO: query sin required fields. Cleanup: docker rm
@@ -121,7 +121,7 @@ targets:
   - C:\Temp\test.db
   status: done
   last_scanned: '2026-06-25'
-  findings_summary: 2H 2M 8L
+  findings_summary: 4H 9L
   curation: partial
   notes: 'npm package no existe (@modelcontextprotocol/server-sqlite 404). Correcto:
     uvx mcp-server-sqlite. F29: describe_table SQLi TP. F30: write_query injection
@@ -154,10 +154,10 @@ targets:
   - mcp-server-fetch
   status: done
   notes: 'HTTP fetch oficial (Python/uvx, no npm). Vector: SSRF, response flood. Corregido
-    de npx → uvx.'
+    de npx → uvx. Clean en v0.9.0 — SSRF fetch bloqueado por whitelist interna.'
   last_scanned: '2026-06-25'
   findings_summary: clean
-  curation: pending
+  curation: TP
 - name: mcp-server-aws-kb-retrieval
   tier: B
   transport: stdio
@@ -209,11 +209,11 @@ targets:
   - -y
   - mcp-fetch-server
   status: done
-  notes: 'Fetch web con readability/Markdown/JSON/YouTube. Vector: SSRF, response
-    flood, content injection'
+  notes: 'Fetch web con readability/Markdown/JSON/YouTube. F15: private-ip dep vulnerable
+    (SSRF guardia comprometida). 1H TP curado.'
   last_scanned: '2026-06-25'
   findings_summary: 1H
-  curation: pending
+  curation: TP
 - name: playwright-mcp
   tier: B
   transport: stdio
@@ -238,10 +238,10 @@ targets:
   - -y
   - npm-search-mcp-server
   status: done
-  notes: 'npm registry search. Sin creds. Vector: query injection, schema validation'
+  notes: 'F16: @modelcontextprotocol/sdk advisory TP. 1L schema bypass LOW. Curado.'
   last_scanned: '2026-06-25'
   findings_summary: 1H 1L
-  curation: pending
+  curation: TP
 - name: n8n-mcp
   tier: B
   transport: stdio
@@ -250,11 +250,11 @@ targets:
   - -y
   - n8n-mcp
   status: done
-  notes: 'n8n workflow docs. Sin creds, many tools (~816+ nodes). Vector: tool poisoning
-    en descriptions, schema bypass'
+  notes: 'F18: tools_documentation.topic reflection TP (prompt injection). F59: search_nodes
+    response flooding TP (v0.9.0). 6L schema bypass + 1M schema. 2H curados.'
   last_scanned: '2026-06-25'
-  findings_summary: 1H 1M 6L 2I
-  curation: pending
+  findings_summary: 2H 1M 6L
+  curation: TP
 - name: shell-command-mcp
   tier: B
   transport: stdio
@@ -263,11 +263,11 @@ targets:
   - -y
   - shell-command-mcp
   status: done
-  notes: 'Shell exec con allowlist configurable (egoist). Puede error sin config.
-    Vector: cmd injection, allowlist bypass'
+  notes: 'F28: shadow tool execute_command description TP. F56: shadow tool conflicts
+    variant TP (v0.9.0). 2H curados.'
   last_scanned: '2026-06-25'
-  findings_summary: 1H
-  curation: pending
+  findings_summary: 2H
+  curation: TP
 - name: mcp-cli-exec
   tier: B
   transport: stdio
@@ -322,11 +322,10 @@ targets:
   - -y
   - mcp-server-commands
   status: done
-  notes: Shell exec server. Alta probabilidad cmd injection HIGH + shadow tool. Sin
-    args obligatorios.
+  notes: 'F35: @modelcontextprotocol/sdk advisory TP. 1I INFO. Curado.'
   last_scanned: '2026-06-25'
   findings_summary: 1H 1I
-  curation: pending
+  curation: TP
 - name: super-shell-mcp
   tier: C
   transport: stdio
@@ -335,11 +334,11 @@ targets:
   - -y
   - super-shell-mcp
   status: done
-  notes: Shell exec v2.0.15. Whitelist configurable pero arranca sin config. Similar
-    superficie a mcp-server-commands.
+  notes: 'F39: shadow tool description TP. F40: injection reflected remove_from_whitelist
+    TP. F57: shadow tool conflicts TP (v0.9.0). 3H curados.'
   last_scanned: '2026-06-25'
-  findings_summary: 2H 1M 1L
-  curation: pending
+  findings_summary: 3H 1M 1L
+  curation: TP
 - name: mcp-shell-server
   tier: C
   transport: stdio
@@ -348,10 +347,11 @@ targets:
   - -y
   - '@mako10k/mcp-shell-server'
   status: done
-  notes: Shell/process server. Sin args obligatorios. Probable cmd injection surface.
+  notes: 'F42: shell_set_default_workdir injection TP. F43: command_history_query injection
+    TP. F58: shell_execute shadow tool TP (v0.9.0). GHSA-7763-c5gf-v5fj disclosed.'
   last_scanned: '2026-06-25'
-  findings_summary: 2H 1M 4L 6I
-  curation: pending
+  findings_summary: 3H 1M 4L 2I
+  curation: TP
 - name: mcp-server-time
   tier: C
   transport: stdio
@@ -359,11 +359,10 @@ targets:
   - uvx
   - mcp-server-time
   status: done
-  notes: Servidor oficial PyPI (@modelcontextprotocol). Time/timezone queries. Sin
-    API key. Superficie limitada pero diversifica el dataset.
+  notes: 'Clean. Superficie minimal. Referencia positiva de server bien scoped.'
   last_scanned: '2026-06-25'
   findings_summary: clean
-  curation: pending
+  curation: TP
 - name: mcp-scan
   tier: C
   transport: stdio
@@ -372,8 +371,8 @@ targets:
   - -y
   - '@contextware/mcp-scan'
   status: skip
-  notes: 'CLI scanner interactivo — no implementa protocolo MCP. Arranca su propia
-    UI (texto), no habla JSON-RPC stdio. Skip definitivo.'
+  notes: CLI scanner interactivo — no implementa protocolo MCP. Arranca su propia
+    UI (texto), no habla JSON-RPC stdio. Skip definitivo.
 - name: mcp-homescan
   tier: C
   transport: stdio
@@ -382,19 +381,19 @@ targets:
   - -y
   - mcp-homescan
   status: done
-  notes: Escanea red local. Sin args obligatorios. Surface de scope creep (MCP02)
-    + posible info disclosure de red interna.
+  notes: 'F45: homescan_device.ip injection TP. F46: schema bypass (required ignorado)
+    TP. 6L schema quality. Curado.'
   last_scanned: '2026-06-25'
   findings_summary: 2M 6L
-  curation: pending
+  curation: TP
 - name: docker-mcp-server
   tier: C
   transport: http
   url: http://localhost:30000/mcp
   status: skip
   notes: 'Arranca en modo HTTP :30000 con auth-token dinámico (UUID per-run). No es
-    stdio. Para escanear: iniciar manualmente, capturar token del stderr, pasarlo como
-    --header. Skip en batch — requiere setup manual por sesión.'
+    stdio. Para escanear: iniciar manualmente, capturar token del stderr, pasarlo
+    como --header. Skip en batch — requiere setup manual por sesión.'
 - name: database-server-executeautomation
   tier: C
   transport: stdio
@@ -404,11 +403,12 @@ targets:
   - '@executeautomation/database-server'
   - C:/Temp/test.db
   status: done
-  notes: Multi-DB server. Usa mismo test.db que server-sqlite. Probable SQL injection
-    + schema bypass.
+  notes: 'F47/F48: supply chain TP (executeautomation + tar). F49: list_insights flooding
+    TP. F60/F61: shadow tool DB FP (by design). F62: list_insights repetitive MEDIUM
+    TP. 4H TP + 2H FP + 1M TP. Curado.'
   last_scanned: '2026-06-25'
-  findings_summary: 4H 4L
-  curation: pending
+  findings_summary: 6H 1M 4L
+  curation: partial
 - name: mcp-server-mysql
   tier: C
   transport: stdio
@@ -417,8 +417,8 @@ targets:
   - -y
   - '@benborla29/mcp-server-mysql'
   status: done
-  notes: 'MySQL local. Setup: docker run -e MYSQL_ROOT_PASSWORD=test -p 3306:3306
-    mysql:8 — igual que hicimos con postgres. Env vars: MYSQL_HOST/USER/PASSWORD/DATABASE.'
+  notes: 'F50: undici supply chain TP. F51: sdk cascade FP. Docker mysql:8 en :3306
+    para test. Curado.'
   last_scanned: '2026-06-25'
   findings_summary: 2H 2M
-  curation: pending
+  curation: partial

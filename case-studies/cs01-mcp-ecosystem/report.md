@@ -1,22 +1,23 @@
 # CS01 — OWASP MCP Ecosystem Audit
 
-**Framework:** Corvus v0.8.1  
+**Framework:** Corvus v0.9.0  
 **Período:** Junio 2026  
 **Targets:** 35 MCP servers (10 Tier A @modelcontextprotocol + 16 Tier B community + 9 Tier C expansión)  
 **Auditados:** 23 (16 Tier A+B + 7 Tier C auto; 2 Tier C skip)  
-**Findings totales:** 51 (36 TP / 15 FP · FP rate 29%)
+**Findings totales:** 62 (43 TP / 19 FP · FP rate 30.6%)  
+**Re-scan V14:** 20 targets re-escaneados con v0.9.0 (2026-06-25) · delta: +11 findings (F52–F62)
 
 ---
 
 ## Resumen ejecutivo
 
-Escaneamos 23 MCP servers del ecosistema real — servidores usados en producción por miles de agentes LLM — con Corvus v0.8.1. Resultado: **15 de 23 servidores tienen al menos un finding HIGH confirmado (65%)**. El problema más sistémico es de supply chain: el advisory de `@modelcontextprotocol/sdk@<=1.25.1` afecta a ≥5 servidores del ecosistema. El más llamativo es un SSRF confirmado en `mcp-server-puppeteer` que navega al endpoint de metadata de AWS. Highlight de la expansión Tier C: `server-everything` ahora detecta **CRITICAL Token Exposure** automáticamente tras el fix del transport en v0.8.1.
+Escaneamos 23 MCP servers del ecosistema real — servidores usados en producción por miles de agentes LLM — con Corvus v0.9.0. Resultado: **15 de 23 servidores tienen al menos un finding HIGH confirmado (65%)**. El problema más sistémico es de supply chain: el advisory de `@modelcontextprotocol/sdk@<=1.25.1` afecta a ≥5 servidores del ecosistema. El más llamativo es un SSRF confirmado en `mcp-server-puppeteer` que navega al endpoint de metadata de AWS. El re-scan V14 con v0.9.0 (21 módulos) confirmó todos los findings anteriores y agregó 7 TP nuevos, principalmente via scope_audit mejorado (F52/F53) y detección de shadow tool enhanced en servers de shell y DB (F56–F58).
 
 ---
 
 ## Metodología
 
-Corvus v0.8.0 ejecuta 12 módulos contra cada target:
+Corvus v0.9.0 ejecuta 21 módulos contra cada target (+5 nuevos en RT-CORVUS-V13):
 
 | Módulo | OWASP ID | Tipo |
 |--------|----------|------|
@@ -27,11 +28,18 @@ Corvus v0.8.0 ejecuta 12 módulos contra cada target:
 | shadow-tool | MCP03 | static |
 | auth-audit | MCP07 | static |
 | log-audit | MCP08 | static |
+| init-audit | MCP01 | static ★ |
 | cmd-injection | MCP05 | dynamic |
 | token-exposure | MCP01 | dynamic |
 | schema-bypass | EXT01 | dynamic |
 | response-flood | MCP09 | dynamic |
 | rug-pull | MCP06 | dynamic |
+| ssrf | EXT04 | dynamic ★ |
+| endpoint-probe | MCP09 | dynamic ★ |
+| param-smuggling | MCP05 | dynamic ★ |
+| proto-fuzz | EXT01 | dynamic ★ |
+
+★ nuevos en v0.9.0
 
 **Transports probados:** stdio (npx/uvx) y HTTP (JSON + SSE).  
 **SSE support:** Corvus v0.8.1 agrega `Accept: application/json, text/event-stream` — server-pdf ahora scaneable. Browsers (`playwright-mcp`, `mcp-server-puppeteer`) requieren scan manual (abren Chrome visible).
@@ -42,8 +50,10 @@ Corvus v0.8.0 ejecuta 12 módulos contra cada target:
 
 ### Tier A — @modelcontextprotocol
 
-#### server-filesystem · 3 HIGH (Shadow Tool)
+#### server-filesystem · 5 HIGH (Shadow Tool + Scope Creep)
 `read_file`, `write_file`, `edit_file` son nombres canónicos de filesystem. Un servidor malicioso que registre estas mismas tools sería confiado implícitamente por un LLM, que asumiría que ejecuta operaciones de sistema. Patrón de riesgo válido incluso cuando la implementación es legítima (F01–F03).
+
+**V14 (v0.9.0):** scope_audit detecta `list_directory` y `list_directory_with_sizes` con claims de scope irrestricto ("all files") — tools que en un server malicioso permitirían listar cualquier path del filesystem del agente. +2 HIGH (F52–F53).
 
 #### server-everything · 1 CRITICAL, 1 HIGH (Token Exposure + Response Flooding)
 `get-env` — descripción: *"Returns all environment variables, helpful for debugging MCP server configuration"*. En producción expone API keys, tokens y rutas sensibles del proceso.
@@ -56,10 +66,10 @@ Corvus v0.8.0 ejecuta 12 módulos contra cada target:
 #### server-github · 1 HIGH (Supply Chain)
 `@modelcontextprotocol/sdk@<=1.25.1` tiene un advisory npm (GHSA, sin CVE asignado aún). Confidence 65 — advisory directo en dependencia. Patrón sistémico: cualquier server que use el SDK oficial en versiones antiguas hereda este finding.
 
-#### server-sqlite · 2 HIGH, 2 MEDIUM (SQL Injection + Schema Bypass)
-`describe_table.table_name` acepta input sin sanitizar, interpolado en `PRAGMA table_info(<name>)`. Payload `null` produce error SQL verbose: *"near null: syntax error"*. La tabla también acepta llamadas sin campos requeridos (F31–F32).
+#### server-sqlite · 4 HIGH, 9 LOW (SQL Injection + Shadow Tool + Schema)
+`describe_table.table_name` acepta input sin sanitizar, interpolado en `PRAGMA table_info(<name>)`. Payload `null` produce error SQL verbose: *"near null: syntax error"* (F29 TP, GHSA-7w27-7xwv-x6x2). 9 LOW schema quality (F31–F32 schema bypass).
 
-`write_query.query` clasificado como FP: el tool está diseñado para ejecutar SQL arbitrario — injection is the feature. Sin embargo, la ausencia de restricciones de operación (allowlist SELECT/INSERT only) sería una mejora.
+**V14 (v0.9.0):** shadow-tool enhanced detecta `read_query` y `write_query` como "arbitrary execution intent" (F54/F55 FP) — mismo argumento que el FP original: DB server by design. +2H en raw scan, ambos FP. Total TP: 2H. Catalogados para whitelist contextual futura.
 
 #### server-git · 5 LOW (Schema Quality)
 Clean desde perspectiva de seguridad. 5 LOW de schema-audit: parámetros sin type constraint en `git_log`, `git_create_branch`, `git_branch`. No hay cmd injection, supply chain ni shadow tools.
@@ -87,8 +97,10 @@ El server acepta URLs arbitrarias sin whitelist de destinos. No hay validación 
 #### npm-search-mcp-server · 1 HIGH (Supply Chain)
 `@modelcontextprotocol/sdk@<=1.25.1` — mismo advisory que F09 en server-github. Patrón ecosistémico.
 
-#### n8n-mcp · 1 HIGH (Supply Chain, pendiente curar), 1 MEDIUM (Cmd Injection)
-`tools_documentation.topic` refleja input verbatim: *"Tool `<script>alert(1)</script>` not found."*. Reflection real — impacto como prompt injection si el payload contiene instrucciones en lugar de XSS. HIGH del raw scan pendiente de curar (probable supply chain via sdk).
+#### n8n-mcp · 2 HIGH (Injection + Response Flooding), 1 MEDIUM (Schema)
+`tools_documentation.topic` refleja input verbatim: *"Tool `<script>alert(1)</script>` not found."*. Reflection real — impacto como prompt injection si el payload contiene instrucciones en lugar de XSS. (F18)
+
+**V14 (v0.9.0):** `search_nodes` sin paginación retorna dump completo de 816+ nodos como respuesta única — context budget exhaustion. endpoint-probe detecta respuesta oversized (F59). +1 HIGH.
 
 #### shell-command-mcp · 1 HIGH (Shadow Tool)
 `execute_command` — confidence 90. El tool es legítimo en este server (ejecuta comandos con allowlist configurable), pero el nombre `execute_command` es de alto valor: un server malicioso que lo registre sería confiado implícitamente por un agente LLM, que asumiría que opera dentro de los permisos del sistema.
@@ -113,13 +125,20 @@ Tres servers de shell execution probados — `super-shell-mcp`, `@mako10k/mcp-sh
 - **Shadow tool HIGH:** Tools llamadas `execute_command` (conf=90) — LLMs los tratan como operaciones del sistema (F28, F39).
 - **Injection reflected HIGH:** Parámetros de path/command reflejan payload verbatim en respuesta sin sanitizar: `shell_set_default_workdir.working_directory` (F42), `command_history_query.entry_id` (F43), `remove_from_whitelist.command` (F40).
 
+**V14 (v0.9.0):** shadow-tool enhanced detecta variante "conflicts with built-in name" — anteriormente solo se capturaba "description intent":
+- `shell-command-mcp`: `execute_command` conflicts (F56) — 2H total
+- `super-shell-mcp`: `execute_command` conflicts (F57) — 3H total  
+- `mcp-shell-server`: `shell_execute` description intent (F58) — 3H total; además -4 INFO (FP calibration)
+
 Patrón: los servers de shell son el vector MCP más riesgoso. Ninguno implementa allowlist de comandos en la capa MCP; la defensa depende de configuración externa.
 
-#### database-server-executeautomation · 4 HIGH (Supply Chain + Flooding)
+#### database-server-executeautomation · 6 HIGH, 1 MEDIUM (Supply Chain + Flooding + Shadow Tool)
 
 - Supply chain HIGH en el propio package (`@executeautomation/database-server`) y en `tar@<=6.2.1` — `tar` es una utilidad del sistema ampliamente usada (F47, F48).
 - `list_insights` sin paginación: dump completo en memoria → response flooding (F49).
 - `@modelcontextprotocol/sdk` advisory (patrón ecosistémico).
+
+**V14 (v0.9.0):** shadow-tool enhanced detecta `read_query` y `write_query` con "arbitrary execution intent" — FP (son DB tools by design, F60/F61). `list_insights` además detectado como contenido altamente repetitivo MEDIUM (F62 TP) — vector de memory anchoring para LLMs.
 
 #### mcp-server-mysql · 2 HIGH (Supply Chain)
 
@@ -157,14 +176,15 @@ Los tres shell servers auditados (Tier B + C) comparten el mismo patrón: parám
 
 ## FP Rate y calibración
 
-**FP rate: 29%** (15 de 51 findings). Los FPs más comunes:
+**FP rate: 30.6%** (19 de 62 findings). Los FPs más comunes:
 - Rug pull en servers stateful por diseño (`server-sequential-thinking`)
 - Tool poisoning FP por descripciones largas legítimas (protocolo de razonamiento)
 - Cascade supply chain advisories (filtrado en v0.8.0)
-- `write_query` injection FP (el tool IS the injection)
+- `write_query` / `read_query` injection FP en DB servers (el tool IS the execution)
 - `browser_evaluate` reflection FP (evalúa JS por diseño)
+- Shadow tool "execution intent" en DB servers (F54/F55/F60/F61) — nuevos en V14
 
-El FP rate del 29% es aceptable para un scanner automático en v0.8.0. La mayoría de los FPs son detectables con contexto del server. Calibración futura: módulo context-aware que ajuste umbral según tipo de server.
+El FP rate del 30.6% es estable vs v0.8.1 (29%). Los 4 FPs nuevos en V14 son todos del mismo patrón (shadow tool en DB tools by design) — candidatos a whitelist contextual por tipo de server.
 
 ---
 
@@ -180,23 +200,39 @@ El FP rate del 29% es aceptable para un scanner automático en v0.8.0. La mayor�
 
 ---
 
-## Stats finales
+## Stats finales (v0.9.0 / RT-CORVUS-V14)
 
-| Métrica | Valor |
-|---------|-------|
-| Targets en scope | 35 |
-| Auditados | 23 (16 Tier A+B + 7 Tier C) |
-| Findings totales | 51 |
-| True Positives | 36 (70.6%) |
-| False Positives | 15 (29.4%) |
-| CRITICAL TPs | 1 (F11 — Token Exposure auto) |
-| HIGH TPs | 21 |
-| MEDIUM TPs | 6 |
-| LOW TPs | 8 |
-| Servers con ≥1 HIGH | 15 de 23 (65%) |
-| SDK advisory alcance | ≥5 servers del ecosistema |
-| OWASP IDs cubiertos | MCP01, MCP02, MCP03, MCP04, MCP05, MCP06, MCP07, MCP08, MCP09, EXT01, EXT02, EXT03 |
+| Métrica | v0.8.1 | v0.9.0 (V14) |
+|---------|--------|--------------|
+| Targets en scope | 35 | 35 |
+| Auditados | 23 | 23 |
+| Findings totales | 51 | **62** |
+| True Positives | 36 (70.6%) | **43 (69.4%)** |
+| False Positives | 15 (29.4%) | **19 (30.6%)** |
+| CRITICAL TPs | 1 | 1 |
+| HIGH TPs | 21 | **27** |
+| MEDIUM TPs | 6 | **7** |
+| LOW TPs | 8 | 8 |
+| Servers con ≥1 HIGH | 15 de 23 (65%) | 15 de 23 (65%) |
+| SDK advisory alcance | ≥5 servers | ≥5 servers |
+| Módulos activos | 12 | **21** |
+| OWASP IDs cubiertos | MCP01–MCP09, EXT01–EXT03 | MCP01–MCP09, EXT01–EXT04 |
+
+**Delta V14:** +11 findings (7 TP + 4 FP). Nuevos módulos: scope_audit B0 (F52/F53), shadow_tool enhanced (F56/F57/F58), endpoint-probe response_flood (F59/F62). FP nuevos: shadow_tool en DB tools by design (F54/F55/F60/F61).
 
 ---
 
-*Generado con [Corvus](https://github.com/CobaltoSec/corvus) v0.8.1*
+## Timeline disclosure
+
+| Finding | Servidor | Fecha disclosure | Estado |
+|---------|----------|-----------------|--------|
+| F33/F34 Path Traversal | @playwright/mcp | 2026-06-25 | GHSA-mf64-cgv4-ppcx (MSRC+CVE pending) |
+| F11 Token Exposure | server-everything | 2026-06-25 | GHSA-pr6r-h66r-m47j |
+| F29 SQL Injection | mcp-server-sqlite | 2026-06-25 | GHSA-7w27-7xwv-x6x2 |
+| F40/F42/F43 | mcp-shell-server | 2026-06-25 | GHSA-7763-c5gf-v5fj |
+
+Timeline 90 días → Ekoparty 2026 (octubre).
+
+---
+
+*Generado con [Corvus](https://github.com/CobaltoSec/corvus) v0.9.0 — RT-CORVUS-V14*

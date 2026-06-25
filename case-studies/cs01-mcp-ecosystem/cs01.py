@@ -163,6 +163,7 @@ def cmd_status(_args: argparse.Namespace, data: dict) -> None:
 
 def cmd_scan(args: argparse.Namespace, data: dict) -> None:
     RUNNABLE = {"pending", "error", None}
+    exclude_set = set(args.exclude) if getattr(args, "exclude", None) else set()
 
     selected = []
     for t in data["targets"]:
@@ -170,7 +171,14 @@ def cmd_scan(args: argparse.Namespace, data: dict) -> None:
             continue
         if args.tier and t.get("tier") != args.tier:
             continue
-        if not args.all and t.get("status") not in RUNNABLE:
+        if t["name"] in exclude_set:
+            print(f"[SKIP] {t['name']}: excluded via --exclude")
+            continue
+        # --redone: select only already-done targets (excludes skip)
+        if getattr(args, "redone", False):
+            if t.get("status") != "done":
+                continue
+        elif not args.all and t.get("status") not in RUNNABLE:
             continue
         # HTTP targets without url need manual startup — skip with warning
         if t.get("transport") == "http":
@@ -182,7 +190,7 @@ def cmd_scan(args: argparse.Namespace, data: dict) -> None:
 
     if not selected:
         print("No targets to scan (all done, or none match filter).")
-        print("Use --all to re-scan already-done targets.")
+        print("Use --all to re-scan already-done targets, --redone to re-scan done ones.")
         return
 
     print(f"Scanning {len(selected)} target(s): {[t['name'] for t in selected]}\n")
@@ -273,6 +281,8 @@ def main() -> None:
     p_scan.add_argument("--tier", metavar="A|B|C", help="Filter by tier")
     p_scan.add_argument("--name", metavar="NAME", help="Scan a single target by name")
     p_scan.add_argument("--all", action="store_true", help="Include already-done targets")
+    p_scan.add_argument("--redone", action="store_true", help="Re-scan only done targets (excludes skip)")
+    p_scan.add_argument("--exclude", nargs="+", metavar="NAME", help="Exclude specific targets by name")
     p_scan.add_argument("--min-confidence", type=int, metavar="N", help="Pass --min-confidence to corvus")
 
     p_update = sub.add_parser("update", help="Update state from existing corvus output dir")
