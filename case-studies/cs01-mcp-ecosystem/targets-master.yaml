@@ -1,0 +1,154 @@
+meta:
+  case_study: CS01
+  description: OWASP MCP Ecosystem Audit — @modelcontextprotocol + community servers
+  corvus_version: 0.8.0
+targets:
+- name: server-filesystem
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-filesystem'
+  - /tmp
+  status: done
+  last_scanned: '2026-06-24'
+  findings_summary: 3H
+  curation: TP
+  notes: Shadow tool pattern — read_file/write_file/edit_file shadows well-known built-ins
+- name: server-memory
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-memory'
+  status: done
+  last_scanned: '2026-06-24'
+  findings_summary: 9L
+  curation: TP
+  notes: Schema bypass — 9 tools sin additionalProperties:false, type coercion silencioso
+- name: server-sequential-thinking
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-sequential-thinking'
+  status: done
+  last_scanned: '2026-06-24'
+  findings_summary: 1H 1M 1L (all FP)
+  curation: FP
+  notes: Server stateful by design — rug-pull FP, tool-poisoning FP (desc larga es
+    el protocolo)
+- name: server-everything
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-everything'
+  status: partial
+  last_scanned: '2026-06-25'
+  findings_summary: 1H 2M 6L 4I
+  curation: pending
+  notes: F11 (get-env HIGH) pendiente verificacion manual. F12/F13 schema bypass probable
+    TP
+- name: server-github
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-github'
+  status: done
+  last_scanned: '2026-06-25'
+  findings_summary: 1H (supply chain, confidence=65)
+  curation: TP
+  notes: F09 TP — @modelcontextprotocol/sdk advisory (GHSA, sin CVE). F10 cascade
+    FP filtrado
+- name: server-pdf
+  tier: A
+  transport: http
+  url: http://localhost:3001/mcp
+  status: pending
+  notes: 'HTTP SSE server — startup manual: npx -y @modelcontextprotocol/server-pdf.
+    Liberar :3001 primero.'
+- name: server-git
+  tier: A
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-git
+  - --repository
+  - /tmp/testrepo
+  status: pending
+  notes: 'Python/uvx (no npm). Requiere git repo en /tmp/testrepo. Vector: cmd injection
+    en git args'
+- name: server-postgres
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-postgres'
+  - ${POSTGRES_URL}
+  status: skip
+  notes: Necesita connection string real. Pendiente env de lab con PostgreSQL.
+- name: server-sqlite
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-sqlite'
+  - /tmp/test.db
+  status: error
+  notes: 'Vector: SQL injection en queries. Simple de levantar.'
+  last_scanned: '2026-06-24'
+  findings_summary: ERROR (no report.json)
+- name: server-brave-search
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-brave-search'
+  status: skip
+  notes: Necesita BRAVE_API_KEY. Pendiente conseguir key de trial.
+- name: mcp-server-puppeteer
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-puppeteer'
+  status: pending
+  notes: 'Browser automation — vector: SSRF/cmd injection en navigate URLs'
+- name: mcp-server-fetch
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-fetch'
+  status: pending
+  notes: 'HTTP fetch tool — vector: SSRF, response flood, header injection'
+- name: mcp-server-aws-kb-retrieval
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-aws-kb-retrieval'
+  status: skip
+  notes: Necesita AWS credentials. Skip por ahora.
+- name: mcp-server-slack
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-slack'
+  status: skip
+  notes: Necesita SLACK_BOT_TOKEN. Skip.
