@@ -16,9 +16,10 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F08 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | LOW | Alta entropía en descripción de `sequentialthinking` | ❌ FP | Base64/estructura esperada en el prompt del server |
 | CS01-F09 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` tiene vulnerabilidad high | ✅ TP (confidence 65) | Advisory directo en dep. Sin CVE asignado (GHSA). |
 | CS01-F10 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/server-github@*` tiene vulnerabilidad high | ❌ FP | Cascade advisory via strings. Filtrado desde v0.8.0. |
-| CS01-F11 | server-everything | 2.0.0 | MCP01 Info Disclosure | HIGH | `get-env` expone todas las variables de entorno del proceso | ✅ TP manual | Tool description confirma: "Returns all environment variables". Scan no capturó tools (enumerator bug — server manda tools en clave `resources/list`). Verificado via tool schema en exchanges.jsonl. En prod expone API keys, secrets. |
-| CS01-F12 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | ❌ Inconclusive | Enumerator bug impidió scan dinámico. No se puede confirmar sin re-scan con bug fix. |
-| CS01-F13 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | ❌ Inconclusive | Mismo motivo que F12. |
+| CS01-F11 | server-everything | 2.0.0 | MCP07 Token Exposure | CRITICAL | `get-env` expone todas las variables de entorno del proceso | ✅ TP (auto+manual) | Re-scan post transport-fix: Corvus v0.8.1 auto-detecta como CRITICAL (Token Exposure, conf=85). Orig. HIGH manual por description "Returns all environment variables". En prod expone API keys, secrets, tokens. |
+| CS01-F12 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | ❌ FP | Re-scan no confirma missing-required-fields en `echo`. El tool sí acepta extra fields (distinto). |
+| CS01-F13 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | ❌ FP | Re-scan no encuentra `get-structured-content` como tool en server-everything 2.0.0. Tool posiblemente renombrada o no existe en esta versión. |
+| CS01-F38 | server-everything | 2.0.0 | MCP08 Response Flooding | HIGH | `get-env` retorna respuesta oversized (todos los env vars) | ✅ TP | Conf=85. Flood vector: `get-env` dump completo de env del proceso — respuesta de tamaño variable según entorno. En servidor cloud puede exceder MB. |
 
 ## Tier B — Community servers
 
@@ -48,6 +49,26 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F35 | server-postgres | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` en dep | ✅ TP (confidence 65) | Mismo advisory que F09/F16. Patrón confirmado: afecta a todo el ecosistema que usa el SDK oficial. |
 | CS01-F36 | server-postgres | EXT02 Schema Info | INFO | `query` define no required fields | ❌ FP | El tool acepta cualquier query SQL — diseño intencional (flexibilidad). |
 | CS01-F37 | server-pdf | EXT02 Schema Info | INFO | `display_pdf` define no required fields | ❌ FP | Parámetros opcionales por diseño del viewer. |
+
+## Tier C — Expansión (RT-CORVUS-V12)
+
+9 targets escaneados: 7 exitosos, 2 skip (mcp-scan = CLI no-MCP; docker-mcp-server = HTTP/auth-token dinámico).
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS01-F39 | super-shell-mcp | MCP03 Shadow Tool | HIGH | `execute_command` conflicts con nombre built-in de alto valor | ✅ TP | Conf=90. Mismo patrón F28. Shell exec server registra `execute_command` — un LLM lo trataría como operación del sistema. |
+| CS01-F40 | super-shell-mcp | MCP05 Cmd Injection | HIGH | Injection reflected — `remove_from_whitelist.command` | ✅ TP | Conf=85. Parámetro `command` refleja payload verbatim en respuesta. Vector: prompt injection via whitelist manipulation. |
+| CS01-F41 | super-shell-mcp | MCP08 Response Flooding | MEDIUM | `get_whitelist` retorna contenido altamente repetitivo | ❌ FP | Whitelist larga = respuesta larga por diseño. Sin payload adversarial posible. |
+| CS01-F42 | mcp-shell-server | MCP05 Cmd Injection | HIGH | Injection reflected — `shell_set_default_workdir.working_directory` | ✅ TP | Conf=85. Path del working directory refleja en respuesta sin sanitizar. Vector: path traversal + injection. |
+| CS01-F43 | mcp-shell-server | MCP05 Cmd Injection | HIGH | Injection reflected — `command_history_query.entry_id` | ✅ TP | Conf=85. `entry_id` refleja en query de history. Posible injection en log query. |
+| CS01-F44 | mcp-server-time | — | CLEAN | — | — | Sin findings. Superficie minimal: solo get_current_time + convert_time. |
+| CS01-F45 | mcp-homescan | MCP02 Scope Audit | MEDIUM | Injection reflected — `homescan_device.ip` | ✅ TP | Conf=80. Parámetro `ip` no validado — refleja en respuesta. En scanner de red: permite escanear IPs arbitrarias fuera del scope del cliente. |
+| CS01-F46 | mcp-homescan | MCP05 Schema Bypass | MEDIUM | `homescan_device` ejecuta con campos requeridos faltantes | ✅ TP | Conf=80. `ip` declarado required pero tool ejecuta con args vacíos. |
+| CS01-F47 | database-server-executeautomation | MCP04 Supply Chain | HIGH | `@executeautomation/database-server` tiene vulnerabilidad HIGH propia | ✅ TP | Conf=65. Advisory en el package principal, no solo en sus deps. Superficie directa. |
+| CS01-F48 | database-server-executeautomation | MCP04 Supply Chain | HIGH | `tar@<=6.2.1` tiene vulnerabilidad HIGH | ✅ TP | Conf=65. `tar` con advisory high en dep tree. tar es utility del sistema — supply chain attack vector concreto. |
+| CS01-F49 | database-server-executeautomation | MCP08 Response Flooding | HIGH | `list_insights` retorna respuesta oversized | ✅ TP | Conf=85. Sin paginación — dump completo de insights en memoria. |
+| CS01-F50 | mcp-server-mysql | MCP04 Supply Chain | HIGH | `undici@<6.x` tiene vulnerabilidad HIGH | ✅ TP | Conf=65. `undici` (HTTP client Node.js) tiene CVEs publicados. Afecta a todo el stack de red del server. |
+| CS01-F51 | mcp-server-mysql | MCP04 Supply Chain | MEDIUM | `@modelcontextprotocol/sdk` advisory (cascade) | ❌ FP | Mismo advisory SDK que F09/F16/F35 — ya documentado. No agrega nueva superficie. |
 
 ---
 
@@ -116,23 +137,25 @@ Tool declara `nodeType` como required, pero ejecuta sin error con args vacíos y
 
 ---
 
-## Estadísticas finales (post CS01 completo)
+## Estadísticas finales (post RT-CORVUS-V12 Tier C)
 
-- **Servers auditados**: 16 (15 auto + 1 manual — mcp-server-puppeteer)
-- **Findings curados**: 37 (F01–F37)
-- **TRUE POSITIVE**: 25 (67.6%) — F01/F02/F03/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35 + F04/F05 (LOW)
-- **FALSE POSITIVE**: 12 (32.4%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37
-- **HIGH TP**: 13 (F01/F02/F03/F09/F11/F14/F15/F16/F28/F29/F33/F34/F35)
-- **MEDIUM TP**: 4 (F18/F20/F31/F32)
+- **Servers auditados**: 23 (16 Tier A+B + 7 Tier C auto; 2 Tier C skip)
+- **Findings curados**: 51 (F01–F51)
+- **TRUE POSITIVE**: 36 (70.6%) — F01/F02/F03/F04/F05/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35/F38/F39/F40/F42/F43/F45/F46/F47/F48/F49/F50
+- **FALSE POSITIVE**: 15 (29.4%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37/F41/F44/F51
+- **CRITICAL TP**: 1 (F11 — Token Exposure auto-detectado)
+- **HIGH TP**: 21 (F01/F02/F03/F09/F14/F15/F16/F28/F29/F33/F34/F35/F38/F39/F40/F42/F43/F47/F48/F49/F50)
+- **MEDIUM TP**: 6 (F18/F20/F31/F32/F45/F46)
 - **LOW TP**: 8 (F04/F05/F17/F21/F22/F23/F24/F25)
-- **FP rate**: 32% (12/37)
-- **Servers con ≥1 HIGH**: 9 de 15 (60%)
+- **FP rate**: 29% (15/51)
+- **Servers con ≥1 HIGH**: 15 de 23 (65%)
+- **SDK advisory (@modelcontextprotocol/sdk)**: afecta a ≥5 servers confirmados (F09/F16/F35 + mcp-server-commands + database-server)
 
 ## Servers skip definitivos
 
 | Server | Razón |
 |--------|-------|
-| server-everything | partial — enumerator bug, F12/F13 Inconclusive |
+| server-everything | done — re-scan post transport-fix completado (F11 CRITICAL, F38 HIGH) |
 | mcp-server-puppeteer | skip — SSRF confirmado manual, Chrome visible en batch |
 | playwright-mcp | done — path traversal F33/F34 confirmado |
 | filesystem-mcp-server | skip — bug ESM en package, imports sin extensión .js |
@@ -145,3 +168,5 @@ Tool declara `nodeType` como required, pero ejecuta sin error con args vacíos y
 | tavily-mcp | skip — TAVILY_API_KEY requerida |
 | exa-mcp-server | skip — EXA_API_KEY requerida |
 | server-gitlab | skip — GITLAB_TOKEN requerido |
+| mcp-scan | skip — CLI scanner interactivo, no MCP server |
+| docker-mcp-server | skip — HTTP :30000 con auth-token dinámico, setup manual por sesión |

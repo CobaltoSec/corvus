@@ -97,19 +97,34 @@ class StdioTransport(MCPTransport):
 
     async def send_request(self, method: str, params: dict[str, Any] | None = None) -> Any:
         self._req_id += 1
-        msg: dict[str, Any] = {"jsonrpc": "2.0", "id": self._req_id, "method": method}
+        req_id = self._req_id
+        msg: dict[str, Any] = {"jsonrpc": "2.0", "id": req_id, "method": method}
         if params is not None:
             msg["params"] = params
 
         t0 = time.monotonic()
         await self._write(msg)
-        raw = await asyncio.wait_for(self._process.stdout.readline(), timeout=self.timeout)
+
+        # Loop until we get the response matching req_id.
+        # Servers may emit notifications (no "id") or unrelated messages before
+        # the actual response — skip those rather than treating them as the result.
+        while True:
+            elapsed = time.monotonic() - t0
+            remaining = self.timeout - elapsed
+            if remaining <= 0:
+                raise asyncio.TimeoutError()
+            raw = await asyncio.wait_for(
+                self._process.stdout.readline(), timeout=remaining
+            )
+            if not raw:
+                raise RuntimeError("Server closed stdout unexpectedly")
+            response = json.loads(raw.decode())
+            if response.get("id") == req_id:
+                break
+            # Notification or out-of-order message — skip
+
         duration_ms = (time.monotonic() - t0) * 1000
 
-        if not raw:
-            raise RuntimeError("Server closed stdout unexpectedly")
-
-        response = json.loads(raw.decode())
         if "error" in response:
             err = response["error"]
             if self._log_requests:

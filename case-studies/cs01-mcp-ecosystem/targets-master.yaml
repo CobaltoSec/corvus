@@ -48,14 +48,14 @@ targets:
   - npx
   - -y
   - '@modelcontextprotocol/server-everything'
-  status: partial
+  status: done
   last_scanned: '2026-06-25'
-  findings_summary: 1H (F11 manual)
+  findings_summary: 1C 2H 6L 4I
   curation: partial
-  notes: 'Enumerator bug: server devuelve tools bajo clave resources/list, confunde
-    al enumerador → 0 tools capturadas. F11: get-env TP confirmado por tool description
-    manual (expone todos los env vars). F12/F13: Inconclusive — no se puede verificar
-    sin re-scan con bug fix en el enumerador.'
+  notes: 'Re-scaneado post transport-fix (v0.8.1). 13 tools capturadas. CRITICAL: get-env
+    Token Exposure auto-detectado (F11 upgrade). HIGH: response flooding get-env (F48).
+    HIGH: echo reflection (FP — by design). F12/F13 resueltos como FP — re-scan no
+    confirma missing-required-fields en echo/get-structured-content.'
 - name: server-github
   tier: A
   transport: stdio
@@ -93,9 +93,9 @@ targets:
   last_scanned: '2026-06-25'
   findings_summary: 5L (schema audit)
   curation: FP
-  notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection,
-    supply chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no
-    seguridad). Correcto: C:/Temp/testrepo (no /tmp en Windows).'
+  notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection, supply
+    chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no seguridad).
+    Correcto: C:/Temp/testrepo (no /tmp en Windows).'
 - name: server-postgres
   tier: A
   transport: stdio
@@ -197,8 +197,8 @@ targets:
   - --allowed-directories
   - C:\Temp
   status: skip
-  notes: 'CLI arg parsing ignora path en Windows — Allowed directories siempre [].
-    Skip. Bytedance impl, incompatible con Windows paths.'
+  notes: CLI arg parsing ignora path en Windows — Allowed directories siempre [].
+    Skip. Bytedance impl, incompatible con Windows paths.
   last_scanned: '2026-06-25'
   findings_summary: ERROR (no report.json)
 - name: mcp-fetch-server
@@ -314,9 +314,6 @@ targets:
   - '@modelcontextprotocol/server-gitlab'
   status: skip
   notes: Necesita GITLAB_TOKEN + GITLAB_URL. Servidor oficial GitLab.
-
-# --- Tier C: expansión RT-CORVUS-V12 — targets sin API key ---
-
 - name: mcp-server-commands
   tier: C
   transport: stdio
@@ -324,10 +321,12 @@ targets:
   - npx
   - -y
   - mcp-server-commands
-  status: pending
+  status: done
   notes: Shell exec server. Alta probabilidad cmd injection HIGH + shadow tool. Sin
     args obligatorios.
-
+  last_scanned: '2026-06-25'
+  findings_summary: 1H 1I
+  curation: pending
 - name: super-shell-mcp
   tier: C
   transport: stdio
@@ -335,10 +334,12 @@ targets:
   - npx
   - -y
   - super-shell-mcp
-  status: pending
+  status: done
   notes: Shell exec v2.0.15. Whitelist configurable pero arranca sin config. Similar
     superficie a mcp-server-commands.
-
+  last_scanned: '2026-06-25'
+  findings_summary: 2H 1M 1L
+  curation: pending
 - name: mcp-shell-server
   tier: C
   transport: stdio
@@ -346,19 +347,23 @@ targets:
   - npx
   - -y
   - '@mako10k/mcp-shell-server'
-  status: pending
+  status: done
   notes: Shell/process server. Sin args obligatorios. Probable cmd injection surface.
-
+  last_scanned: '2026-06-25'
+  findings_summary: 2H 1M 4L 6I
+  curation: pending
 - name: mcp-server-time
   tier: C
   transport: stdio
   cmd:
   - uvx
   - mcp-server-time
-  status: pending
+  status: done
   notes: Servidor oficial PyPI (@modelcontextprotocol). Time/timezone queries. Sin
     API key. Superficie limitada pero diversifica el dataset.
-
+  last_scanned: '2026-06-25'
+  findings_summary: clean
+  curation: pending
 - name: mcp-scan
   tier: C
   transport: stdio
@@ -366,10 +371,9 @@ targets:
   - npx
   - -y
   - '@contextware/mcp-scan'
-  status: pending
-  notes: 'Escáner de seguridad MCP — ángulo narrativo: escaneamos el escáner. Sin
-    args. Superficie interesante: podría exponer info del entorno.'
-
+  status: skip
+  notes: 'CLI scanner interactivo — no implementa protocolo MCP. Arranca su propia
+    UI (texto), no habla JSON-RPC stdio. Skip definitivo.'
 - name: mcp-homescan
   tier: C
   transport: stdio
@@ -377,21 +381,20 @@ targets:
   - npx
   - -y
   - mcp-homescan
-  status: pending
+  status: done
   notes: Escanea red local. Sin args obligatorios. Surface de scope creep (MCP02)
     + posible info disclosure de red interna.
-
+  last_scanned: '2026-06-25'
+  findings_summary: 2M 6L
+  curation: pending
 - name: docker-mcp-server
   tier: C
-  transport: stdio
-  cmd:
-  - npx
-  - -y
-  - docker-mcp-server
-  status: pending
-  notes: Gestión Docker via MCP. Necesita Docker daemon activo (disponible en E16).
-    Alta superficie scope creep + shadow tool (run/exec containers).
-
+  transport: http
+  url: http://localhost:30000/mcp
+  status: skip
+  notes: 'Arranca en modo HTTP :30000 con auth-token dinámico (UUID per-run). No es
+    stdio. Para escanear: iniciar manualmente, capturar token del stderr, pasarlo como
+    --header. Skip en batch — requiere setup manual por sesión.'
 - name: database-server-executeautomation
   tier: C
   transport: stdio
@@ -400,10 +403,12 @@ targets:
   - -y
   - '@executeautomation/database-server'
   - C:/Temp/test.db
-  status: pending
+  status: done
   notes: Multi-DB server. Usa mismo test.db que server-sqlite. Probable SQL injection
     + schema bypass.
-
+  last_scanned: '2026-06-25'
+  findings_summary: 4H 4L
+  curation: pending
 - name: mcp-server-mysql
   tier: C
   transport: stdio
@@ -411,6 +416,9 @@ targets:
   - npx
   - -y
   - '@benborla29/mcp-server-mysql'
-  status: pending
+  status: done
   notes: 'MySQL local. Setup: docker run -e MYSQL_ROOT_PASSWORD=test -p 3306:3306
     mysql:8 — igual que hicimos con postgres. Env vars: MYSQL_HOST/USER/PASSWORD/DATABASE.'
+  last_scanned: '2026-06-25'
+  findings_summary: 2H 2M
+  curation: pending

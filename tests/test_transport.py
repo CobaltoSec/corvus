@@ -62,3 +62,45 @@ async def test_valid_server_not_affected_by_startup_check():
     async with StdioTransport(MOCK_SERVER_CMD) as t:
         result = await t.initialize()
     assert result["serverInfo"]["name"] == "mock-vulnerable-server"
+
+
+# Notification-skipping: server emits notifications/tools/list_changed before response
+
+_NOTIFY_BEFORE_TOOLS_SERVER = """
+import json, sys
+
+def send(msg):
+    sys.stdout.write(json.dumps(msg) + "\\n")
+    sys.stdout.flush()
+
+for line in sys.stdin:
+    msg = json.loads(line)
+    method = msg.get("method", "")
+    if method == "initialize":
+        send({"jsonrpc":"2.0","id":msg["id"],"result":{
+            "protocolVersion":"2024-11-05",
+            "capabilities":{"tools":{"listChanged":True}},
+            "serverInfo":{"name":"notify-first","version":"1.0"}
+        }})
+    elif method == "notifications/initialized":
+        pass
+    elif method == "tools/list":
+        # Emit notification BEFORE the response — simulates server-everything behavior
+        send({"jsonrpc":"2.0","method":"notifications/tools/list_changed"})
+        send({"jsonrpc":"2.0","id":msg["id"],"result":{
+            "tools":[{"name":"probe","description":"probe tool","inputSchema":{"type":"object","properties":{}}}]
+        }})
+    else:
+        send({"jsonrpc":"2.0","id":msg.get("id"),"result":{}})
+"""
+
+
+@pytest.mark.asyncio
+async def test_notification_before_response_skipped():
+    cmd = [sys.executable, "-c", _NOTIFY_BEFORE_TOOLS_SERVER]
+    async with StdioTransport(cmd) as t:
+        await t.initialize()
+        result = await t.send_request("tools/list") or {}
+    tools = result.get("tools", [])
+    assert len(tools) == 1
+    assert tools[0]["name"] == "probe"

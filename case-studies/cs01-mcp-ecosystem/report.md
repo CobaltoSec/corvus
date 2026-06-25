@@ -1,16 +1,16 @@
 # CS01 — OWASP MCP Ecosystem Audit
 
-**Framework:** Corvus v0.8.0  
+**Framework:** Corvus v0.8.1  
 **Período:** Junio 2026  
-**Targets:** 26 MCP servers (10 Tier A @modelcontextprotocol + 16 Tier B community)  
-**Auditados:** 16 (15 via Corvus automatizado + 1 manual — mcp-server-puppeteer)  
-**Findings totales:** 37 (25 TP / 12 FP · FP rate 32%)
+**Targets:** 35 MCP servers (10 Tier A @modelcontextprotocol + 16 Tier B community + 9 Tier C expansión)  
+**Auditados:** 23 (16 Tier A+B + 7 Tier C auto; 2 Tier C skip)  
+**Findings totales:** 51 (36 TP / 15 FP · FP rate 29%)
 
 ---
 
 ## Resumen ejecutivo
 
-Escaneamos 13 MCP servers del ecosistema real — servidores usados en producción por miles de agentes LLM — con Corvus v0.8.0. Resultado: **9 de 15 servidores tienen al menos un finding HIGH confirmado (60%)**. El problema más sistémico es de supply chain: el advisory de `@modelcontextprotocol/sdk@<=1.25.1` afecta a múltiples servidores del ecosistema. El más llamativo es un SSRF confirmado en `mcp-server-puppeteer` que navega al endpoint de metadata de AWS.
+Escaneamos 23 MCP servers del ecosistema real — servidores usados en producción por miles de agentes LLM — con Corvus v0.8.1. Resultado: **15 de 23 servidores tienen al menos un finding HIGH confirmado (65%)**. El problema más sistémico es de supply chain: el advisory de `@modelcontextprotocol/sdk@<=1.25.1` afecta a ≥5 servidores del ecosistema. El más llamativo es un SSRF confirmado en `mcp-server-puppeteer` que navega al endpoint de metadata de AWS. Highlight de la expansión Tier C: `server-everything` ahora detecta **CRITICAL Token Exposure** automáticamente tras el fix del transport en v0.8.1.
 
 ---
 
@@ -45,10 +45,13 @@ Corvus v0.8.0 ejecuta 12 módulos contra cada target:
 #### server-filesystem · 3 HIGH (Shadow Tool)
 `read_file`, `write_file`, `edit_file` son nombres canónicos de filesystem. Un servidor malicioso que registre estas mismas tools sería confiado implícitamente por un LLM, que asumiría que ejecuta operaciones de sistema. Patrón de riesgo válido incluso cuando la implementación es legítima (F01–F03).
 
-#### server-everything · 1 HIGH (Info Disclosure)
-`get-env` — descripción: *"Returns all environment variables, helpful for debugging MCP server configuration"*. En producción expone API keys, tokens y rutas sensibles del proceso. Finding confirmado por inspección manual; el enumerador de Corvus no capturó las tools por un bug de parseo (el server responde con keys erróneas en tools/list → enumerador recibe null).
+#### server-everything · 1 CRITICAL, 1 HIGH (Token Exposure + Response Flooding)
+`get-env` — descripción: *"Returns all environment variables, helpful for debugging MCP server configuration"*. En producción expone API keys, tokens y rutas sensibles del proceso.
 
-**Bug de framework documentado:** `server-everything` envía tools en la respuesta de `resources/list` y resources en `prompts/list`. Corvus espera la estructura MCP estándar. Fix pendiente en el enumerador.
+**v0.8.1 transport fix:** `server-everything` tiene `listChanged: true` y emitía `notifications/tools/list_changed` antes de responder a `tools/list`. El transport de Corvus leía la notificación como respuesta (result=null) → 0 tools capturadas. Fix: `send_request()` ahora loopea por `id`, skipea notificaciones. Post-fix: **13 tools capturadas, 1 CRITICAL + 1 HIGH detectados automáticamente.**
+
+- **CRITICAL (F11):** `get-env` → Token Exposure (conf=85). Auto-detectado por el módulo `token-exposure`.
+- **HIGH (F38):** `get-env` → Response Flooding (conf=85). Dump completo de env vars puede superar MB en entornos cloud con muchas variables.
 
 #### server-github · 1 HIGH (Supply Chain)
 `@modelcontextprotocol/sdk@<=1.25.1` tiene un advisory npm (GHSA, sin CVE asignado aún). Confidence 65 — advisory directo en dependencia. Patrón sistémico: cualquier server que use el SDK oficial en versiones antiguas hereda este finding.
@@ -99,6 +102,40 @@ Además: `browser_evaluate.function` refleja el payload (probable FP para un ser
 
 ---
 
+### Tier C — Expansión (shell servers + DB + network)
+
+9 targets agregados en RT-CORVUS-V12. 7/9 auditados exitosamente. 2 skip definitivos: `@contextware/mcp-scan` (CLI interactivo, no MCP server) y `docker-mcp-server` (HTTP :30000 con auth-token dinámico por sesión).
+
+#### Shell execution servers · patrón de injection sistémico
+
+Tres servers de shell execution probados — `super-shell-mcp`, `@mako10k/mcp-shell-server`, `shell-command-mcp` (Tier B) — exhiben el mismo patrón:
+
+- **Shadow tool HIGH:** Tools llamadas `execute_command` (conf=90) — LLMs los tratan como operaciones del sistema (F28, F39).
+- **Injection reflected HIGH:** Parámetros de path/command reflejan payload verbatim en respuesta sin sanitizar: `shell_set_default_workdir.working_directory` (F42), `command_history_query.entry_id` (F43), `remove_from_whitelist.command` (F40).
+
+Patrón: los servers de shell son el vector MCP más riesgoso. Ninguno implementa allowlist de comandos en la capa MCP; la defensa depende de configuración externa.
+
+#### database-server-executeautomation · 4 HIGH (Supply Chain + Flooding)
+
+- Supply chain HIGH en el propio package (`@executeautomation/database-server`) y en `tar@<=6.2.1` — `tar` es una utilidad del sistema ampliamente usada (F47, F48).
+- `list_insights` sin paginación: dump completo en memoria → response flooding (F49).
+- `@modelcontextprotocol/sdk` advisory (patrón ecosistémico).
+
+#### mcp-server-mysql · 2 HIGH (Supply Chain)
+
+- `undici@<6.x` HIGH — HTTP client de Node.js con CVEs publicados. Afecta a todo el stack de red del server (F50).
+- `@modelcontextprotocol/sdk` advisory.
+
+#### mcp-homescan · 2 MEDIUM (Injection + Schema)
+
+Network scanner MCP. `homescan_device.ip` no validado — reflection en respuesta (F45). Combinación con scope creep: un server MCP de network scan con injection en el parámetro `ip` permite a un actor malicioso escanear IPs arbitrarias, incluyendo subredes internas del host donde corre el agente.
+
+#### mcp-server-time · CLEAN
+
+Sin findings. Superficie minimal (get_current_time + convert_time). Referencia positiva de server bien scoped.
+
+---
+
 ## Patrones transversales
 
 ### 1. Supply chain sistémico
@@ -110,6 +147,9 @@ Además: `browser_evaluate.function` refleja el payload (probable FP para un ser
 ### 3. Shadow tool pattern en servers de filesystem/shell
 Cualquier server que registre tools con nombres como `read_file`, `write_file`, `execute_command` — incluso si su implementación es legítima — normaliza que un LLM confíe en esos nombres. Un server malicioso registrado luego se beneficia de esa confianza implícita.
 
+### 5. Shell execution servers = injection vector sistémico
+Los tres shell servers auditados (Tier B + C) comparten el mismo patrón: parámetros de path/command reflejan payload sin sanitizar. Sin allowlist de comandos en la capa MCP. El protocolo no tiene primitivas de sandboxing — la defensa depende 100% de configuración del operador.
+
 ### 4. Browser servers como vectores de alto riesgo
 `mcp-server-puppeteer` y `playwright-mcp` tienen acceso a un browser real. SSRF via URLs arbitrarias, path traversal via filenames, JS injection — el MCP protocol no tiene primitivas para restringir estas operaciones.
 
@@ -117,7 +157,7 @@ Cualquier server que registre tools con nombres como `read_file`, `write_file`, 
 
 ## FP Rate y calibración
 
-**FP rate: 32%** (12 de 37 findings). Los FPs más comunes:
+**FP rate: 29%** (15 de 51 findings). Los FPs más comunes:
 - Rug pull en servers stateful por diseño (`server-sequential-thinking`)
 - Tool poisoning FP por descripciones largas legítimas (protocolo de razonamiento)
 - Cascade supply chain advisories (filtrado en v0.8.0)
@@ -133,8 +173,9 @@ El FP rate del 29% es aceptable para un scanner automático en v0.8.0. La mayor�
 | Limitación | Impacto | Fix |
 |-----------|---------|-----|
 | ~~HTTP SSE transport no soportado~~ | ~~server-pdf no escaneado~~ | **Resuelto en v0.8.1** |
-| Enumerator bug con keys no-estándar | server-everything: 0 tools capturadas | Parseo tolerante en tools/resources/prompts |
+| ~~Enumerator bug notificaciones intermedias~~ | ~~server-everything: 0 tools~~ | **Resuelto en v0.8.1** — transport skipea notificaciones por id |
 | Browsers no escaneables en batch | puppeteer/playwright solo manual | Headless scan option |
+| docker-mcp-server HTTP/auth-token dinámico | no auto-scannable en batch | Setup manual: capturar token de stderr + `--header` |
 | Servers de API key (brave, slack, gitlab...) | 10 servers skip | Integration env vars / mock mode |
 
 ---
@@ -143,17 +184,19 @@ El FP rate del 29% es aceptable para un scanner automático en v0.8.0. La mayor�
 
 | Métrica | Valor |
 |---------|-------|
-| Targets en scope | 26 |
-| Auditados | 16 (15 auto + 1 manual) |
-| Findings totales | 37 |
-| True Positives | 25 (67.6%) |
-| False Positives | 12 (32.4%) |
-| HIGH TPs | 13 |
-| MEDIUM TPs | 4 |
+| Targets en scope | 35 |
+| Auditados | 23 (16 Tier A+B + 7 Tier C) |
+| Findings totales | 51 |
+| True Positives | 36 (70.6%) |
+| False Positives | 15 (29.4%) |
+| CRITICAL TPs | 1 (F11 — Token Exposure auto) |
+| HIGH TPs | 21 |
+| MEDIUM TPs | 6 |
 | LOW TPs | 8 |
-| Servers con ≥1 HIGH | 9 de 15 (60%) |
-| OWASP IDs cubiertos | MCP01, MCP03, MCP04, MCP05, MCP06, MCP08, EXT01, EXT02, EXT03 |
+| Servers con ≥1 HIGH | 15 de 23 (65%) |
+| SDK advisory alcance | ≥5 servers del ecosistema |
+| OWASP IDs cubiertos | MCP01, MCP02, MCP03, MCP04, MCP05, MCP06, MCP07, MCP08, MCP09, EXT01, EXT02, EXT03 |
 
 ---
 
-*Generado con [Corvus](https://github.com/CobaltoSec/corvus) v0.8.0*
+*Generado con [Corvus](https://github.com/CobaltoSec/corvus) v0.8.1*
