@@ -3,7 +3,7 @@
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
-Corvus v0.5.1  MCP Security Scanner
+Corvus v0.7.0  MCP Security Scanner
 Target     : python my_mcp_server.py
 Transport  : stdio
 Modules    : tool-poisoning, schema-audit, shadow-tool, auth-audit, log-audit,
@@ -70,9 +70,37 @@ corvus scan --transport stdio --cmd "python my_server.py" --fail-on high
 # Load config from file
 corvus scan --config corvus.toml
 
+# Filter low-confidence findings (0-100)
+corvus scan --transport stdio --cmd "python my_server.py" --min-confidence 70
+
+# Capture raw JSON-RPC exchanges
+corvus scan --transport stdio --cmd "python my_server.py" --log-requests
+
 # List available modules
 corvus list-modules
 ```
+
+## Batch Scan
+
+Scan multiple MCP servers in one invocation:
+
+```yaml
+# targets.yaml
+targets:
+  - name: filesystem
+    transport: stdio
+    cmd: ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+
+  - name: my-http-server
+    transport: http
+    url: http://localhost:8080
+```
+
+```bash
+corvus batch targets.yaml --output-dir results/ --sarif --min-confidence 70
+```
+
+Produces a per-target `report.json` and a top-level `summary.md` table.
 
 ## Modules
 

@@ -37,4 +37,4 @@ Si se encuentra un finding CRITICAL en un servidor oficial:
 
 ## Herramienta
 
-Corvus vX.Y.Z instalado en `.venv/`. Comandos desde `C:\Proyectos\CobaltoSec\sectors\red-team\corvus\`.
+Corvus — install with `pip install cobaltosec-corvus`.
