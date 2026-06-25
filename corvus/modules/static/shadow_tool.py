@@ -38,8 +38,8 @@ _LOW_PATTERNS: list[re.Pattern[str]] = [
 
 
 class ShadowToolModule(ScanModule):
-    owasp_id = "MCP03"
-    category = "Shadow Tool"
+    owasp_id = "EXT03"
+    category = "Shadow Tool Detection"
     name = "shadow-tool"
     description = (
         "Detects tool names that shadow common built-ins or signal dangerous operations, "
@@ -63,7 +63,7 @@ class ShadowToolModule(ScanModule):
 
         if name.lower() in _EXACT_HIGH:
             found.append(Finding(
-                owasp_category=OWASPCategory.MCP03_SHADOW_TOOL,
+                owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
                 severity=Severity.HIGH,
                 title=f"Shadow Tool — '{name}' conflicts with a high-value built-in name",
                 description=(
@@ -84,7 +84,7 @@ class ShadowToolModule(ScanModule):
         for pattern in _MEDIUM_PATTERNS:
             if pattern.search(name):
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP03_SHADOW_TOOL,
+                    owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
                     severity=Severity.MEDIUM,
                     title=f"Shadow Tool — '{name}' contains a dangerous operation keyword",
                     description=(
@@ -100,7 +100,7 @@ class ShadowToolModule(ScanModule):
         for pattern in _LOW_PATTERNS:
             if pattern.search(name):
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP03_SHADOW_TOOL,
+                    owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
                     severity=Severity.LOW,
                     title=f"Shadow Tool — '{name}' uses a suspicious naming convention",
                     description=(

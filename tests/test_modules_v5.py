@@ -8,8 +8,8 @@ import pytest
 from corvus.core.models import MCPSurface, OWASPCategory, Severity, ToolSpec
 from corvus.core.session import ScanSession
 from corvus.discovery.enumerator import MCPEnumerator
-from corvus.modules.dynamic.info_disclosure import InfoDisclosureModule
-from corvus.modules.dynamic.param_injection import ParamInjectionModule
+from corvus.modules.dynamic.token_exposure import TokenExposureModule as InfoDisclosureModule
+from corvus.modules.dynamic.cmd_injection import CmdInjectionModule as ParamInjectionModule
 from corvus.modules.dynamic.rug_pull import RugPullModule
 from corvus.modules.static.tool_poisoning import ToolPoisoningModule
 from corvus.transport.http import HttpTransport
@@ -68,7 +68,7 @@ async def test_entropy_fires_on_long_high_entropy():
     entropy_findings = [
         f for f in findings
         if f.tool_name == "long_entropy_tool"
-        and f.owasp_category == OWASPCategory.MCP01_TOOL_POISONING
+        and f.owasp_category == OWASPCategory.MCP03_TOOL_POISONING
         and f.severity == Severity.LOW
     ]
     assert entropy_findings, (
@@ -96,7 +96,7 @@ async def test_info_disclosure_finds_stacktrace_on_empty_args():
     stacktrace_findings = [
         f for f in findings
         if f.tool_name == "fragile_tool"
-        and f.owasp_category == OWASPCategory.MCP04_INFO_DISCLOSURE
+        and f.owasp_category == OWASPCategory.MCP01_TOKEN_EXPOSURE
         and "stack trace" in f.title.lower()
     ]
     assert stacktrace_findings, (
@@ -138,7 +138,7 @@ async def test_info_disclosure_keeps_json_response():
     server_status_findings = [
         f for f in findings
         if f.tool_name == "server_status"
-        and f.owasp_category == OWASPCategory.MCP04_INFO_DISCLOSURE
+        and f.owasp_category == OWASPCategory.MCP01_TOKEN_EXPOSURE
     ]
     assert server_status_findings, (
         "Expected info-disclosure findings for server_status tool (leaks API_KEY/HOME/PATH)"
@@ -162,7 +162,7 @@ async def test_sql_error_keyword_gives_critical():
         if f.tool_name == "query_db"
         and f.severity == Severity.CRITICAL
         and f.exploitation_confirmed is True
-        and f.owasp_category == OWASPCategory.MCP02_PARAM_INJECTION
+        and f.owasp_category == OWASPCategory.MCP05_CMD_INJECTION
     ]
     assert sql_critical, (
         "Expected a CRITICAL exploitation_confirmed finding for query_db (SQL error-based); "
@@ -185,7 +185,7 @@ async def test_param_injection_sanitized_response_is_low():
     sanitized_tool_findings = [
         f for f in findings
         if f.tool_name == "sanitized_lookup"
-        and f.owasp_category == OWASPCategory.MCP02_PARAM_INJECTION
+        and f.owasp_category == OWASPCategory.MCP05_CMD_INJECTION
     ]
     if sanitized_tool_findings:
         for f in sanitized_tool_findings:

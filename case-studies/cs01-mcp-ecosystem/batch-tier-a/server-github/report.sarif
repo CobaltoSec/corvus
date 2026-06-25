@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.7.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP04-SUPPLY",
+              "name": "MCP04-SUPPLY",
+              "shortDescription": {
+                "text": "MCP04-SUPPLY"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP04-SUPPLY",
+          "level": "error",
+          "message": {
+            "text": "Supply Chain \u2014 '@modelcontextprotocol/sdk' has high vulnerability (no CVE assigned). Package '@modelcontextprotocol/sdk' (dependency of '@modelcontextprotocol/server-github') has a known high vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP04-SUPPLY",
+          "level": "error",
+          "message": {
+            "text": "Supply Chain \u2014 '@modelcontextprotocol/server-github' has high vulnerability (no CVE assigned). Package '@modelcontextprotocol/server-github' (dependency of '@modelcontextprotocol/server-github') has a known high vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

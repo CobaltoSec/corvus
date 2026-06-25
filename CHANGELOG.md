@@ -2,6 +2,48 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V10] — 2026-06-24 — v0.8.0 OWASP Remap + B1/B2 CS01
+
+### Breaking changes (SARIF rule IDs and module names changed)
+
+**OWASP ID remap completo — alineado con OWASP MCP Top 10 oficial**
+
+| Módulo | ID anterior | ID correcto | Cambios |
+|--------|-------------|-------------|---------|
+| `token-exposure` (ex `info-disclosure`) | MCP04 | MCP01 | Renombrado + remap |
+| `scope-audit` | MCP02-SCOPE | MCP02 | Limpieza sufijo |
+| `tool-poisoning` | MCP01 | MCP03 | Solo remap |
+| `supply-chain` | MCP04-SUPPLY | MCP04 | Limpieza sufijo |
+| `cmd-injection` (ex `param-injection`) | MCP02 | MCP05 | Renombrado + remap |
+| `rug-pull` | MCP06 | MCP06 | Sin cambio |
+| `auth-audit` | MCP08 | MCP07 | Solo remap |
+| `log-audit` | MCP10 | MCP08 | Solo remap |
+| `response-flood` | MCP07 | MCP10 | Solo remap |
+| `schema-bypass` | MCP05 | EXT01 | Moved to extension |
+| `schema-audit` | MCP09 | EXT02 | Moved to extension |
+| `shadow-tool` | MCP03 | EXT03 | Moved to extension |
+
+- Nuevos archivos: `token_exposure.py` (ex `info_disclosure.py`), `cmd_injection.py` (ex `param_injection.py`)
+- SARIF rule IDs usan nuevo scheme: `CORVUS-MCP01` → token-exposure, `CORVUS-MCP03` → tool-poisoning, etc.
+- `OWASPCategory` enum reescrito con nombres canónicos y valores correctos
+- Nuevo test `tests/test_owasp_remap.py` (12 parametrizados) verifica IDs post-remap
+
+**B1 — Supply Chain FP fix**
+- Cascade advisories (via=list de strings) ahora filtrados — no son vulnerabilidades directas
+- Findings sin CVE asignado: confidence reducida de 90 → 65
+- CS01-F10 (`server-github@*`): retroactivamente marcado como FP (cascade)
+- CS01-F09 (`@modelcontextprotocol/sdk@<=1.25.1`): TP con confidence=65
+- +2 tests en `test_supply_chain.py`
+
+**B2 — server-pdf investigation**
+- Diagnóstico: `@modelcontextprotocol/server-pdf` es HTTP server (porta 3001), no stdio
+- Target corregido en `targets-cs01-tier-a.yaml`: `transport: http, url: http://localhost:3001/mcp`
+- Requiere startup manual antes de batch
+
+**Tests: 111 → 125 (+14)**
+- +2 supply chain tests (cascade + no-CVE confidence)
+- +12 remap tests parametrizados (`test_owasp_remap.py`)
+
 ## [RT-CORVUS-V09] — 2026-06-25
 
 ### Added — MCP02 scope-audit + MCP04 supply-chain + CS01 Batch Tier A

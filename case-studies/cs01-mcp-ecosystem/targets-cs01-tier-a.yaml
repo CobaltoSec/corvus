@@ -3,9 +3,12 @@ targets:
     transport: stdio
     cmd: ["npx", "-y", "@modelcontextprotocol/server-github"]
 
+  # server-pdf is an HTTP server (binds to :3001), not stdio.
+  # Manual startup required before batch: npx -y @modelcontextprotocol/server-pdf
+  # Ensure :3001 is free (conflicts with JuiceShop in lab env).
   - name: server-pdf
-    transport: stdio
-    cmd: ["npx", "-y", "@modelcontextprotocol/server-pdf"]
+    transport: http
+    url: "http://localhost:3001/mcp"
 
   - name: server-everything
     transport: stdio

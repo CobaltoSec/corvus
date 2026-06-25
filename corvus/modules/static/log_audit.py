@@ -47,8 +47,8 @@ _MEDIUM_DESC: list[re.Pattern[str]] = [
 
 
 class LogAuditModule(ScanModule):
-    owasp_id = "MCP10"
-    category = "Logging & Monitoring Failures"
+    owasp_id = "MCP08"
+    category = "Lack of Audit and Telemetry"
     name = "log-audit"
     description = (
         "Static analysis that detects tools exposing or tampering with audit logs, "
@@ -72,7 +72,7 @@ class LogAuditModule(ScanModule):
         for pattern in _CRITICAL_NAME:
             if pattern.search(name):
                 return [Finding(
-                    owasp_category=OWASPCategory.MCP10_LOG_AUDIT,
+                    owasp_category=OWASPCategory.MCP08_LOG_AUDIT,
                     severity=Severity.CRITICAL,
                     title=f"Log Audit Failure — '{name}' can destroy the audit trail",
                     description=(
@@ -91,7 +91,7 @@ class LogAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 return [Finding(
-                    owasp_category=OWASPCategory.MCP10_LOG_AUDIT,
+                    owasp_category=OWASPCategory.MCP08_LOG_AUDIT,
                     severity=Severity.CRITICAL,
                     title=f"Log Audit Failure — '{name}' claims to clear or disable audit logging",
                     description=(
@@ -109,7 +109,7 @@ class LogAuditModule(ScanModule):
         # HIGH: tool exposes raw log data (audit logs contain credentials, PII, internal paths)
         if _HIGH_NAME.search(name):
             return [Finding(
-                owasp_category=OWASPCategory.MCP10_LOG_AUDIT,
+                owasp_category=OWASPCategory.MCP08_LOG_AUDIT,
                 severity=Severity.HIGH,
                 title=f"Log Audit Failure — '{name}' exposes raw log data",
                 description=(
@@ -128,7 +128,7 @@ class LogAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 return [Finding(
-                    owasp_category=OWASPCategory.MCP10_LOG_AUDIT,
+                    owasp_category=OWASPCategory.MCP08_LOG_AUDIT,
                     severity=Severity.HIGH,
                     title=f"Log Audit Failure — '{name}' exposes log content",
                     description=(
@@ -149,7 +149,7 @@ class LogAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 return [Finding(
-                    owasp_category=OWASPCategory.MCP10_LOG_AUDIT,
+                    owasp_category=OWASPCategory.MCP08_LOG_AUDIT,
                     severity=Severity.MEDIUM,
                     title=f"Log Audit Failure — '{name}' operates without audit logging",
                     description=(

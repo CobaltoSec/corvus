@@ -25,7 +25,7 @@ async def test_shadow_tool_detects_bash():
 
     bash_findings = [f for f in findings if f.tool_name == "bash"]
     assert bash_findings, "Expected a finding for the 'bash' shadow tool"
-    assert all(f.owasp_category == OWASPCategory.MCP03_SHADOW_TOOL for f in bash_findings)
+    assert all(f.owasp_category == OWASPCategory.EXT03_SHADOW_TOOL for f in bash_findings)
     assert any(f.severity == Severity.HIGH for f in bash_findings)
 
 

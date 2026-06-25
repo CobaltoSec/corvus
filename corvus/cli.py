@@ -16,8 +16,8 @@ from .config import CorvusConfig, load_config
 from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
-from .modules.dynamic.info_disclosure import InfoDisclosureModule
-from .modules.dynamic.param_injection import ParamInjectionModule
+from .modules.dynamic.token_exposure import TokenExposureModule
+from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
@@ -45,14 +45,14 @@ _ALL_MODULES = {
     "shadow-tool":     ShadowToolModule,
     "auth-audit":      AuthAuditModule,
     "log-audit":       LogAuditModule,
-    "param-injection": ParamInjectionModule,
-    "info-disclosure": InfoDisclosureModule,
+    "cmd-injection":   CmdInjectionModule,
+    "token-exposure":  TokenExposureModule,
     "schema-bypass":   SchemaBypassModule,
     "response-flood":  ResponseFloodModule,
     "rug-pull":        RugPullModule,
 }
 _STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
-_DYNAMIC = {"param-injection", "info-disclosure", "schema-bypass", "response-flood", "rug-pull"}
+_DYNAMIC = {"cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull"}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
 _SEV_COLOR = {

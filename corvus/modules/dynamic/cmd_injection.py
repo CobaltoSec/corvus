@@ -34,10 +34,10 @@ _SQL_ERROR_SIGNATURES = [
 _SANITIZATION_SIGNALS = ("sanitized", "filtered", "escaped", "blocked")
 
 
-class ParamInjectionModule(ScanModule):
-    owasp_id = "MCP02"
-    category = "Parameter Injection"
-    name = "param-injection"
+class CmdInjectionModule(ScanModule):
+    owasp_id = "MCP05"
+    category = "Command Injection & Execution"
+    name = "cmd-injection"
     description = "Tests string parameters for command/path/prompt/SQL injection using schema-aware payloads"
     is_static = False
 
@@ -132,7 +132,7 @@ class ParamInjectionModule(ScanModule):
                             continue  # no signal — skip this payload
 
                         findings.append(Finding(
-                            owasp_category=OWASPCategory.MCP02_PARAM_INJECTION,
+                            owasp_category=OWASPCategory.MCP05_CMD_INJECTION,
                             severity=severity,
                             title=f"Injection reflected — '{tool.name}.{param}'",
                             description=desc,

@@ -97,9 +97,17 @@ def _parse_audit(audit_json: dict, package: str) -> list[Finding]:
         if severity is None:
             continue
 
+        via_list = vuln.get("via", [])
+
+        # Cascade advisory: via contains only package-name strings (no advisory objects).
+        # The package itself is not vulnerable — it just transitively depends on one that is.
+        # The actual vulnerable dep appears as its own entry; skip the cascade wrapper.
+        if via_list and all(isinstance(v, str) for v in via_list):
+            continue
+
         # Extract CVE IDs from via entries
         cve_ids: list[str] = []
-        for via in vuln.get("via", []):
+        for via in via_list:
             if not isinstance(via, dict):
                 continue
             if "cve" in via:
@@ -137,7 +145,7 @@ def _parse_audit(audit_json: dict, package: str) -> list[Finding]:
                 if fix_version
                 else f"Update '{vuln_name}' to a patched version."
             ),
-            confidence=90,
+            confidence=65 if cve_str == "no CVE assigned" else 90,
         ))
 
     return findings

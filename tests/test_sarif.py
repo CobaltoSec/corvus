@@ -14,7 +14,7 @@ def _minimal_result() -> ScanResult:
     surface = MCPSurface(server_name="test-server", tools=[])
     findings = [
         Finding(
-            owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+            owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
             severity=Severity.CRITICAL,
             title="Poisoned tool detected",
             description="Tool description contains hidden instructions.",
@@ -22,14 +22,14 @@ def _minimal_result() -> ScanResult:
             remediation="Remove hidden instructions.",
         ),
         Finding(
-            owasp_category=OWASPCategory.MCP04_INFO_DISCLOSURE,
+            owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
             severity=Severity.HIGH,
             title="Credential leaked",
             description="Response contains API key.",
             tool_name="server_status",
         ),
         Finding(
-            owasp_category=OWASPCategory.MCP09_SCHEMA_AUDIT,
+            owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
             severity=Severity.MEDIUM,
             title="Weak schema",
             description="Parameter accepts any type.",
@@ -41,7 +41,7 @@ def _minimal_result() -> ScanResult:
         transport="stdio",
         surface=surface,
         findings=findings,
-        modules_run=["tool-poisoning", "info-disclosure", "schema-audit"],
+        modules_run=["tool-poisoning", "token-exposure", "schema-audit"],
     )
 
 
@@ -72,9 +72,9 @@ def test_sarif_rules_deduplicated(tmp_path: Path) -> None:
     rule_ids = [r["id"] for r in rules]
     # One rule per OWASP category; no duplicates
     assert len(rule_ids) == len(set(rule_ids))
-    assert "CORVUS-MCP01" in rule_ids
-    assert "CORVUS-MCP04" in rule_ids
-    assert "CORVUS-MCP09" in rule_ids
+    assert "CORVUS-MCP03" in rule_ids   # tool-poisoning
+    assert "CORVUS-MCP01" in rule_ids   # token-exposure
+    assert "CORVUS-EXT02" in rule_ids   # schema-audit
 
 
 def test_sarif_results_count(tmp_path: Path) -> None:
@@ -92,9 +92,9 @@ def test_sarif_severity_mapping(tmp_path: Path) -> None:
     results = data["runs"][0]["results"]
 
     by_rule = {r["ruleId"]: r["level"] for r in results}
-    assert by_rule["CORVUS-MCP01"] == "error"    # CRITICAL → error
-    assert by_rule["CORVUS-MCP04"] == "error"    # HIGH → error
-    assert by_rule["CORVUS-MCP09"] == "warning"  # MEDIUM → warning
+    assert by_rule["CORVUS-MCP03"] == "error"    # CRITICAL (tool-poisoning)
+    assert by_rule["CORVUS-MCP01"] == "error"    # HIGH (token-exposure)
+    assert by_rule["CORVUS-EXT02"] == "warning"  # MEDIUM (schema-audit)
 
 
 def test_sarif_location_has_tool_name(tmp_path: Path) -> None:
@@ -103,7 +103,7 @@ def test_sarif_location_has_tool_name(tmp_path: Path) -> None:
     data = json.loads(sarif_path.read_text(encoding="utf-8"))
     results = data["runs"][0]["results"]
 
-    evil_result = next(r for r in results if r["ruleId"] == "CORVUS-MCP01")
+    evil_result = next(r for r in results if r["ruleId"] == "CORVUS-MCP03")
     locs = evil_result.get("locations", [])
     assert locs, "Expected at least one location for a finding with tool_name"
     logical = locs[0]["logicalLocations"][0]

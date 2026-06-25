@@ -7,7 +7,7 @@ from .conftest import MOCK_SERVER_CMD
 from corvus.transport.stdio import StdioTransport
 from corvus.discovery.enumerator import MCPEnumerator
 from corvus.core.session import ScanSession
-from corvus.modules.dynamic.param_injection import ParamInjectionModule
+from corvus.modules.dynamic.cmd_injection import CmdInjectionModule as ParamInjectionModule
 from corvus.reporting.report import ReportGenerator
 
 

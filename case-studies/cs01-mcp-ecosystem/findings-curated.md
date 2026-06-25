@@ -12,8 +12,8 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F06 | server-sequential-thinking | 0.2.0 | MCP06 Rug Pull | HIGH | Tool `sequentialthinking` desapareció mid-session | ⚠️ FP probable | Server stateful — tool list cambia por diseño |
 | CS01-F07 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | MEDIUM | Descripción excesivamente larga en `sequentialthinking` | ⚠️ FP probable | Descripción larga es el propósito del server |
 | CS01-F08 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | LOW | Alta entropía en descripción de `sequentialthinking` | ⚠️ FP probable | Base64/estructura esperada en el prompt del server |
-| CS01-F09 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` tiene vulnerabilidad high | ⚠️ Revisar | npm advisory sin CVE asignado — verificar si es real |
-| CS01-F10 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/server-github@*` tiene vulnerabilidad high | ⚠️ Revisar | npm advisory sin CVE asignado — puede ser el mismo advisory |
+| CS01-F09 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` tiene vulnerabilidad high | ✅ TP (confidence 65) | Advisory directo en dep. Sin CVE asignado (GHSA pendiente de numeración). Corvus lo reporta con confidence=65. |
+| CS01-F10 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/server-github@*` tiene vulnerabilidad high | ❌ FP | Cascade advisory — `via: ["@modelcontextprotocol/sdk"]` (strings only). Filtrado automáticamente desde Corvus v0.8.0. |
 | CS01-F11 | server-everything | — | MCP04 Info Disclosure | HIGH | `get-env` expone sensitive system file path | ⚠️ Revisar | Evidence del report muestra error de gzip-file-as-resource — verificar manualmente |
 | CS01-F12 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | 🔲 Pendiente | schema_bypass module — probable TP |
 | CS01-F13 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | 🔲 Pendiente | schema_bypass module — probable TP |
@@ -37,19 +37,29 @@ El server por diseño tiene un solo tool con descripción larga (protocolo de ra
 
 **Veredicto:** FALSE POSITIVE — candidatos para ajuste de umbral en v0.6.0
 
+### CS01-F09 — Supply Chain: `@modelcontextprotocol/sdk@<=1.25.1`
+Advisory npm directo contra el SDK de MCP (via contiene objeto con título y URL de GHSA). Sin CVE asignado — el advisory existe en la base de datos de GitHub Security Advisories pero aún no tiene numeración CVE-XXXX-XXXXX. Corvus v0.8.0 lo reporta con `confidence=65` (bajado de 90 por ausencia de CVE).
+
+**Veredicto:** TRUE POSITIVE — advisory real en dep directo, confidence=65
+
+### CS01-F10 — Supply Chain: `@modelcontextprotocol/server-github@*`
+Cascade advisory: `via: ["@modelcontextprotocol/sdk"]` (solo strings, no objetos). npm audit reporta el paquete padre porque hereda la severidad del dep vulnerable. El paquete padre en sí no tiene una vulnerabilidad propia — F09 ya cubre el advisory real.
+
+**Veredicto:** FALSE POSITIVE — cascade advisory. Corvus v0.8.0 lo filtra automáticamente.
+
 ---
 
 ## Estadísticas
 
 - Servers escaneados: 6 (`server-filesystem`, `server-memory`, `server-sequential-thinking`, `server-everything`, `server-github`, `server-pdf[ERROR]`)
 - Findings totales (raw): ~28+
-- Findings confirmados (TRUE POSITIVE): 5 (CS01-F01 a CS01-F05)
-- Findings FP probable: 3 (CS01-F06 a CS01-F08)
-- Findings pendientes de revisión: 5 (CS01-F09 a CS01-F13)
+- Findings confirmados (TRUE POSITIVE): 6 (CS01-F01 a CS01-F05 + F09)
+- Findings FP confirmados: 4 (CS01-F06/F07/F08/F10)
+- Findings pendientes de revisión: 3 (CS01-F11 a CS01-F13)
 - Findings confirmados CRITICAL: 0
-- Findings confirmados HIGH: 3 (MCP03 en filesystem) + 2 pendientes (supply chain github) + 1 pendiente (info disclosure everything)
+- Findings confirmados HIGH: 3 (MCP03 en filesystem) + 1 (supply chain sdk, confidence=65)
 - Findings confirmados LOW: 2 (MCP05 en memory)
-- Batch Tier A: server-github 2H supply-chain | server-everything 1H+2M+6L+4I | server-pdf ERROR
+- Batch Tier A: server-github 1H supply-chain (1 FP filtrado) | server-everything 1H+2M+6L+4I | server-pdf ERROR
 
 ## Servers pendientes
 
@@ -58,5 +68,5 @@ El server por diseño tiene un solo tool con descripción larga (protocolo de ra
 | server-git | No testeado | `@modelcontextprotocol/server-git` no existe en npm — es Python (uvx). Pendiente. |
 | server-github | ✅ Escaneado (2H) | 2 HIGH supply chain — pendiente revisión CVE |
 | server-postgres | No testeado | Necesita connection string |
-| server-pdf | ERROR | `@modelcontextprotocol/server-pdf` crashea en startup — investigar |
+| server-pdf | SKIP | HTTP server (SSE/Streamable HTTP, puerto 3001) — no stdio. Target corregido a `transport: http`. Requiere startup manual antes de batch. |
 | server-everything | ✅ Escaneado (13 findings) | v0.7.0 listChanged retry funcionó — 1H+2M+6L+4I. Pendiente curation manual. |

@@ -7,7 +7,7 @@ from ...transport.base import MCPTransport
 
 
 class SchemaAuditModule(ScanModule):
-    owasp_id = "MCP09"
+    owasp_id = "EXT02"
     category = "Schema Audit"
     name = "schema-audit"
     description = "Audits tool schemas for weak definitions that expand the attack surface"
@@ -27,7 +27,7 @@ class SchemaAuditModule(ScanModule):
             # Tool has no description
             if not tool.description.strip():
                 findings.append(Finding(
-                    owasp_category=OWASPCategory.MCP09_SCHEMA_AUDIT,
+                    owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
                     severity=Severity.LOW,
                     title=f"'{tool.name}' has no description",
                     description="Tools without descriptions cannot be audited for hidden intent.",
@@ -39,7 +39,7 @@ class SchemaAuditModule(ScanModule):
             # additionalProperties: true — accepts arbitrary keys
             if schema.get("additionalProperties") is True:
                 findings.append(Finding(
-                    owasp_category=OWASPCategory.MCP09_SCHEMA_AUDIT,
+                    owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
                     severity=Severity.MEDIUM,
                     title=f"'{tool.name}' accepts arbitrary additional properties",
                     description="additionalProperties: true allows unexpected parameters that may bypass validation logic.",
@@ -52,7 +52,7 @@ class SchemaAuditModule(ScanModule):
             for param, param_schema in properties.items():
                 if "type" not in param_schema and "$ref" not in param_schema:
                     findings.append(Finding(
-                        owasp_category=OWASPCategory.MCP09_SCHEMA_AUDIT,
+                        owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
                         severity=Severity.LOW,
                         title=f"Parameter '{param}' in '{tool.name}' has no type constraint",
                         description="Untyped parameters accept any value, making input validation harder to enforce.",
@@ -65,7 +65,7 @@ class SchemaAuditModule(ScanModule):
             # Tool has properties but no required field
             if properties and "required" not in schema:
                 findings.append(Finding(
-                    owasp_category=OWASPCategory.MCP09_SCHEMA_AUDIT,
+                    owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
                     severity=Severity.INFO,
                     title=f"'{tool.name}' defines no required fields",
                     description="All parameters are implicitly optional. Verify this is intentional.",

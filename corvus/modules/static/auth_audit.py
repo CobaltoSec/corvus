@@ -39,8 +39,8 @@ _MEDIUM_DESC: list[re.Pattern[str]] = [
 
 
 class AuthAuditModule(ScanModule):
-    owasp_id = "MCP08"
-    category = "Auth Bypass"
+    owasp_id = "MCP07"
+    category = "Insufficient Auth & Authorization"
     name = "auth-audit"
     description = (
         "Static analysis that flags tool names and descriptions suggesting missing, "
@@ -67,7 +67,7 @@ class AuthAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP08_AUTH_BYPASS,
+                    owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
                     severity=Severity.CRITICAL,
                     title=f"Auth Bypass — '{name}' explicitly claims no authentication needed",
                     description=(
@@ -89,7 +89,7 @@ class AuthAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP08_AUTH_BYPASS,
+                    owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
                     severity=Severity.HIGH,
                     title=f"Auth Bypass — '{name}' is marked as restricted but has no auth signal",
                     description=(
@@ -110,7 +110,7 @@ class AuthAuditModule(ScanModule):
         for pattern in _HIGH_NAME:
             if pattern.search(name):
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP08_AUTH_BYPASS,
+                    owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
                     severity=Severity.HIGH,
                     title=f"Auth Bypass — '{name}' uses a restricted-access naming convention",
                     description=(
@@ -131,7 +131,7 @@ class AuthAuditModule(ScanModule):
             m = pattern.search(description)
             if m:
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP08_AUTH_BYPASS,
+                    owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
                     severity=Severity.MEDIUM,
                     title=f"Auth Bypass — '{name}' treats authentication as optional",
                     description=(

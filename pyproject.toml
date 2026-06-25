@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cobaltosec-corvus"
-version = "0.7.0"
+version = "0.8.0"
 description = "MCP server security testing framework"
 readme = "README.md"
 license = {text = "MIT"}

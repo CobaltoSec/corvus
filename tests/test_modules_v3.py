@@ -25,7 +25,7 @@ async def test_auth_audit_detects_no_auth_required():
 
     admin_findings = [f for f in findings if f.tool_name == "admin_reset"]
     assert admin_findings, "Expected finding for admin_reset tool"
-    assert any(f.owasp_category == OWASPCategory.MCP08_AUTH_BYPASS for f in admin_findings)
+    assert any(f.owasp_category == OWASPCategory.MCP07_AUTH_AUDIT for f in admin_findings)
     assert any(f.severity == Severity.CRITICAL for f in admin_findings)
 
 
@@ -38,7 +38,7 @@ async def test_auth_audit_detects_admin_name_prefix():
 
     # admin_reset has CRITICAL from description pattern; also verify name-based detection
     # works by checking a hypothetical — the real tool hits description CRITICAL first
-    flagged_tools = {f.tool_name for f in findings if f.owasp_category == OWASPCategory.MCP08_AUTH_BYPASS}
+    flagged_tools = {f.tool_name for f in findings if f.owasp_category == OWASPCategory.MCP07_AUTH_AUDIT}
     assert "admin_reset" in flagged_tools
 
 
@@ -50,7 +50,7 @@ async def test_auth_audit_clean_tools_not_flagged():
         findings = await AuthAuditModule().run(surface, t, session)
 
     # echo and add_numbers should never be flagged for auth issues
-    auth_flagged = {f.tool_name for f in findings if f.owasp_category == OWASPCategory.MCP08_AUTH_BYPASS}
+    auth_flagged = {f.tool_name for f in findings if f.owasp_category == OWASPCategory.MCP07_AUTH_AUDIT}
     for clean in ("echo", "add_numbers", "get_time"):
         assert clean not in auth_flagged, f"'{clean}' should not be flagged by auth-audit"
 
@@ -78,7 +78,7 @@ async def test_response_flood_detects_oversized():
     config_findings = [f for f in findings if f.tool_name == "get_config"]
     assert config_findings, "Expected response-flood finding for get_config"
     assert any(f.severity == Severity.HIGH for f in config_findings)
-    assert any(f.owasp_category == OWASPCategory.MCP07_RESPONSE_FLOOD for f in config_findings)
+    assert any(f.owasp_category == OWASPCategory.MCP10_CONTEXT_INJECTION for f in config_findings)
 
 
 @pytest.mark.asyncio

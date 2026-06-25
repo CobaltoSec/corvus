@@ -26,7 +26,7 @@ class SampleCustomModule(ScanModule):
     ) -> list[Finding]:
         return [
             Finding(
-                owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+                owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
                 severity=Severity.INFO,
                 title="Custom plugin executed successfully",
                 description="Finding emitted by the sample plugin to confirm it was loaded.",

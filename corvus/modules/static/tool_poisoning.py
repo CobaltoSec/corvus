@@ -16,7 +16,7 @@ _PATTERNS_FILE = Path(__file__).parent.parent.parent / "payloads" / "data" / "po
 
 
 class ToolPoisoningModule(ScanModule):
-    owasp_id = "MCP01"
+    owasp_id = "MCP03"
     category = "Tool Poisoning"
     name = "tool-poisoning"
     description = "Detects hidden instructions and obfuscation in tool descriptions"
@@ -50,7 +50,7 @@ class ToolPoisoningModule(ScanModule):
             m = pattern.search(description)
             if m:
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+                    owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
                     severity=Severity.CRITICAL,
                     title=f"Tool Poisoning — hidden instruction in '{tool_name}'",
                     description=f"Description matches injection pattern: '{m.group()}'",
@@ -65,7 +65,7 @@ class ToolPoisoningModule(ScanModule):
         for char in self._unicode:
             if char in description:
                 found.append(Finding(
-                    owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+                    owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
                     severity=Severity.HIGH,
                     title=f"Tool Poisoning — invisible unicode in '{tool_name}'",
                     description=f"Description contains suspicious character U+{ord(char):04X}",
@@ -79,7 +79,7 @@ class ToolPoisoningModule(ScanModule):
         # Excessive length
         if len(description) > self._max_len:
             found.append(Finding(
-                owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+                owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
                 severity=Severity.MEDIUM,
                 title=f"Excessive description length in '{tool_name}'",
                 description=f"Description is {len(description)} chars (limit {self._max_len}). May contain hidden content.",
@@ -92,7 +92,7 @@ class ToolPoisoningModule(ScanModule):
         # to rule out naturally random short identifiers
         if len(description) > self._min_entropy_length and _entropy(description) > self._entropy_threshold:
             found.append(Finding(
-                owasp_category=OWASPCategory.MCP01_TOOL_POISONING,
+                owasp_category=OWASPCategory.MCP03_TOOL_POISONING,
                 severity=Severity.LOW,
                 title=f"High entropy description in '{tool_name}'",
                 description="Unusual character distribution may indicate obfuscated content.",

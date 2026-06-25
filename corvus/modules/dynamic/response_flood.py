@@ -14,8 +14,8 @@ _TRIGRAM_THRESHOLD = 15   # same 3-word sequence must appear this many times to 
 
 
 class ResponseFloodModule(ScanModule):
-    owasp_id = "MCP07"
-    category = "Response Flooding"
+    owasp_id = "MCP10"
+    category = "Context Injection & Over-Sharing"
     name = "response-flood"
     description = (
         "Detects tool responses that are excessively large or contain highly repetitive content "
@@ -55,7 +55,7 @@ class ResponseFloodModule(ScanModule):
 
                 if byte_size > _SIZE_THRESHOLD:
                     findings.append(Finding(
-                        owasp_category=OWASPCategory.MCP07_RESPONSE_FLOOD,
+                        owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
                         severity=Severity.HIGH,
                         title=f"Response Flooding — '{tool.name}' returns oversized response",
                         description=(
@@ -75,7 +75,7 @@ class ResponseFloodModule(ScanModule):
 
                 if _is_repetitive(text):
                     findings.append(Finding(
-                        owasp_category=OWASPCategory.MCP07_RESPONSE_FLOOD,
+                        owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
                         severity=Severity.MEDIUM,
                         title=f"Response Flooding — '{tool.name}' returns highly repetitive content",
                         description=(

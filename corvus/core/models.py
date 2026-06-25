@@ -25,18 +25,21 @@ class Severity(str, Enum):
 
 
 class OWASPCategory(str, Enum):
-    MCP01_TOOL_POISONING = "MCP01"
-    MCP02_PARAM_INJECTION = "MCP02"
-    MCP03_SHADOW_TOOL = "MCP03"
-    MCP04_INFO_DISCLOSURE = "MCP04"
-    MCP05_SCHEMA_BYPASS = "MCP05"
-    MCP06_RUG_PULL = "MCP06"
-    MCP07_RESPONSE_FLOOD = "MCP07"
-    MCP08_AUTH_BYPASS = "MCP08"
-    MCP09_SCHEMA_AUDIT = "MCP09"
-    MCP10_LOG_AUDIT = "MCP10"
-    MCP02_SCOPE_CREEP   = "MCP02-SCOPE"   # temporal — remap completo en v0.8.0
-    MCP04_SUPPLY_CHAIN  = "MCP04-SUPPLY"  # temporal — remap completo en v0.8.0
+    # OWASP MCP Top 10 (official IDs — v0.8.0 remap)
+    MCP01_TOKEN_EXPOSURE    = "MCP01"  # Token Mismanagement & Secret Exposure
+    MCP02_SCOPE_CREEP       = "MCP02"  # Privilege Escalation via Scope Creep
+    MCP03_TOOL_POISONING    = "MCP03"  # Tool Poisoning
+    MCP04_SUPPLY_CHAIN      = "MCP04"  # Supply Chain Attacks
+    MCP05_CMD_INJECTION     = "MCP05"  # Command Injection & Execution
+    MCP06_RUG_PULL          = "MCP06"  # Intent Flow Subversion (Rug Pull)
+    MCP07_AUTH_AUDIT        = "MCP07"  # Insufficient Auth & Authorization
+    MCP08_LOG_AUDIT         = "MCP08"  # Lack of Audit and Telemetry
+    MCP09_SHADOW_SERVER     = "MCP09"  # Shadow MCP Servers (non-scannable — out-of-scope)
+    MCP10_CONTEXT_INJECTION = "MCP10"  # Context Injection & Over-Sharing
+    # Extensions (not in official Top 10)
+    EXT01_SCHEMA_BYPASS     = "EXT01"  # Schema Validation Bypass
+    EXT02_SCHEMA_AUDIT      = "EXT02"  # Schema Audit
+    EXT03_SHADOW_TOOL       = "EXT03"  # Shadow Tool Detection
 
 
 class ToolSpec(BaseModel):

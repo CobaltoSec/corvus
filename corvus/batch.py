@@ -12,8 +12,8 @@ import yaml
 from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
-from .modules.dynamic.info_disclosure import InfoDisclosureModule
-from .modules.dynamic.param_injection import ParamInjectionModule
+from .modules.dynamic.token_exposure import TokenExposureModule
+from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
@@ -31,8 +31,8 @@ from .transport.stdio import StdioTransport
 _ALL_MODULES = [
     ScopeAuditModule, SupplyChainModule,
     ToolPoisoningModule, SchemaAuditModule, ShadowToolModule,
-    AuthAuditModule, LogAuditModule, ParamInjectionModule,
-    InfoDisclosureModule, SchemaBypassModule, ResponseFloodModule, RugPullModule,
+    AuthAuditModule, LogAuditModule, CmdInjectionModule,
+    TokenExposureModule, SchemaBypassModule, ResponseFloodModule, RugPullModule,
 ]
 
 

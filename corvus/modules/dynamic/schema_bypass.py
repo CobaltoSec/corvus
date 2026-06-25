@@ -10,8 +10,8 @@ from ...transport.base import MCPTransport
 
 
 class SchemaBypassModule(ScanModule):
-    owasp_id = "MCP05"
-    category = "Schema Bypass"
+    owasp_id = "EXT01"
+    category = "Schema Validation Bypass"
     name = "schema-bypass"
     description = "Tests whether tools properly reject inputs that violate their declared schema"
     is_static = False
@@ -35,7 +35,7 @@ class SchemaBypassModule(ScanModule):
             if required:
                 if await self._accepted(transport, tool.name, {}):
                     findings.append(Finding(
-                        owasp_category=OWASPCategory.MCP05_SCHEMA_BYPASS,
+                        owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
                         severity=Severity.MEDIUM,
                         title=f"'{tool.name}' accepts missing required fields",
                         description=f"Tool succeeded with empty arguments despite required: {required}",
@@ -52,7 +52,7 @@ class SchemaBypassModule(ScanModule):
                     args = self.engine.build_args(properties, required, param, payload)
                     if await self._accepted(transport, tool.name, args):
                         findings.append(Finding(
-                            owasp_category=OWASPCategory.MCP05_SCHEMA_BYPASS,
+                            owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
                             severity=Severity.LOW,
                             title=f"'{tool.name}.{param}' silently accepts wrong type",
                             description=(
@@ -76,7 +76,7 @@ class SchemaBypassModule(ScanModule):
                 args["__proto__"] = {"polluted": True}
                 if await self._accepted(transport, tool.name, args):
                     findings.append(Finding(
-                        owasp_category=OWASPCategory.MCP05_SCHEMA_BYPASS,
+                        owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
                         severity=Severity.LOW,
                         title=f"'{tool.name}' accepts undeclared extra fields",
                         description="Tool accepted arguments containing '__proto__' without error.",

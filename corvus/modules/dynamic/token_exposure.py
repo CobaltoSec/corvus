@@ -32,10 +32,10 @@ _SIGNALS: list[tuple[re.Pattern[str], str, Severity, int]] = [
 ]
 
 
-class InfoDisclosureModule(ScanModule):
-    owasp_id = "MCP04"
-    category = "Information Disclosure"
-    name = "info-disclosure"
+class TokenExposureModule(ScanModule):
+    owasp_id = "MCP01"
+    category = "Token Mismanagement & Secret Exposure"
+    name = "token-exposure"
     description = "Detects sensitive data leaked in tool responses (credentials, paths, stack traces)"
     is_static = False
 
@@ -104,9 +104,9 @@ class InfoDisclosureModule(ScanModule):
                     m = pattern.search(text)
                     if m:
                         findings.append(Finding(
-                            owasp_category=OWASPCategory.MCP04_INFO_DISCLOSURE,
+                            owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
                             severity=severity,
-                            title=f"Info Disclosure — {label} in '{tool.name}'",
+                            title=f"Token Exposure — {label} in '{tool.name}'",
                             description=f"Tool response contains {label}.",
                             tool_name=tool.name,
                             evidence=text[:400],
