@@ -21,6 +21,11 @@ from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
+from .modules.dynamic.ssrf import SSRFModule
+from .modules.dynamic.endpoint_probe import EndpointProbeModule
+from .modules.dynamic.param_smuggling import ParamSmugglingModule
+from .modules.dynamic.init_audit import InitAuditModule
+from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
@@ -50,9 +55,17 @@ _ALL_MODULES = {
     "schema-bypass":   SchemaBypassModule,
     "response-flood":  ResponseFloodModule,
     "rug-pull":        RugPullModule,
+    "ssrf":            SSRFModule,
+    "endpoint-probe":  EndpointProbeModule,
+    "param-smuggling": ParamSmugglingModule,
+    "init-audit":      InitAuditModule,
+    "proto-fuzz":      ProtoFuzzModule,
 }
 _STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
-_DYNAMIC = {"cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull"}
+_DYNAMIC = {
+    "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
+    "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",
+}
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
 _SEV_COLOR = {

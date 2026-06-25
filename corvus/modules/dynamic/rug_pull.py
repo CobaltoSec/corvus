@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ..base import ScanModule
 from ...core.models import Finding, MCPSurface, OWASPCategory, Severity, ToolSpec
 from ...core.session import ScanSession
 from ...transport.base import MCPTransport
+
+
+# Tool names that suggest by-design stateful behavior (e.g. server-sequential-thinking)
+_STATEFUL_TOOL_NAME = re.compile(
+    r"sequential_thinking|memory|session|context|chain|state|history|thread",
+    re.I,
+)
 
 
 class RugPullModule(ScanModule):
@@ -59,16 +67,20 @@ class RugPullModule(ScanModule):
 
         # Tools that disappeared during the session
         for name in sorted(orig_names - new_names):
+            # B5: stateful servers legitimately hide tools based on context
+            is_stateful = bool(_STATEFUL_TOOL_NAME.search(name))
             findings.append(Finding(
                 owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                severity=Severity.HIGH,
+                severity=Severity.LOW if is_stateful else Severity.HIGH,
                 title=f"Rug Pull — tool '{name}' disappeared mid-session",
                 description=(
                     f"Tool '{name}' was present at session start but is no longer listed. "
-                    "The server may be hiding evidence of malicious tool calls."
+                    + ("Tool name suggests stateful by-design behavior — low confidence finding."
+                       if is_stateful else
+                       "The server may be hiding evidence of malicious tool calls.")
                 ),
                 tool_name=name,
-                confidence=85,
+                confidence=40 if is_stateful else 85,
                 remediation="Treat disappearing tools as a red flag and audit all prior interactions.",
             ))
 

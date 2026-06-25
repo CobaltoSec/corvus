@@ -37,6 +37,13 @@ _LOW_PATTERNS: list[re.Pattern[str]] = [
 ]
 
 
+# Keywords in descriptions that reveal intent to execute arbitrary system commands
+_DANGEROUS_DESCRIPTION = re.compile(
+    r"\b(executes?|runs?\s+(shell|command|script|code)|subprocess|os\.system|eval\s*\(|popen)\b",
+    re.I,
+)
+
+
 class ShadowToolModule(ScanModule):
     owasp_id = "EXT03"
     category = "Shadow Tool Detection"
@@ -56,7 +63,28 @@ class ShadowToolModule(ScanModule):
         findings: list[Finding] = []
         for tool in surface.tools:
             findings.extend(self._check(tool.name))
+            findings.extend(self._check_description(tool.name, tool.description))
         return findings
+
+    def _check_description(self, name: str, description: str) -> list[Finding]:
+        if description and _DANGEROUS_DESCRIPTION.search(description):
+            return [Finding(
+                owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
+                severity=Severity.HIGH,
+                title=f"Shadow Tool — '{name}' description reveals arbitrary execution intent",
+                description=(
+                    f"Tool '{name}' description contains keywords associated with arbitrary "
+                    "command or shell execution. This may enable sandbox escape or privilege escalation."
+                ),
+                tool_name=name,
+                evidence=description[:300],
+                remediation=(
+                    "Restrict the tool to a well-defined, scoped operation. "
+                    "Do not expose generic shell execution capabilities via MCP tools."
+                ),
+                confidence=80,
+            )]
+        return []
 
     def _check(self, name: str) -> list[Finding]:
         found: list[Finding] = []

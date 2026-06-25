@@ -160,6 +160,29 @@ TOOLS = [
         "description": "Read the application configuration file.",
         "inputSchema": {"type": "object", "properties": {}},
     },
+    # B0d: shadow-tool description scan — description reveals execution intent
+    {
+        "name": "run_system_task",
+        "description": "Executes a shell command directly on the system for maintenance tasks.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"task": {"type": "string", "description": "Task identifier"}},
+            "required": ["task"],
+        },
+    },
+]
+
+RESOURCES = [
+    {"uri": "file:///data/config.txt", "name": "config", "description": "App config", "mimeType": "text/plain"},
+    {"uri": "file:///secrets/env.txt", "name": "env", "description": "Environment file", "mimeType": "text/plain"},
+]
+
+PROMPTS = [
+    {
+        "name": "summarize",
+        "description": "Summarize the provided text.",
+        "arguments": [{"name": "user_input", "description": "Text to summarize", "required": True}],
+    },
 ]
 
 
@@ -173,7 +196,7 @@ def handle(request: dict) -> dict | None:
             "jsonrpc": "2.0", "id": rid,
             "result": {
                 "protocolVersion": "2024-11-05",
-                "capabilities": {"tools": {}},
+                "capabilities": {"tools": {}, "resources": {}, "prompts": {}},
                 "serverInfo": {"name": "mock-vulnerable-server", "version": "0.1.0"},
             },
         }
@@ -183,6 +206,32 @@ def handle(request: dict) -> dict | None:
 
     if method == "tools/list":
         return {"jsonrpc": "2.0", "id": rid, "result": {"tools": TOOLS}}
+
+    if method == "resources/list":
+        return {"jsonrpc": "2.0", "id": rid, "result": {"resources": RESOURCES}}
+
+    if method == "resources/read":
+        uri = params.get("uri", "")
+        text = _read_resource(uri)
+        return {
+            "jsonrpc": "2.0", "id": rid,
+            "result": {"contents": [{"uri": uri, "text": text, "mimeType": "text/plain"}]},
+        }
+
+    if method == "prompts/list":
+        return {"jsonrpc": "2.0", "id": rid, "result": {"prompts": PROMPTS}}
+
+    if method == "prompts/get":
+        name = params.get("name", "")
+        arguments = params.get("arguments", {})
+        text = _render_prompt(name, arguments)
+        return {
+            "jsonrpc": "2.0", "id": rid,
+            "result": {
+                "description": f"Prompt: {name}",
+                "messages": [{"role": "user", "content": {"type": "text", "text": text}}],
+            },
+        }
 
     if method == "tools/call":
         name = params.get("name")
@@ -301,7 +350,33 @@ def _call(name: str, args: dict) -> str:
     if name == "read_config":
         return '{"log_level": "info", "port": 8080}'
 
+    if name == "run_system_task":
+        return f"Task '{args.get('task', '')}' completed."
+
     return f"Unknown tool: {name}"
+
+
+def _read_resource(uri: str) -> str:
+    if "secrets" in uri:
+        return "API_KEY=sk-secret123\nDB_PASSWORD=hunter2\n"
+    if any(m in uri for m in ("../", "%2e%2e", "%252e", "，，", "．．")):
+        return "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n"
+    if uri.startswith("http://169.254") or "meta-data" in uri:
+        return "ami-id: ami-0abc123\ninstance-id: i-1234567890abcdef0\n"
+    return f"[content of {uri}]"
+
+
+def _render_prompt(name: str, arguments: dict) -> str:
+    user_input = arguments.get("user_input", "")
+    # Template injection: if the argument contains {{expr}}, evaluate it (VULN — for testing only)
+    import re
+    def _eval_tpl(m: re.Match) -> str:
+        try:
+            return str(eval(m.group(1)))  # noqa: S307 — intentionally vulnerable
+        except Exception:
+            return m.group(0)
+    rendered = re.sub(r"\{\{(.+?)\}\}", _eval_tpl, user_input)
+    return f"Please summarize the following text:\n\n{rendered}"
 
 
 def main() -> None:

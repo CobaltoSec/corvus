@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V13] — 2026-06-25 — Detection Quality v0.9.0
+
+- **B0a** — Encoding bypass: `%252e%252e%252f` (double-encode) + `．．／` (unicode fullwidth) en `traversal.yaml`
+- **B0b** — Framework version string signal en `token_exposure.py` (`_SIGNALS`) → INFO finding para CVE targeting
+- **B0c** — EXT02 INFO filter: `schema-audit` suprime "no required fields" para tools con nombre `search|query|list|get|doc|view|display|read` (~5 FPs CS01)
+- **B0d** — `shadow-tool` escanea descriptions: keywords `executes|runs shell/command|subprocess|os.system|eval|popen` → HIGH finding
+- **B1** — Nuevo módulo `ssrf.py` (EXT04): SSRF via URL/host params — content signal (metadata keywords) + timing signal; `EXT04_SSRF` en `OWASPCategory`
+- **B2** — Nuevo módulo `endpoint-probe.py`: `resources/read` (traversal + SSRF + token exposure) + `prompts/get` (template injection `{{7*7}}` + prompt hijacking)
+- **B3a** — `cmd-injection` extendido a params `integer` (SQL payloads) y `array` (traversal/injection payloads)
+- **B3b** — Nuevo módulo `param-smuggling.py` (EXT01): hidden params `_debug/unsafe/admin/verbose/__proto__` + response diff
+- **B3c** — Nuevo módulo `init-audit.py` (MCP07): control chars en `serverInfo` + protocol version downgrade probe
+- **B3e** — Nuevo módulo `proto-fuzz.py` (EXT01): unknown methods + oversized method name + null ID probe
+- **B5** — FP calibration: `rug-pull` downgrade a LOW para stateful tool names (`sequential_thinking/memory/session/context/chain`); `cmd-injection` skip SQL payloads para tools `write_query|execute_query|run_sql`
+- **Tests**: 128 → 160 tests (+32); `mock_server.py` +resources/prompts handlers; `mock_ssrf_server.py` nuevo
+
 ## [RT-CORVUS-V13-DISC] — 2026-06-25 — Responsible Disclosure + Gap Analysis
 
 - **Responsible disclosure completo**: 4 GHSAs creados en `CobaltoSec/advisories` + MSRC submitido

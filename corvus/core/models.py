@@ -40,6 +40,7 @@ class OWASPCategory(str, Enum):
     EXT01_SCHEMA_BYPASS     = "EXT01"  # Schema Validation Bypass
     EXT02_SCHEMA_AUDIT      = "EXT02"  # Schema Audit
     EXT03_SHADOW_TOOL       = "EXT03"  # Shadow Tool Detection
+    EXT04_SSRF              = "EXT04"  # Server-Side Request Forgery
 
 
 class ToolSpec(BaseModel):

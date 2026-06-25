@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from ..base import ScanModule
@@ -34,6 +35,14 @@ _SQL_ERROR_SIGNATURES = [
 _SANITIZATION_SIGNALS = ("sanitized", "filtered", "escaped", "blocked")
 
 
+# B3a: payloads for integer and array params
+_INTEGER_PAYLOADS: list[Any] = [0, "0 OR 1=1", "1; DROP TABLE users--", "1 UNION SELECT 1--"]
+_ARRAY_PAYLOADS: list[Any] = [["../../etc/passwd"], ["; echo INJECTED #"], ["{{7*7}}"]]
+
+# B5: tool names that are DB operations by design — skip SQL payloads for these
+_DB_TOOL_NAME = re.compile(r"write_query|execute_query|run_sql|run_query|exec_sql", re.I)
+
+
 class CmdInjectionModule(ScanModule):
     owasp_id = "MCP05"
     category = "Command Injection & Execution"
@@ -56,11 +65,77 @@ class CmdInjectionModule(ScanModule):
             properties: dict[str, Any] = schema.get("properties", {})
             required: list[str] = schema.get("required", [])
 
+            is_db_tool = bool(_DB_TOOL_NAME.search(tool.name))
+
             for param, param_schema in properties.items():
-                if param_schema.get("type") not in ("string", None):
+                param_type = param_schema.get("type")
+
+                # B3a: handle integer and array params with targeted payloads
+                if param_type == "integer":
+                    for payload in _INTEGER_PAYLOADS:
+                        args = self.engine.build_args(properties, required, param, payload)
+                        try:
+                            result = await transport.send_request(
+                                "tools/call", {"name": tool.name, "arguments": args}
+                            )
+                            if isinstance(result, dict) and result.get("isError"):
+                                continue
+                            text = _extract_text(result)
+                            if _sql_error_confirmed(text):
+                                findings.append(Finding(
+                                    owasp_category=OWASPCategory.MCP05_CMD_INJECTION,
+                                    severity=Severity.CRITICAL,
+                                    title=f"SQL Injection (integer param) — '{tool.name}.{param}'",
+                                    description="SQL error keywords in response to integer-typed payload — error-based SQLi confirmed.",
+                                    tool_name=tool.name,
+                                    parameter=param,
+                                    payload=str(payload),
+                                    evidence=text[:300],
+                                    exploitation_confirmed=True,
+                                    confidence=90,
+                                    remediation="Use parameterized queries. Never interpolate raw parameter values into SQL strings.",
+                                ))
+                                break
+                        except Exception:
+                            pass
+                    continue
+
+                if param_type == "array":
+                    for payload in _ARRAY_PAYLOADS:
+                        args = self.engine.build_args(properties, required, param, payload)
+                        try:
+                            result = await transport.send_request(
+                                "tools/call", {"name": tool.name, "arguments": args}
+                            )
+                            if isinstance(result, dict) and result.get("isError"):
+                                continue
+                            text = _extract_text(result)
+                            if any(sig in text for sig in _TRAVERSAL_SIGNATURES) or _sql_error_confirmed(text):
+                                findings.append(Finding(
+                                    owasp_category=OWASPCategory.MCP05_CMD_INJECTION,
+                                    severity=Severity.HIGH,
+                                    title=f"Injection via array param — '{tool.name}.{param}'",
+                                    description="Injection signal detected via array-typed parameter.",
+                                    tool_name=tool.name,
+                                    parameter=param,
+                                    payload=str(payload),
+                                    evidence=text[:300],
+                                    exploitation_confirmed=True,
+                                    confidence=85,
+                                    remediation="Validate and sanitize all elements of array parameters individually.",
+                                ))
+                                break
+                        except Exception:
+                            pass
+                    continue
+
+                if param_type not in ("string", None):
                     continue
 
                 category = self.engine.classify_field(param, param_schema)
+                # B5: skip SQL payloads for tools that are DB operations by design
+                if is_db_tool and category == "sql":
+                    continue
                 payloads = self.engine.get_payloads(category)
 
                 for payload in payloads:

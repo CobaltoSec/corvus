@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import re
+
 from ..base import ScanModule
 from ...core.models import Finding, MCPSurface, OWASPCategory, Severity
 from ...core.session import ScanSession
 from ...transport.base import MCPTransport
+
+
+# Tools whose purpose is inherently optional-param (search, query, list, view…)
+_SEARCH_TOOL_NAME = re.compile(r"search|query|list|get|doc|view|display|read", re.I)
 
 
 class SchemaAuditModule(ScanModule):
@@ -63,7 +69,7 @@ class SchemaAuditModule(ScanModule):
                     ))
 
             # Tool has properties but no required field
-            if properties and "required" not in schema:
+            if properties and "required" not in schema and not _SEARCH_TOOL_NAME.search(tool.name):
                 findings.append(Finding(
                     owasp_category=OWASPCategory.EXT02_SCHEMA_AUDIT,
                     severity=Severity.INFO,

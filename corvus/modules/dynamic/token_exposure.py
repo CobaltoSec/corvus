@@ -29,6 +29,8 @@ _SIGNALS: list[tuple[re.Pattern[str], str, Severity, int]] = [
      "internal IP address", Severity.LOW, 70),
     (re.compile(r'-----BEGIN (RSA |EC )?PRIVATE KEY-----'),
      "private key material", Severity.CRITICAL, 85),
+    (re.compile(r"(Flask|Express|FastAPI|uvicorn|starlette|Django)/\d+\.\d+", re.I),
+     "framework version string", Severity.INFO, 70),
 ]
 
 
