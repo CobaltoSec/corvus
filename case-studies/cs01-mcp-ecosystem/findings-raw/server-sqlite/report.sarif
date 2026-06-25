@@ -1,0 +1,259 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.8.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "error",
+          "message": {
+            "text": "Injection reflected \u2014 'write_query.query'. Payload was reflected verbatim in the response without sanitization (field classification: command)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "write_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "error",
+          "message": {
+            "text": "Injection reflected \u2014 'describe_table.table_name'. Payload was reflected verbatim in the response without sanitization (field classification: generic_string)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "describe_table",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'read_query.query' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "read_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'read_query' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "read_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'write_query' accepts missing required fields. Tool succeeded with empty arguments despite required: ['query']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "write_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'write_query.query' silently accepts wrong type. Expected type 'string', sent int value '12345' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "write_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'write_query' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "write_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'create_table.query' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "create_table",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'create_table' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "create_table",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'describe_table' accepts missing required fields. Tool succeeded with empty arguments despite required: ['table_name']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "describe_table",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'describe_table.table_name' silently accepts wrong type. Expected type 'string', sent bool value 'True' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "describe_table",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'append_insight.insight' silently accepts wrong type. Expected type 'string', sent int value '12345' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "append_insight",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

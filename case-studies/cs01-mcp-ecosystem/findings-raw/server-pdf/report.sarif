@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.8.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'display_pdf' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "display_pdf",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport http"
+        }
+      ]
+    }
+  ]
+}

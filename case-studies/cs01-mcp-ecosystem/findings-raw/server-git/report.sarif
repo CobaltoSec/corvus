@@ -1,0 +1,125 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.8.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "Parameter 'start_timestamp' in 'git_log' has no type constraint. Untyped parameters accept any value, making input validation harder to enforce."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "git_log",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "Parameter 'end_timestamp' in 'git_log' has no type constraint. Untyped parameters accept any value, making input validation harder to enforce."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "git_log",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "Parameter 'base_branch' in 'git_create_branch' has no type constraint. Untyped parameters accept any value, making input validation harder to enforce."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "git_create_branch",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "Parameter 'contains' in 'git_branch' has no type constraint. Untyped parameters accept any value, making input validation harder to enforce."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "git_branch",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "Parameter 'not_contains' in 'git_branch' has no type constraint. Untyped parameters accept any value, making input validation harder to enforce."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "git_branch",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

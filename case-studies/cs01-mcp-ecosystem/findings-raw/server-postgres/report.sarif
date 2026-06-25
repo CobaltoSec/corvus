@@ -1,0 +1,79 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.8.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP04",
+              "name": "MCP04",
+              "shortDescription": {
+                "text": "MCP04"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP04",
+          "level": "error",
+          "message": {
+            "text": "Supply Chain \u2014 '@modelcontextprotocol/sdk' has high vulnerability (no CVE assigned). Package '@modelcontextprotocol/sdk' (dependency of '@modelcontextprotocol/server-postgres') has a known high vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'query' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

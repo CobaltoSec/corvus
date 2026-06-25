@@ -1,11 +1,43 @@
 """Integration tests for HttpTransport against a live mock HTTP server."""
+import json
 import os
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
 from tests.mock_http_server import MockHTTPServer
 from corvus.transport.http import HttpTransport
 from corvus.discovery.enumerator import MCPEnumerator
+
+
+class _SSEHandler(BaseHTTPRequestHandler):
+    """Mock server that responds with SSE (text/event-stream) format."""
+
+    def do_POST(self) -> None:
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length)
+        req = json.loads(body)
+        result = {"jsonrpc": "2.0", "id": req.get("id"), "result": {"echo": "sse-ok"}}
+        sse_body = f"data: {json.dumps(result)}\n\n".encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Content-Length", str(len(sse_body)))
+        self.end_headers()
+        self.wfile.write(sse_body)
+
+    def log_message(self, *args) -> None:
+        pass
+
+
+@pytest.fixture(scope="module")
+def sse_server():
+    server = HTTPServer(("127.0.0.1", 0), _SSEHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    port = server.server_address[1]
+    yield f"http://127.0.0.1:{port}/mcp"
+    server.shutdown()
 
 
 @pytest.fixture(scope="module")
@@ -66,6 +98,22 @@ async def test_http_custom_headers_forwarded(http_server):
         await t.initialize()
     # http.server lowercases header names
     assert http_server.last_headers.get("authorization") == "Bearer test-token-xyz"
+
+
+@pytest.mark.asyncio
+async def test_sse_response_parsed(sse_server):
+    """HttpTransport must parse text/event-stream responses correctly."""
+    async with HttpTransport(sse_server) as t:
+        result = await t.send_request("tools/list", {})
+    assert result == {"echo": "sse-ok"}
+
+
+@pytest.mark.asyncio
+async def test_sse_parse_static():
+    """_parse_sse extracts the first valid JSON data line."""
+    text = "data: {\"a\": 1}\n\ndata: {\"b\": 2}\n\n"
+    result = HttpTransport._parse_sse(text)
+    assert result == {"a": 1}
 
 
 @pytest.mark.asyncio

@@ -50,10 +50,12 @@ targets:
   - '@modelcontextprotocol/server-everything'
   status: partial
   last_scanned: '2026-06-25'
-  findings_summary: 1H 2M 6L 4I
-  curation: pending
-  notes: F11 (get-env HIGH) pendiente verificacion manual. F12/F13 schema bypass probable
-    TP
+  findings_summary: 1H (F11 manual)
+  curation: partial
+  notes: 'Enumerator bug: server devuelve tools bajo clave resources/list, confunde
+    al enumerador → 0 tools capturadas. F11: get-env TP confirmado por tool description
+    manual (expone todos los env vars). F12/F13: Inconclusive — no se puede verificar
+    sin re-scan con bug fix en el enumerador.'
 - name: server-github
   tier: A
   transport: stdio
@@ -71,9 +73,14 @@ targets:
   tier: A
   transport: http
   url: http://localhost:3001/mcp
-  status: pending
-  notes: 'HTTP SSE server — startup manual: npx -y @modelcontextprotocol/server-pdf.
-    Liberar :3001 primero.'
+  status: done
+  last_scanned: '2026-06-25'
+  findings_summary: 1I
+  curation: FP
+  notes: 'SSE fix en Corvus v0.8.1 — Accept: application/json, text/event-stream.
+    PDF Server 2.0.0. 4 tools. 1 INFO: display_pdf sin required fields. Warning manual:
+    binding 0.0.0.0 sin DNS rebinding protection (startup log). Startup: npx -y @modelcontextprotocol/server-pdf
+    en :3001.'
 - name: server-git
   tier: A
   transport: stdio
@@ -81,10 +88,14 @@ targets:
   - uvx
   - mcp-server-git
   - --repository
-  - /tmp/testrepo
-  status: pending
-  notes: 'Python/uvx (no npm). Requiere git repo en /tmp/testrepo. Vector: cmd injection
-    en git args'
+  - C:/Temp/testrepo
+  status: done
+  last_scanned: '2026-06-25'
+  findings_summary: 5L (schema audit)
+  curation: FP
+  notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection,
+    supply chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no
+    seguridad). Correcto: C:/Temp/testrepo (no /tmp en Windows).'
 - name: server-postgres
   tier: A
   transport: stdio
@@ -92,21 +103,29 @@ targets:
   - npx
   - -y
   - '@modelcontextprotocol/server-postgres'
-  - ${POSTGRES_URL}
-  status: skip
-  notes: Necesita connection string real. Pendiente env de lab con PostgreSQL.
+  - postgresql://corvus:corvus123@localhost:5434/testdb
+  status: done
+  last_scanned: '2026-06-25'
+  findings_summary: 1H (supply chain)
+  curation: TP
+  notes: 'Docker postgres:15 en :5434 para test. 1 HIGH: @modelcontextprotocol/sdk
+    advisory (mismo F09/F16). 1 INFO: query sin required fields. Cleanup: docker rm
+    corvus-test-pg post-scan.'
 - name: server-sqlite
   tier: A
   transport: stdio
   cmd:
-  - npx
-  - -y
-  - '@modelcontextprotocol/server-sqlite'
-  - /tmp/test.db
-  status: error
-  notes: 'Vector: SQL injection en queries. Simple de levantar.'
-  last_scanned: '2026-06-24'
-  findings_summary: ERROR (no report.json)
+  - uvx
+  - mcp-server-sqlite
+  - --db-path
+  - C:\Temp\test.db
+  status: done
+  last_scanned: '2026-06-25'
+  findings_summary: 2H 2M 8L
+  curation: partial
+  notes: 'npm package no existe (@modelcontextprotocol/server-sqlite 404). Correcto:
+    uvx mcp-server-sqlite. F29: describe_table SQLi TP. F30: write_query injection
+    FP (by design). F31-F32: schema bypass TP. 8 LOW schema bypass.'
 - name: server-brave-search
   tier: A
   transport: stdio
@@ -161,13 +180,13 @@ targets:
   tier: B
   transport: stdio
   cmd:
-  - npx
-  - -y
-  - filesystem-mcp-server
-  - /tmp
+  - node
+  - C:/Temp/fsmcp/node_modules/filesystem-mcp-server/dist/index.js
+  - C:/Temp
   status: skip
-  notes: Sin campo bin en package.json — npx no puede determinar executable. Skip.
-    Requiere instalación global o invocación node directa.
+  notes: 'Sin campo bin (npx 404). Entry point: dist/index.js. Bug ESM en el package:
+    imports sin extensión .js → ERR_MODULE_NOT_FOUND en Node ESM. Package roto — skip
+    definitivo.'
 - name: agent-infra-mcp-filesystem
   tier: B
   transport: stdio
@@ -202,9 +221,15 @@ targets:
   - npx
   - -y
   - '@playwright/mcp'
-  status: skip
-  notes: 'Microsoft Playwright browser automation. Skip en batch — lanza Chrome headless.
-    Scan manual en sesión dedicada. Vector: SSRF via navigate URLs, JS injection.'
+  status: done
+  last_scanned: '2026-06-24'
+  findings_summary: 5H 1M 4L 4I
+  curation: partial
+  notes: 'Microsoft Playwright 1.61.0-alpha. Batch scan en 20260624-235324. F33/F34:
+    path traversal via filename params (archivo %2e%2e%2fetc%2fpasswd creado en CWD).
+    F14 (SSRF 169.254.169.254) confirmado manual. CORVUS-005 (browser_evaluate null
+    reflection) probable FP. CORVUS-006 (gopher:// via filter) ERR_ABORTED — SSRF
+    bloqueado por Chrome, no por el server.'
 - name: npm-search-mcp-server
   tier: B
   transport: stdio
@@ -289,3 +314,103 @@ targets:
   - '@modelcontextprotocol/server-gitlab'
   status: skip
   notes: Necesita GITLAB_TOKEN + GITLAB_URL. Servidor oficial GitLab.
+
+# --- Tier C: expansión RT-CORVUS-V12 — targets sin API key ---
+
+- name: mcp-server-commands
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-commands
+  status: pending
+  notes: Shell exec server. Alta probabilidad cmd injection HIGH + shadow tool. Sin
+    args obligatorios.
+
+- name: super-shell-mcp
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - super-shell-mcp
+  status: pending
+  notes: Shell exec v2.0.15. Whitelist configurable pero arranca sin config. Similar
+    superficie a mcp-server-commands.
+
+- name: mcp-shell-server
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mako10k/mcp-shell-server'
+  status: pending
+  notes: Shell/process server. Sin args obligatorios. Probable cmd injection surface.
+
+- name: mcp-server-time
+  tier: C
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-time
+  status: pending
+  notes: Servidor oficial PyPI (@modelcontextprotocol). Time/timezone queries. Sin
+    API key. Superficie limitada pero diversifica el dataset.
+
+- name: mcp-scan
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@contextware/mcp-scan'
+  status: pending
+  notes: 'Escáner de seguridad MCP — ángulo narrativo: escaneamos el escáner. Sin
+    args. Superficie interesante: podría exponer info del entorno.'
+
+- name: mcp-homescan
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-homescan
+  status: pending
+  notes: Escanea red local. Sin args obligatorios. Surface de scope creep (MCP02)
+    + posible info disclosure de red interna.
+
+- name: docker-mcp-server
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - docker-mcp-server
+  status: pending
+  notes: Gestión Docker via MCP. Necesita Docker daemon activo (disponible en E16).
+    Alta superficie scope creep + shadow tool (run/exec containers).
+
+- name: database-server-executeautomation
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@executeautomation/database-server'
+  - C:/Temp/test.db
+  status: pending
+  notes: Multi-DB server. Usa mismo test.db que server-sqlite. Probable SQL injection
+    + schema bypass.
+
+- name: mcp-server-mysql
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@benborla29/mcp-server-mysql'
+  status: pending
+  notes: 'MySQL local. Setup: docker run -e MYSQL_ROOT_PASSWORD=test -p 3306:3306
+    mysql:8 — igual que hicimos con postgres. Env vars: MYSQL_HOST/USER/PASSWORD/DATABASE.'

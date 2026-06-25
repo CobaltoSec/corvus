@@ -47,7 +47,7 @@ class HttpTransport(MCPTransport):
             proxy=proxy,
             headers={
                 "Content-Type": "application/json",
-                "Accept": "application/json",
+                "Accept": "application/json, text/event-stream",
                 **self._extra_headers,
             },
         )
@@ -78,7 +78,11 @@ class HttpTransport(MCPTransport):
             raise RuntimeError(f"HTTP request failed: {exc}") from exc
 
         duration_ms = (time.monotonic() - t0) * 1000
-        data = resp.json()
+        content_type = resp.headers.get("content-type", "")
+        if "text/event-stream" in content_type:
+            data = self._parse_sse(resp.text)
+        else:
+            data = resp.json()
         if "error" in data:
             err = data["error"]
             if self._log_requests:
@@ -105,6 +109,18 @@ class HttpTransport(MCPTransport):
                 duration_ms=duration_ms,
             ))
         return result
+
+    @staticmethod
+    def _parse_sse(text: str) -> dict[str, Any]:
+        import json as _json
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith("data: "):
+                try:
+                    return _json.loads(line[6:])
+                except ValueError:
+                    continue
+        raise RuntimeError("No valid JSON found in SSE response")
 
     async def send_notification(self, method: str, params: dict[str, Any] | None = None) -> None:
         if self._client is None:

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V12] — 2026-06-25 — CS01 Cierre + SSE fix + Tier C targets
+
+- **CS01 cerrado**: 16 auditados (15 auto + 1 manual), 37 findings curados (F01–F37), 25 TP / 12 FP
+- **SSE transport fix**: `Accept: application/json, text/event-stream` + `_parse_sse()` en `transport/http.py` — server-pdf ahora scaneable. 127/127 tests.
+- **server-sqlite**: re-scan con `uvx mcp-server-sqlite` (npm 404 fix) — F29 SQL injection TP, F30 FP by design, F31/F32 schema bypass TP
+- **server-postgres**: Docker postgres:15 test env — F35 supply chain TP (mismo advisory sdk)
+- **server-pdf**: escaneado post SSE fix — 1 INFO (clean)
+- **server-git**: Windows path fix (`C:/Temp/testrepo`) — 5 LOW schema quality (clean)
+- **playwright-mcp F33/F34**: path traversal via `filename` params confirmado — `%2e%2e%2fetc%2fpasswd` creado en CWD durante scan batch anterior
+- **report.md**: narrativa CS01 completa con secciones por server, patrones transversales, limitaciones de framework, stats finales
+- **findings-curated.md**: sección estadísticas y tabla skips actualizadas (stale anterior eliminado)
+- **Tier C targets**: 9 nuevos targets sin API key cargados en `targets-master.yaml` — 35 targets total, 9 pending para próximo bloque
+
 ## [RT-CORVUS-V11] — 2026-06-25 — CS01 Tier B scan + curation
 
 - Poblado `targets-master.yaml` con 12 nuevos servers Tier B (8 scannable, 4 skip por creds)

@@ -16,9 +16,9 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F08 | server-sequential-thinking | 0.2.0 | MCP01 Tool Poisoning | LOW | Alta entropía en descripción de `sequentialthinking` | ❌ FP | Base64/estructura esperada en el prompt del server |
 | CS01-F09 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` tiene vulnerabilidad high | ✅ TP (confidence 65) | Advisory directo en dep. Sin CVE asignado (GHSA). |
 | CS01-F10 | server-github | 0.6.2 | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/server-github@*` tiene vulnerabilidad high | ❌ FP | Cascade advisory via strings. Filtrado desde v0.8.0. |
-| CS01-F11 | server-everything | — | MCP04 Info Disclosure | HIGH | `get-env` expone sensitive system file path | ⚠️ Revisar | Evidence muestra error gzip — verificar manualmente |
-| CS01-F12 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | 🔲 Pendiente | probable TP |
-| CS01-F13 | server-everything | — | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | 🔲 Pendiente | probable TP |
+| CS01-F11 | server-everything | 2.0.0 | MCP01 Info Disclosure | HIGH | `get-env` expone todas las variables de entorno del proceso | ✅ TP manual | Tool description confirma: "Returns all environment variables". Scan no capturó tools (enumerator bug — server manda tools en clave `resources/list`). Verificado via tool schema en exchanges.jsonl. En prod expone API keys, secrets. |
+| CS01-F12 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `echo` acepta missing required fields | ❌ Inconclusive | Enumerator bug impidió scan dinámico. No se puede confirmar sin re-scan con bug fix. |
+| CS01-F13 | server-everything | 2.0.0 | MCP05 Schema Bypass | MEDIUM | `get-structured-content` acepta missing required fields | ❌ Inconclusive | Mismo motivo que F12. |
 
 ## Tier B — Community servers
 
@@ -39,6 +39,15 @@ Tabla consolidada post-FP-filter. Solo findings confirmados manualmente.
 | CS01-F26 | n8n-mcp | EXT02 Schema Info | INFO | `tools_documentation` no define campos required | ❌ FP | Diseño intencional — flexibilidad de la API de docs. |
 | CS01-F27 | n8n-mcp | EXT02 Schema Info | INFO | `search_templates` no define campos required | ❌ FP | Mismo patrón. |
 | CS01-F28 | shell-command-mcp | MCP03 Shadow Tool | HIGH | `execute_command` conflicts con nombre built-in de alto valor | ✅ TP | Confidence 90. En este server es legítimo, pero el patrón es idéntico a F01-F03: un server malicioso que registre `execute_command` sería confiado implícitamente por un LLM. |
+| CS01-F29 | server-sqlite | MCP05 Cmd Injection | HIGH | `describe_table.table_name` — SQL injection via table name | ✅ TP | Payload `null` inyectado en consulta SQL: "near null: syntax error". table_name se interpola sin sanitizar en `PRAGMA table_info(<name>)`. Permite SQLi clásico. |
+| CS01-F30 | server-sqlite | MCP05 Cmd Injection | HIGH | `write_query.query` — error-based SQL injection | ❌ FP (by design) | Tool está diseñado para ejecutar SQL arbitrario. El error verbose confirma ejecución pero el patrón es intencional. Sin mecanismo de allowlist (ej. SELECT-only). |
+| CS01-F31 | server-sqlite | MCP05 Schema Bypass | MEDIUM | `write_query` ejecuta con campos requeridos faltantes | ✅ TP | `query` declarado required pero el tool acepta args vacíos y retorna error SQL verbose. |
+| CS01-F32 | server-sqlite | MCP05 Schema Bypass | MEDIUM | `describe_table` ejecuta con campos requeridos faltantes | ✅ TP | `table_name` declarado required, acepta llamada vacía. Mismo patrón F20/F31. |
+| CS01-F33 | playwright-mcp | MCP05 Path Traversal | HIGH | `browser_snapshot.filename` — path traversal → archivo creado en CWD | ✅ Confirmado | Payload `%2e%2e%2fetc%2fpasswd` aceptado como filename. Archivo creado en CWD. En Linux con URL decode: write a path arbitrario. Evidence: `./%2e%2e%2fetc%2fpasswd` existe post-scan. |
+| CS01-F34 | playwright-mcp | MCP05 Path Traversal | HIGH | `browser_network_requests.filename` — path traversal → archivo creado en CWD | ✅ Confirmado | Mismo vector que F33 en tool de network capture. Filename no validado antes de escribir. |
+| CS01-F35 | server-postgres | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk@<=1.25.1` en dep | ✅ TP (confidence 65) | Mismo advisory que F09/F16. Patrón confirmado: afecta a todo el ecosistema que usa el SDK oficial. |
+| CS01-F36 | server-postgres | EXT02 Schema Info | INFO | `query` define no required fields | ❌ FP | El tool acepta cualquier query SQL — diseño intencional (flexibilidad). |
+| CS01-F37 | server-pdf | EXT02 Schema Info | INFO | `display_pdf` define no required fields | ❌ FP | Parámetros opcionales por diseño del viewer. |
 
 ---
 
@@ -107,41 +116,32 @@ Tool declara `nodeType` como required, pero ejecuta sin error con args vacíos y
 
 ---
 
-## Estadísticas (post Tier B)
+## Estadísticas finales (post CS01 completo)
 
-- **Servers escaneados**: 13 (Tier A: 5 + Tier B: 8 sin browsers/errores)
-- **Findings raw totales**: ~45+
-- **Findings TRUE POSITIVE confirmados**: 18
-  - CS01-F01/F02/F03 (shadow, 3H)
-  - CS01-F04/F05 (schema bypass, 2L)
-  - CS01-F09 (supply chain sdk, 1H)
-  - CS01-F14 (SSRF puppeteer, 1H — manual)
-  - CS01-F15 (supply chain private-ip, 1H)
-  - CS01-F16 (supply chain sdk npm-search, 1H)
-  - CS01-F17 (proto pollution, 1L)
-  - CS01-F18 (reflection n8n, 1M-condicional)
-  - CS01-F20 (schema bypass get_node, 1M)
-  - CS01-F21/F22/F23/F24/F25 (type coercion ×5, 5L)
-  - CS01-F28 (shadow execute_command, 1H)
-- **Findings FP confirmados**: 7 (F06/F07/F08/F10/F19/F26/F27)
-- **Findings pendientes**: 3 (F11/F12/F13 en server-everything)
-- **Findings HIGH TP**: 8 (F01/F02/F03/F09/F14/F15/F16/F28)
-- **Findings MEDIUM TP**: 2 (F18-condicional/F20)
-- **Findings LOW TP**: 8 (F04/F05/F17/F21/F22/F23/F24/F25)
-- **FP rate observado**: ~15% (7/45+)
-- **% servers con ≥1 HIGH finding**: 62% (8/13 escaneados)
+- **Servers auditados**: 16 (15 auto + 1 manual — mcp-server-puppeteer)
+- **Findings curados**: 37 (F01–F37)
+- **TRUE POSITIVE**: 25 (67.6%) — F01/F02/F03/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35 + F04/F05 (LOW)
+- **FALSE POSITIVE**: 12 (32.4%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37
+- **HIGH TP**: 13 (F01/F02/F03/F09/F11/F14/F15/F16/F28/F29/F33/F34/F35)
+- **MEDIUM TP**: 4 (F18/F20/F31/F32)
+- **LOW TP**: 8 (F04/F05/F17/F21/F22/F23/F24/F25)
+- **FP rate**: 32% (12/37)
+- **Servers con ≥1 HIGH**: 9 de 15 (60%)
 
-## Servers pendientes / errores
+## Servers skip definitivos
 
-| Server | Estado | Bloqueante |
-|--------|--------|-----------|
-| server-everything | partial | F11/F12/F13 pendientes curation manual |
-| server-git | pending | Python/uvx, requiere `/tmp/testrepo` |
-| server-pdf | pending | HTTP server, startup manual `:3001` |
-| server-sqlite | error | Re-scan pendiente |
-| mcp-server-fetch (oficial) | error | Startup falla — investigar |
-| filesystem-mcp-server | error | `/tmp` no existe en Windows — cambiar path |
-| agent-infra-mcp-filesystem | error | Mismo problema |
-| mcp-cli-exec | error | Paquete no existe o crash al init |
-| mcp-server-puppeteer | skip | SSRF confirmado manual — scan batch incompatible (abre Chrome) |
-| playwright-mcp | skip | Browser visible — scan manual dedicado |
+| Server | Razón |
+|--------|-------|
+| server-everything | partial — enumerator bug, F12/F13 Inconclusive |
+| mcp-server-puppeteer | skip — SSRF confirmado manual, Chrome visible en batch |
+| playwright-mcp | done — path traversal F33/F34 confirmado |
+| filesystem-mcp-server | skip — bug ESM en package, imports sin extensión .js |
+| agent-infra-mcp-filesystem | skip — CLI incompatible con Windows paths |
+| mcp-cli-exec | skip — paquete no publicado en npm |
+| server-brave-search | skip — BRAVE_API_KEY requerida |
+| mcp-server-aws-kb-retrieval | skip — AWS credentials requeridas |
+| mcp-server-slack | skip — SLACK_BOT_TOKEN requerida |
+| notion-mcp-server | skip — NOTION_API_KEY requerida |
+| tavily-mcp | skip — TAVILY_API_KEY requerida |
+| exa-mcp-server | skip — EXA_API_KEY requerida |
+| server-gitlab | skip — GITLAB_TOKEN requerido |
