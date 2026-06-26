@@ -1,0 +1,785 @@
+- cmd:
+  - npx
+  - -y
+  - '@ui5/mcp-server'
+  name: mcp-server
+  notes: MCP server for SAPUI5/OpenUI5 development. 117,814 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - slack-mcp-server
+  name: slack-mcp-server
+  notes: Model Context Protocol (MCP) server for Slack Workspaces. This integration
+    supports both Stdio and SSE transports, proxy settings and does not require any
+    permissions or bots being created or approved by Workspace admins. 32,497 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@wonderwhy-er/desktop-commander'
+  name: desktop-commander
+  notes: MCP server for terminal operations and file editing. 30,359 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@drawio/mcp'
+  name: mcp
+  notes: Official draw.io MCP server for LLMs - Open diagrams in draw.io editor. 29,897
+    weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@microsoft/workiq'
+  name: workiq
+  notes: MCP server for Microsoft 365 Copilot. 23,721 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - hostinger-api-mcp
+  name: hostinger-api-mcp
+  notes: MCP server for Hostinger API. 22,682 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@apify/actors-mcp-server'
+  name: actors-mcp-server
+  notes: Apify MCP Server. 16,924 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - mcp-server-nationalparks
+  name: mcp-server-nationalparks
+  notes: MCP Server for the National Park Service (NPS) API, providing real-time information
+    about U.S. National Parks, including park details, alerts, and activities.. 13,831
+    weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@shortcut/mcp'
+  name: mcp
+  notes: Shortcut MCP Server. 13,675 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@brave/brave-search-mcp-server'
+  name: brave-search-mcp-server
+  notes: 'Brave Search MCP Server: web results, images, videos, rich results, AI summaries,
+    and more.. 13,111 weekly downloads.'
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@alchemy/mcp-server'
+  name: mcp-server
+  notes: MCP server for using Alchemy APIs. 12,645 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@browserstack/mcp-server'
+  name: mcp-server
+  notes: BrowserStack's Official MCP Server. 12,415 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - fetcher-mcp
+  name: fetcher-mcp
+  notes: MCP server for fetching web content using Playwright browser. 11,973 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@smartbear/mcp'
+  name: mcp
+  notes: MCP server for interacting SmartBear Products. 11,799 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - lsp-mcp-server
+  name: lsp-mcp-server
+  notes: MCP server bridging Claude Code to Language Server Protocol servers. 11,770
+    weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@aikidosec/mcp'
+  name: mcp
+  notes: Aikido MCP server. 10,977 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@ironbee-ai/devtools'
+  name: devtools
+  notes: MCP Server and CLI for IronBee DevTools. 10,717 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@z_ai/mcp-server'
+  name: mcp-server
+  notes: MCP Server for Z.AI - A Model Context Protocol server that provides AI capabilities.
+    10,258 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@translated/lara-mcp'
+  name: lara-mcp
+  notes: Lara API official MCP server. 9,804 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - docusaurus-plugin-mcp-server
+  name: docusaurus-plugin-mcp-server
+  notes: A Docusaurus plugin that exposes an MCP server endpoint for AI agents to
+    search and retrieve documentation. 8,794 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@dynatrace-oss/dynatrace-mcp-server'
+  name: dynatrace-mcp-server
+  notes: Model Context Protocol (MCP) server for Dynatrace. 7,586 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@esaio/esa-mcp-server'
+  name: esa-mcp-server
+  notes: Official MCP server for esa.io - STDIO transport version. 7,295 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - argocd-mcp
+  name: argocd-mcp
+  notes: Argo CD MCP Server. 7,191 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@growthbook/mcp'
+  name: mcp
+  notes: MCP Server for interacting with GrowthBook. 6,795 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@ehrocks/fe-mcp-server'
+  name: fe-mcp-server
+  notes: MCP server for searching Hero Design System components. 6,513 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@heroku/mcp-server'
+  name: mcp-server
+  notes: Heroku Platform MCP Server. 6,309 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - dataforseo-mcp-server
+  name: dataforseo-mcp-server
+  notes: A Model Context Protocol (MCP) server for the DataForSEO API, enabling modular
+    and extensible integration of DataForSEO endpoints with support for both HTTP
+    and SSE transports.. 6,204 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - cclsp
+  name: cclsp
+  notes: MCP server for accessing LSP functionality. 5,309 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - storybook-mcp-server
+  name: storybook-mcp-server
+  notes: MCP server for Storybook - provides AI assistants access to components, stories,
+    properties and screenshots. 5,254 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@henkey/postgres-mcp-server'
+  name: postgres-mcp-server
+  notes: A Model Context Protocol (MCP) server that provides comprehensive PostgreSQL
+    database management capabilities for AI assistants. 4,933 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@mgsoftwarebv/mcp-server-bridge'
+  name: mcp-server-bridge
+  notes: MCP Server bridge for MG Tickets - connects Cursor to HTTP MCP server with
+    image support and GitHub code exploration. 4,134 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - malicious-mcp-server
+  name: malicious-mcp-server
+  notes: A deliberately malicious MCP server for E2E testing purposes. 3,967 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - polaris-mcp-server
+  name: polaris-mcp-server
+  notes: Shopify Polaris UI Components MCP Server for AI assistants. 3,890 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@vizejs/musea-mcp-server'
+  name: musea-mcp-server
+  notes: MCP server for building Vue.js design systems - component analysis, documentation,
+    variant generation, and design tokens. 3,889 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@ragieai/mcp-server'
+  name: mcp-server
+  notes: A Model Context Protocol (MCP) server for Ragie. 3,827 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@siemens/element-mcp'
+  name: element-mcp
+  notes: Element MCP server. 3,605 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@microsoft/clarity-mcp-server'
+  name: clarity-mcp-server
+  notes: MCP Server for Microsoft Clarity based on data export API. 3,333 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@knip/mcp'
+  name: mcp
+  notes: Knip MCP Server. 3,174 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - kapture-mcp
+  name: kapture-mcp
+  notes: MCP server for Kapture browser automation. 2,938 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@professional-wiki/mediawiki-mcp-server'
+  name: mediawiki-mcp-server
+  notes: Model Context Protocol (MCP) server for MediaWiki. 2,844 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@qase/mcp-server'
+  name: mcp-server
+  notes: Official MCP server for Qase Test Management Platform. 2,690 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - paput-mcp
+  name: paput-mcp
+  notes: PaPut MCP Server. 2,534 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@mantine/mcp-server'
+  name: mcp-server
+  notes: MCP server for Mantine documentation. 2,390 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@fangjunjie/ssh-mcp-server'
+  name: ssh-mcp-server
+  notes: SSH-based MCP Server (基于 SSH 的 MCP 服务器). 2,373 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@iobroker/mcp-server'
+  name: mcp-server
+  notes: MCP server for ioBroker. 2,331 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@doitintl/doit-mcp-server'
+  name: doit-mcp-server
+  notes: DoiT official MCP Server. 2,322 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@delorenj/mcp-server-trello'
+  name: mcp-server-trello
+  notes: An MCP server for Trello boards, powered by Bun for maximum performance..
+    2,312 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@ohah/react-native-mcp-server'
+  name: react-native-mcp-server
+  notes: MCP server for React Native app automation and monitoring. 2,165 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@runpod/mcp-server'
+  name: mcp-server
+  notes: MCP server for interacting with Runpod API. 1,958 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@vibeframe/mcp-server'
+  name: mcp-server
+  notes: VibeFrame MCP Server - AI-native video editing via Model Context Protocol.
+    1,939 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@line/line-bot-mcp-server'
+  name: line-bot-mcp-server
+  notes: MCP server for interacting with your LINE Official Account. 1,931 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@extentos/mcp-server'
+  name: mcp-server
+  notes: Extentos MCP server — deterministic tools for building Meta-glasses apps..
+    1,742 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@gleanwork/local-mcp-server'
+  name: local-mcp-server
+  notes: MCP server for Glean API integration. 1,739 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@mcp-apps/kusto-mcp-server'
+  name: kusto-mcp-server
+  notes: MCP server for interacting with Kusto databases. 1,586 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - rosetta-mcp-server
+  name: rosetta-mcp-server
+  notes: MCP server for Rosetta/PyRosetta functions and properties. 1,555 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - mcp-server
+  name: mcp-server
+  notes: mcp server. 1,514 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@tocharianou/mcp-server-kibana'
+  name: mcp-server-kibana
+  notes: Kibana MCP Server. 1,493 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - agentmail-mcp
+  name: agentmail-mcp
+  notes: AgentMail MCP Server. 1,461 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - slite-mcp-server
+  name: slite-mcp-server
+  notes: '''Slite MCP server''. 1,427 weekly downloads.'
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@socialneuron/mcp-server'
+  name: mcp-server
+  notes: MCP server for Social Neuron - AI content creation platform. 1,383 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - serper-search-scrape-mcp-server
+  name: serper-search-scrape-mcp-server
+  notes: Serper MCP Server supporting search and webpage scraping. 1,306 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - mcp-server-code-runner
+  name: mcp-server-code-runner
+  notes: Code Runner MCP Server. 1,248 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@anyproto/anytype-mcp'
+  name: anytype-mcp
+  notes: Official MCP server for Anytype API. 1,240 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@leonardsellem/n8n-mcp-server'
+  name: n8n-mcp-server
+  notes: Model Context Protocol (MCP) server for n8n workflow automation. 1,172 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - codex-mcp-server
+  name: codex-mcp-server
+  notes: MCP server wrapper for OpenAI Codex CLI. 1,043 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@unthread-io/mcp-server'
+  name: mcp-server
+  notes: Unthread MCP Server. 914 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@regle/mcp-server'
+  name: mcp-server
+  notes: MCP Server for Regle. 908 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@kintone/mcp-server'
+  name: mcp-server
+  notes: The official MCP Server for kintone. 887 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@mapbox/mcp-server'
+  name: mcp-server
+  notes: Mapbox MCP server.. 791 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@kernlang/mcp-server'
+  name: mcp-server
+  notes: KERN MCP server — compile, review, and analyze .kern files via MCP. 762 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - targetprocess-mcp-server
+  name: targetprocess-mcp-server
+  notes: MCP server for Tartget Process. 758 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - mcp-server-docker
+  name: mcp-server-docker
+  notes: MCP server for executing commands in Docker containers. 677 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@unified-product-graph/mcp-server'
+  name: mcp-server
+  notes: Local MCP server for .upg files. Read and write product knowledge graphs
+    offline.. 652 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@r-huijts/strava-mcp-server'
+  name: strava-mcp-server
+  notes: MCP server for Strava API. 639 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - agent-orchestrator-mcp-server
+  name: agent-orchestrator-mcp-server
+  notes: Local implementation of agent-orchestrator MCP server. 605 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - playwright-mcp-server
+  name: playwright-mcp-server
+  notes: MCP server for generating Playwright tests. 593 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@transloadit/mcp-server'
+  name: mcp-server
+  notes: Transloadit MCP server. 590 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@codefuturist/email-mcp'
+  name: email-mcp
+  notes: Email MCP server with IMAP + SMTP support. 556 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@vapi-ai/mcp-server'
+  name: mcp-server
+  notes: Vapi MCP Server. 437 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@onozaty/redmine-mcp-server'
+  name: redmine-mcp-server
+  notes: MCP server for Redmine. 416 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - codeloop-mcp-server
+  name: codeloop-mcp-server
+  notes: CodeLoop MCP server - verification, self-repair, and recommendation layer
+    for AI coding agents. 390 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - '@convertcom/mcp-server'
+  name: mcp-server
+  notes: MCP server for Convert's A/B testing and experimentation platform. 346 weekly
+    downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - openapi-mcp-server
+  name: openapi-mcp-server
+  notes: MCP server for interacting with openapisearch.com API. 298 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio
+- cmd:
+  - npx
+  - -y
+  - deepl-mcp-server
+  name: deepl-mcp-server
+  notes: MCP server for DeepL translation API. 221 weekly downloads.
+  status: pending
+  tier: D
+  transport: stdio

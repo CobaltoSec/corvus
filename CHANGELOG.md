@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V15-CS02-SCRAPE] — 2026-06-26 — CS02 Target Discovery
+
+- **scraper.py**: discovery npm registry (4 queries, 930 pkgs) + Smithery API (272 servers) → 84 candidatos threshold=200/wk
+- **curate.py**: curaciación semántica 3 capas (SKIP_EXACT 90+/NAME 40+/DESC 8 patrones) + merge run1+run2 por varianza npm
+- **candidates.yaml**: 84 candidatos brutos con metadata (downloads, version, has_bin, auth_required)
+- **curated-keep.yaml**: 49 targets Tier D batchables (23 run2 + 26 run1-únicos)
+- **curated-skip.yaml**: 61 descartados con razón explícita (audit trail)
+- **tier-d-curated.yaml**: 49 entradas listas para targets-master.yaml — **72 servers totales al escanear**
+- Ekoparty CFP relevado: abierto hasta 2026-08-14, probabilidad aceptación ~70-75%
+
 ## [RT-CORVUS-V14] — 2026-06-25 — E2E Final Dataset CS01
 
 - **Re-scan**: 20 targets re-escaneados con Corvus v0.9.0 (`--redone` batch)

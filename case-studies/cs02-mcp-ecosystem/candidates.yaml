@@ -1,0 +1,1162 @@
+candidates:
+- auth_required: false
+  description: MCP server for SAPUI5/OpenUI5 development
+  has_bin: true
+  keywords:
+  - openui5
+  - sapui5
+  - ui5
+  - development
+  - mcp
+  name: '@ui5/mcp-server'
+  version: 0.2.14
+  weekly_downloads: 117814
+- auth_required: false
+  description: Model Context Protocol (MCP) server for Slack Workspaces. This integration
+    supports both Stdio and SSE transports, proxy settings and does not require any
+    permissions or bots being created or approved by Workspace admins
+  has_bin: true
+  keywords:
+  - mcp
+  - slack
+  - slack-api
+  - model context protocol
+  - model
+  - context
+  - protocol
+  name: slack-mcp-server
+  version: 1.3.0
+  weekly_downloads: 32497
+- auth_required: false
+  description: MCP server for terminal operations and file editing
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - terminal
+  - claude
+  - ai
+  - command-line
+  - process-management
+  - file-editing
+  - code-editing
+  - diff
+  - patch
+  - block-editing
+  - file-system
+  - text-manipulation
+  - code-modification
+  - surgical-edits
+  - file-operations
+  name: '@wonderwhy-er/desktop-commander'
+  version: 0.2.43
+  weekly_downloads: 30359
+- auth_required: false
+  description: Official draw.io MCP server for LLMs - Open diagrams in draw.io editor
+  has_bin: true
+  keywords:
+  - mcp
+  - drawio
+  - draw.io
+  - diagrams
+  - mermaid
+  - csv
+  - xml
+  - llm
+  - claude
+  - anthropic
+  name: '@drawio/mcp'
+  version: 1.3.2
+  weekly_downloads: 29897
+- auth_required: false
+  description: MCP server for Microsoft 365 Copilot
+  has_bin: true
+  keywords:
+  - copilot
+  - m365
+  - mcp
+  - mcp-server
+  - ai
+  - agents
+  - workiq
+  name: '@microsoft/workiq'
+  version: 1.0.0
+  weekly_downloads: 23721
+- auth_required: false
+  description: MCP server for Hostinger API
+  has_bin: true
+  keywords:
+  - hostinger
+  - mcp
+  - server
+  - rest
+  - api
+  name: hostinger-api-mcp
+  version: 0.2.17
+  weekly_downloads: 22682
+- auth_required: false
+  description: Apify MCP Server
+  has_bin: true
+  keywords:
+  - apify
+  - mcp
+  - server
+  - actors
+  - model context protocol
+  name: '@apify/actors-mcp-server'
+  version: 0.11.4
+  weekly_downloads: 16924
+- auth_required: false
+  description: MCP Server for the National Park Service (NPS) API, providing real-time
+    information about U.S. National Parks, including park details, alerts, and activities.
+  has_bin: true
+  keywords:
+  - mcp
+  - claude
+  - national-parks
+  - api
+  - anthropic
+  name: mcp-server-nationalparks
+  version: 1.0.1
+  weekly_downloads: 13831
+- auth_required: false
+  description: Shortcut MCP Server
+  has_bin: true
+  keywords:
+  - shortcut
+  - mcp
+  - modelcontextprotocol
+  name: '@shortcut/mcp'
+  version: 0.25.0
+  weekly_downloads: 13675
+- auth_required: false
+  description: 'Brave Search MCP Server: web results, images, videos, rich results,
+    AI summaries, and more.'
+  has_bin: true
+  keywords:
+  - api
+  - brave
+  - mcp
+  - search
+  name: '@brave/brave-search-mcp-server'
+  version: 2.0.85
+  weekly_downloads: 13111
+- auth_required: false
+  description: MCP server for using Alchemy APIs
+  has_bin: true
+  keywords:
+  - alchemy
+  - mcp
+  - model-context-protocol
+  - blockchain
+  name: '@alchemy/mcp-server'
+  version: 0.3.0
+  weekly_downloads: 12645
+- auth_required: false
+  description: BrowserStack's Official MCP Server
+  has_bin: true
+  keywords:
+  - mcp
+  - browserstack
+  - testing
+  - automation
+  name: '@browserstack/mcp-server'
+  version: 1.2.25
+  weekly_downloads: 12415
+- auth_required: false
+  description: MCP server for fetching web content using Playwright browser
+  has_bin: true
+  keywords:
+  - mcp
+  - playwright
+  - web-scraping
+  - readability
+  - content-extraction
+  name: fetcher-mcp
+  version: 0.3.9
+  weekly_downloads: 11973
+- auth_required: false
+  description: MCP server for interacting SmartBear Products
+  has_bin: true
+  keywords:
+  - smartbear
+  - mcp
+  - bugsnag
+  - reflect
+  - swagger
+  - pactflow
+  - zephyr
+  - qtm4j
+  name: '@smartbear/mcp'
+  version: 0.26.1
+  weekly_downloads: 11799
+- auth_required: false
+  description: MCP server bridging Claude Code to Language Server Protocol servers
+  has_bin: true
+  keywords:
+  - mcp
+  - lsp
+  - language-server
+  - claude
+  - code-intelligence
+  name: lsp-mcp-server
+  version: 1.1.20
+  weekly_downloads: 11770
+- auth_required: false
+  description: Aikido MCP server
+  has_bin: true
+  keywords:
+  - aikido
+  - mcp
+  - server
+  - security
+  name: '@aikidosec/mcp'
+  version: 1.0.12
+  weekly_downloads: 10977
+- auth_required: false
+  description: MCP Server and CLI for IronBee DevTools
+  has_bin: true
+  keywords:
+  - ai
+  - mcp
+  - mcp-server
+  - browser
+  - dev-tools
+  - debug
+  name: '@ironbee-ai/devtools'
+  version: 0.13.2
+  weekly_downloads: 10717
+- auth_required: false
+  description: MCP Server for Z.AI - A Model Context Protocol server that provides
+    AI capabilities
+  has_bin: true
+  keywords:
+  - zai
+  - mcp
+  - vision
+  name: '@z_ai/mcp-server'
+  version: 0.1.4
+  weekly_downloads: 10258
+- auth_required: false
+  description: Lara API official MCP server
+  has_bin: true
+  keywords:
+  - mcp
+  - mcpserver
+  - laratranslate
+  - lara
+  - translate
+  - translation
+  - ai
+  - translate
+  - translated
+  name: '@translated/lara-mcp'
+  version: 1.0.6
+  weekly_downloads: 9804
+- auth_required: false
+  description: A Docusaurus plugin that exposes an MCP server endpoint for AI agents
+    to search and retrieve documentation
+  has_bin: true
+  keywords:
+  - docusaurus
+  - docusaurus-plugin
+  - mcp
+  - model-context-protocol
+  - documentation
+  - ai
+  - search
+  - llm
+  - claude
+  - cursor
+  name: docusaurus-plugin-mcp-server
+  version: 0.13.0
+  weekly_downloads: 8794
+- auth_required: false
+  description: Model Context Protocol (MCP) server for Dynatrace
+  has_bin: true
+  keywords:
+  - Dynatrace
+  - mcp
+  - model-context-protocol
+  - server
+  name: '@dynatrace-oss/dynatrace-mcp-server'
+  version: 2.0.1
+  weekly_downloads: 7586
+- auth_required: false
+  description: Official MCP server for esa.io - STDIO transport version
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - esa
+  - esa.io
+  - documentation
+  - knowledge-base
+  name: '@esaio/esa-mcp-server'
+  version: 0.13.0
+  weekly_downloads: 7295
+- auth_required: false
+  description: Argo CD MCP Server
+  has_bin: true
+  keywords:
+  - mcp
+  - argocd
+  - argocd-mcp
+  - argocd-mcp-server
+  - argo-cd
+  - argo-cd-mcp
+  - argo-cd-mcp-server
+  - cicd
+  - cicd-mcp
+  - cicd-mcp-server
+  - gitops
+  - gitops-mcp
+  - gitops-mcp-server
+  - kubernetes
+  - kubernetes-mcp
+  - kubernetes-mcp-server
+  name: argocd-mcp
+  version: 0.8.0
+  weekly_downloads: 7191
+- auth_required: false
+  description: MCP Server for interacting with GrowthBook
+  has_bin: true
+  keywords:
+  - growthbook
+  - mcp
+  - modelcontextprotocol
+  - featureflags
+  - experiments
+  name: '@growthbook/mcp'
+  version: 1.8.1
+  weekly_downloads: 6795
+- auth_required: false
+  description: MCP server for searching Hero Design System components
+  has_bin: true
+  keywords:
+  - mcp
+  - hero-design
+  - components
+  - search
+  name: '@ehrocks/fe-mcp-server'
+  version: 1.0.10
+  weekly_downloads: 6513
+- auth_required: false
+  description: Heroku Platform MCP Server
+  has_bin: true
+  keywords:
+  - heroku
+  - mcp
+  name: '@heroku/mcp-server'
+  version: 1.2.4
+  weekly_downloads: 6309
+- auth_required: false
+  description: A Model Context Protocol (MCP) server for the DataForSEO API, enabling
+    modular and extensible integration of DataForSEO endpoints with support for both
+    HTTP and SSE transports.
+  has_bin: true
+  keywords:
+  - dataforseo
+  - mcp
+  - modelcontextprotocol
+  - api
+  - server
+  - seo
+  - sse
+  - streaming
+  name: dataforseo-mcp-server
+  version: 2.9.9
+  weekly_downloads: 6204
+- auth_required: false
+  description: MCP server for accessing LSP functionality
+  has_bin: true
+  keywords:
+  - mcp
+  - lsp
+  - language-server
+  - model-context-protocol
+  - claude-code
+  name: cclsp
+  version: 0.7.0
+  weekly_downloads: 5309
+- auth_required: false
+  description: MCP server for Storybook - provides AI assistants access to components,
+    stories, properties and screenshots
+  has_bin: true
+  keywords:
+  - mcp
+  - mcp-server
+  - storybook
+  - model-context-protocol
+  - claude
+  - claude-desktop
+  - anthropic
+  - puppeteer
+  - screenshot
+  - visual-testing
+  - component-testing
+  name: storybook-mcp-server
+  version: 0.1.3
+  weekly_downloads: 5254
+- auth_required: false
+  description: A Model Context Protocol (MCP) server that provides comprehensive PostgreSQL
+    database management capabilities for AI assistants
+  has_bin: true
+  keywords:
+  - postgresql
+  - postgres
+  - mcp
+  - database
+  - model-context-protocol
+  - ai
+  - claude
+  - database-management
+  - sql
+  - ai-assistant
+  name: '@henkey/postgres-mcp-server'
+  version: 1.0.7
+  weekly_downloads: 4933
+- auth_required: false
+  description: MCP Server bridge for MG Tickets - connects Cursor to HTTP MCP server
+    with image support and GitHub code exploration
+  has_bin: true
+  keywords:
+  - mcp
+  - tickets
+  - bridge
+  - cursor
+  - mg-software
+  name: '@mgsoftwarebv/mcp-server-bridge'
+  version: 3.5.20
+  weekly_downloads: 4134
+- auth_required: false
+  description: A deliberately malicious MCP server for E2E testing purposes
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - testing
+  - e2e
+  name: malicious-mcp-server
+  version: 1.5.0
+  weekly_downloads: 3967
+- auth_required: false
+  description: Shopify Polaris UI Components MCP Server for AI assistants
+  has_bin: true
+  keywords:
+  - shopify
+  - polaris
+  - mcp
+  - ui
+  - components
+  name: polaris-mcp-server
+  version: 1.0.0
+  weekly_downloads: 3890
+- auth_required: false
+  description: MCP server for building Vue.js design systems - component analysis,
+    documentation, variant generation, and design tokens
+  has_bin: true
+  keywords:
+  - ai
+  - component-analysis
+  - design-system
+  - mcp
+  - model-context-protocol
+  - musea
+  - vue
+  name: '@vizejs/musea-mcp-server'
+  version: 0.262.0
+  weekly_downloads: 3889
+- auth_required: false
+  description: A Model Context Protocol (MCP) server for Ragie
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - ragie
+  - knowledge-base
+  - retrieval
+  - ai
+  - claude
+  - anthropic
+  name: '@ragieai/mcp-server'
+  version: 1.0.0
+  weekly_downloads: 3827
+- auth_required: false
+  description: Element MCP server
+  has_bin: true
+  keywords:
+  - element
+  - mcp
+  - ai
+  name: '@siemens/element-mcp'
+  version: 49.12.0-v.1.11.1
+  weekly_downloads: 3605
+- auth_required: false
+  description: MCP Server for Microsoft Clarity based on data export API
+  has_bin: true
+  keywords:
+  - clarity
+  - behavior-analytics-tools
+  - heatmaps
+  - session-recordings
+  - insights
+  - analytics
+  - mcp
+  - model-context-protocol
+  - ai
+  - agents
+  name: '@microsoft/clarity-mcp-server'
+  version: 2.0.1
+  weekly_downloads: 3333
+- auth_required: false
+  description: Knip MCP Server
+  has_bin: true
+  keywords:
+  - knip
+  - mcp
+  - model-context-protocol
+  name: '@knip/mcp'
+  version: 0.0.32
+  weekly_downloads: 3174
+- auth_required: false
+  description: MCP server for Kapture browser automation
+  has_bin: true
+  keywords:
+  - mcp
+  - browser-automation
+  - chrome-extension
+  - kapture
+  - devtools
+  name: kapture-mcp
+  version: 2.6.0
+  weekly_downloads: 2938
+- auth_required: false
+  description: Model Context Protocol (MCP) server for MediaWiki
+  has_bin: true
+  keywords:
+  - modelcontextprotocol
+  - mcp
+  - mediawiki
+  - wiki
+  - wikipedia
+  - wikimedia
+  - knowledge
+  - wikibase
+  - smw
+  name: '@professional-wiki/mediawiki-mcp-server'
+  version: 0.13.0
+  weekly_downloads: 2844
+- auth_required: false
+  description: Official MCP server for Qase Test Management Platform
+  has_bin: true
+  keywords:
+  - mcp
+  - qase
+  - testing
+  - test-management
+  - model-context-protocol
+  - test-automation
+  - qa
+  - quality-assurance
+  - test-cases
+  - test-runs
+  - defect-tracking
+  - claude
+  - ai-assistant
+  - llm
+  - anthropic
+  name: '@qase/mcp-server'
+  version: 1.1.8
+  weekly_downloads: 2690
+- auth_required: false
+  description: PaPut MCP Server
+  has_bin: true
+  keywords:
+  - mcp
+  - paput
+  - ai
+  - assistant
+  - memo
+  - output
+  name: paput-mcp
+  version: 4.2.12
+  weekly_downloads: 2534
+- auth_required: false
+  description: MCP server for Mantine documentation
+  has_bin: true
+  keywords:
+  - ai
+  - docs
+  - mantine
+  - mcp
+  - model-context-protocol
+  - react
+  name: '@mantine/mcp-server'
+  version: 9.4.0
+  weekly_downloads: 2390
+- auth_required: false
+  description: SSH-based MCP Server (基于 SSH 的 MCP 服务器)
+  has_bin: true
+  keywords:
+  - ssh
+  - mcp
+  - server
+  - cli
+  name: '@fangjunjie/ssh-mcp-server'
+  version: 1.8.4
+  weekly_downloads: 2373
+- auth_required: false
+  description: MCP server for ioBroker
+  has_bin: false
+  keywords:
+  - ioBroker
+  - mcp
+  - server
+  name: '@iobroker/mcp-server'
+  version: 0.0.2
+  weekly_downloads: 2331
+- auth_required: false
+  description: DoiT official MCP Server
+  has_bin: true
+  keywords:
+  - doit
+  - mcp
+  - mcp-server
+  name: '@doitintl/doit-mcp-server'
+  version: 0.14.1
+  weekly_downloads: 2322
+- auth_required: false
+  description: An MCP server for Trello boards, powered by Bun for maximum performance.
+  has_bin: true
+  keywords:
+  - mcp
+  - trello
+  - bun
+  - automation
+  - productivity
+  - model-context-protocol
+  - api
+  - integration
+  - typescript
+  - board-management
+  - task-management
+  - kanban
+  name: '@delorenj/mcp-server-trello'
+  version: 1.7.1
+  weekly_downloads: 2312
+- auth_required: false
+  description: MCP server for React Native app automation and monitoring
+  has_bin: true
+  keywords:
+  - automation
+  - mcp
+  - model-context-protocol
+  - monitoring
+  - react-native
+  name: '@ohah/react-native-mcp-server'
+  version: 0.1.0-rc.14
+  weekly_downloads: 2165
+- auth_required: false
+  description: MCP server for interacting with Runpod API
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - runpod
+  - server
+  - api
+  name: '@runpod/mcp-server'
+  version: 1.3.0
+  weekly_downloads: 1958
+- auth_required: false
+  description: VibeFrame MCP Server - AI-native video editing via Model Context Protocol
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - vibeframe
+  - video-editing
+  - ai
+  - claude-desktop
+  - cursor
+  name: '@vibeframe/mcp-server'
+  version: 0.113.11
+  weekly_downloads: 1939
+- auth_required: false
+  description: MCP server for interacting with your LINE Official Account
+  has_bin: true
+  keywords:
+  - line
+  - bot
+  - mcp
+  name: '@line/line-bot-mcp-server'
+  version: 0.5.0
+  weekly_downloads: 1931
+- auth_required: false
+  description: Extentos MCP server — deterministic tools for building Meta-glasses
+    apps.
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - meta-glasses
+  - ray-ban
+  - extentos
+  - ai-agents
+  - claude-code
+  name: '@extentos/mcp-server'
+  version: 0.8.2
+  weekly_downloads: 1742
+- auth_required: false
+  description: MCP server for Glean API integration
+  has_bin: true
+  keywords:
+  - mcp
+  - mcp-server
+  name: '@gleanwork/local-mcp-server'
+  version: 0.10.1
+  weekly_downloads: 1739
+- auth_required: false
+  description: MCP server for interacting with Kusto databases
+  has_bin: true
+  keywords:
+  - mcp
+  - kusto
+  - azure-data-explorer
+  - model-context-protocol
+  - adx
+  - database
+  - query
+  - analytics
+  - data-analysis
+  - copilot
+  - ai-assistant
+  name: '@mcp-apps/kusto-mcp-server'
+  version: 1.0.47
+  weekly_downloads: 1586
+- auth_required: false
+  description: MCP server for Rosetta/PyRosetta functions and properties
+  has_bin: true
+  keywords:
+  - mcp
+  - rosetta
+  - pyrosetta
+  - protein
+  - modeling
+  - bioinformatics
+  - mcp-server
+  - model-context-protocol
+  - biotite
+  name: rosetta-mcp-server
+  version: 1.3.1
+  weekly_downloads: 1555
+- auth_required: false
+  description: mcp server
+  has_bin: true
+  keywords:
+  - mcp
+  name: mcp-server
+  version: 0.0.9
+  weekly_downloads: 1514
+- auth_required: false
+  description: Kibana MCP Server
+  has_bin: true
+  keywords:
+  - kibana
+  - mcp
+  - mcp-server
+  - elasticsearch
+  - model-context-protocol
+  - elastic-stack
+  - observability
+  - monitoring
+  - dashboard
+  - visualization
+  - analytics
+  - logs
+  - metrics
+  - apm
+  - claude
+  - anthropic
+  - api-management
+  - openapi
+  - devops
+  - elastic
+  name: '@tocharianou/mcp-server-kibana'
+  version: 0.8.0
+  weekly_downloads: 1493
+- auth_required: false
+  description: AgentMail MCP Server
+  has_bin: true
+  keywords:
+  - agentmail
+  - mcp
+  - server
+  - tools
+  name: agentmail-mcp
+  version: 0.2.2
+  weekly_downloads: 1461
+- auth_required: false
+  description: '''Slite MCP server'''
+  has_bin: true
+  keywords:
+  - slite
+  - mcp
+  - llm
+  - nodejs
+  - client
+  - search
+  name: slite-mcp-server
+  version: 1.3.0
+  weekly_downloads: 1427
+- auth_required: false
+  description: MCP server for Social Neuron - AI content creation platform
+  has_bin: true
+  keywords:
+  - mcp
+  - mcp-server
+  - model-context-protocol
+  - ai
+  - social-media
+  - social-media-management
+  - content-creation
+  - content-scheduling
+  - marketing
+  - automation
+  - analytics
+  - youtube
+  - tiktok
+  - instagram
+  - linkedin
+  name: '@socialneuron/mcp-server'
+  version: 1.7.12
+  weekly_downloads: 1383
+- auth_required: false
+  description: Serper MCP Server supporting search and webpage scraping
+  has_bin: true
+  keywords:
+  - mcp
+  - serper
+  - search
+  - scrape
+  - claude
+  - claude-desktop
+  - modelcontextprotocol
+  name: serper-search-scrape-mcp-server
+  version: 0.1.2
+  weekly_downloads: 1306
+- auth_required: false
+  description: Code Runner MCP Server
+  has_bin: true
+  keywords:
+  - mcp
+  - code-runner
+  - server
+  name: mcp-server-code-runner
+  version: 0.1.8
+  weekly_downloads: 1248
+- auth_required: false
+  description: Official MCP server for Anytype API
+  has_bin: true
+  keywords:
+  - anytype
+  - api
+  - mcp
+  - server
+  name: '@anyproto/anytype-mcp'
+  version: 1.2.8
+  weekly_downloads: 1240
+- auth_required: false
+  description: Model Context Protocol (MCP) server for n8n workflow automation
+  has_bin: true
+  keywords:
+  - mcp
+  - n8n
+  - workflow
+  - automation
+  - ai
+  name: '@leonardsellem/n8n-mcp-server'
+  version: 0.1.8
+  weekly_downloads: 1172
+- auth_required: false
+  description: MCP server wrapper for OpenAI Codex CLI
+  has_bin: true
+  keywords:
+  - mcp
+  - codex
+  - openai
+  - claude
+  - ai
+  - cli
+  name: codex-mcp-server
+  version: 1.4.10
+  weekly_downloads: 1043
+- auth_required: false
+  description: Unthread MCP Server
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - unthread
+  name: '@unthread-io/mcp-server'
+  version: 1.3.1
+  weekly_downloads: 914
+- auth_required: false
+  description: MCP Server for Regle
+  has_bin: true
+  keywords:
+  - ai
+  - forms
+  - mcp
+  - model-context-protocol
+  - regle
+  - validation
+  - vue
+  name: '@regle/mcp-server'
+  version: 1.28.1
+  weekly_downloads: 908
+- auth_required: false
+  description: The official MCP Server for kintone
+  has_bin: true
+  keywords:
+  - kintone
+  - mcp
+  - modelcontextprotocol
+  name: '@kintone/mcp-server'
+  version: 1.6.0
+  weekly_downloads: 887
+- auth_required: false
+  description: Mapbox MCP server.
+  has_bin: true
+  keywords:
+  - mapbox
+  - mcp
+  name: '@mapbox/mcp-server'
+  version: 0.12.5
+  weekly_downloads: 791
+- auth_required: false
+  description: KERN MCP server — compile, review, and analyze .kern files via MCP
+  has_bin: true
+  keywords:
+  - kern
+  - mcp
+  - model-context-protocol
+  - ai
+  - llm
+  - dsl
+  - compiler
+  - transpiler
+  - code-generation
+  - review
+  - security
+  - claude
+  - cursor
+  - react
+  - nextjs
+  - express
+  - vue
+  name: '@kernlang/mcp-server'
+  version: 4.1.0
+  weekly_downloads: 762
+- auth_required: false
+  description: MCP server for Tartget Process
+  has_bin: true
+  keywords:
+  - mcp
+  - tp
+  - mcp-server
+  - targetprocess
+  - targetprocess-server
+  name: targetprocess-mcp-server
+  version: 2.5.0
+  weekly_downloads: 758
+- auth_required: false
+  description: MCP server for executing commands in Docker containers
+  has_bin: true
+  keywords:
+  - mcp
+  - docker
+  - model-context-protocol
+  - cli
+  - container
+  name: mcp-server-docker
+  version: 1.0.0
+  weekly_downloads: 677
+- auth_required: false
+  description: Local MCP server for .upg files. Read and write product knowledge graphs
+    offline.
+  has_bin: true
+  keywords:
+  - mcp
+  - upg
+  - unified-product-graph
+  - product-management
+  - model-context-protocol
+  - knowledge-graph
+  name: '@unified-product-graph/mcp-server'
+  version: 0.16.2
+  weekly_downloads: 652
+- auth_required: false
+  description: MCP server for Strava API
+  has_bin: true
+  keywords:
+  - mcp
+  - strava
+  - llm
+  - ai
+  name: '@r-huijts/strava-mcp-server'
+  version: 1.2.1
+  weekly_downloads: 639
+- auth_required: false
+  description: Local implementation of agent-orchestrator MCP server
+  has_bin: true
+  keywords:
+  - mcp
+  - model-context-protocol
+  - claude-code
+  - agent-orchestrator
+  - pulsemcp
+  name: agent-orchestrator-mcp-server
+  version: 0.8.8
+  weekly_downloads: 605
+- auth_required: false
+  description: MCP server for generating Playwright tests
+  has_bin: true
+  keywords:
+  - playwright
+  - testing
+  - mcp
+  - cursor
+  - automation
+  name: playwright-mcp-server
+  version: 1.0.0
+  weekly_downloads: 593
+- auth_required: false
+  description: Transloadit MCP server
+  has_bin: true
+  keywords:
+  - mcp
+  - mcp-server
+  - model-context-protocol
+  - ai
+  - agent
+  - llm
+  - claude
+  - transloadit
+  - media
+  - video
+  - image
+  - audio
+  - document-processing
+  - file-processing
+  - upload
+  - encoding
+  - transcoding
+  name: '@transloadit/mcp-server'
+  version: 0.3.27
+  weekly_downloads: 590
+- auth_required: false
+  description: Email MCP server with IMAP + SMTP support
+  has_bin: true
+  keywords:
+  - email
+  - mcp
+  - imap
+  - smtp
+  - model-context-protocol
+  - mcp-server
+  - claude
+  - anthropic
+  - ai-tools
+  - llm
+  - nodejs
+  name: '@codefuturist/email-mcp'
+  version: 0.2.3
+  weekly_downloads: 556
+- auth_required: false
+  description: Vapi MCP Server
+  has_bin: true
+  keywords:
+  - vapi
+  - mcp
+  - model-context-protocol
+  - ai
+  - claude
+  - voice-api
+  - tool-calling
+  name: '@vapi-ai/mcp-server'
+  version: 0.0.9
+  weekly_downloads: 437
+- auth_required: false
+  description: MCP server for Redmine
+  has_bin: true
+  keywords:
+  - mcp
+  - modelcontextprotocol
+  - redmine
+  name: '@onozaty/redmine-mcp-server'
+  version: 1.2.0
+  weekly_downloads: 416
+- auth_required: false
+  description: CodeLoop MCP server - verification, self-repair, and recommendation
+    layer for AI coding agents
+  has_bin: true
+  keywords:
+  - codeloop
+  - mcp
+  - mcp-server
+  - model-context-protocol
+  - cursor
+  - cursor-ide
+  - claude-code
+  - testing
+  - verification
+  - ai-coding
+  - ai-agent
+  - ai-qa
+  - bugbot-alternative
+  - visual-regression
+  - playwright
+  - flutter
+  - design-compare
+  - gate-check
+  name: codeloop-mcp-server
+  version: 0.1.96
+  weekly_downloads: 390
+- auth_required: false
+  description: MCP server for Convert's A/B testing and experimentation platform
+  has_bin: true
+  keywords:
+  - mcp
+  - convert.com
+  - convertcom
+  name: '@convertcom/mcp-server'
+  version: 0.0.1-beta.13
+  weekly_downloads: 346
+- auth_required: false
+  description: MCP server for interacting with openapisearch.com API
+  has_bin: true
+  keywords:
+  - openapi
+  - mcp
+  - server
+  - proxy
+  name: openapi-mcp-server
+  version: 2.1.0
+  weekly_downloads: 298
+- auth_required: false
+  description: MCP server for DeepL translation API
+  has_bin: true
+  keywords:
+  - deepl
+  - mcp
+  - translation
+  - claude
+  - ai
+  name: deepl-mcp-server
+  version: 1.1.0
+  weekly_downloads: 221
+meta:
+  min_downloads: 200
+  total: 84
