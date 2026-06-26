@@ -1,0 +1,465 @@
+meta:
+  case_study: CS02
+  description: OWASP MCP Ecosystem Audit — Tier D community servers (49 targets)
+  corvus_version: 0.9.0
+targets:
+- name: ui5-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ui5/mcp-server'
+  status: error
+  notes: MCP server for SAPUI5/OpenUI5 development. SAP UI5 dev tools — large schema
+    surface 117,814/wk.
+  last_scanned: '2026-06-26'
+  findings_summary: ERROR (no report.json)
+- name: nx-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - nx-mcp
+  status: skip
+  notes: Nx monorepo dev tools. SKIP — cuelga buscando workspace Nx, nunca conecta
+    al MCP handshake 58,168/wk.
+- name: desktop-commander
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@wonderwhy-er/desktop-commander'
+  status: pending
+  notes: MCP server for terminal operations and file editing. Terminal + file editing
+    (30+ tools) — huge attack surface 30,359/wk.
+- name: drawio-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@drawio/mcp'
+  status: skip
+  notes: Official draw.io MCP server for LLMs. SKIP — abre draw.io UI visible 29,897/wk.
+- name: mcp-server-nationalparks
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-nationalparks
+  status: pending
+  notes: MCP Server for the National Park Service (NPS) API. Public API — schema quality
+    surface 13,831/wk.
+- name: fetcher-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - fetcher-mcp
+  status: skip
+  notes: MCP server for fetching web content using Playwright browser. SKIP — abre
+    Chrome visible (Playwright) 11,973/wk.
+- name: lsp-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - lsp-mcp-server
+  status: pending
+  notes: MCP server bridging Claude Code to Language Server Protocol servers. LSP
+    bridge — protocol attack surface 11,770/wk.
+- name: obsidian-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - obsidian-mcp-server
+  status: pending
+  notes: Obsidian vault read/write via REST API plugin. File system access 5,866/wk.
+- name: cclsp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - cclsp
+  status: pending
+  notes: MCP server for accessing LSP functionality. Code intelligence attack surface
+    5,309/wk.
+- name: postgres-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@henkey/postgres-mcp-server'
+  status: pending
+  notes: PostgreSQL database management capabilities for AI assistants. SQL injection
+    surface (test DB) 4,933/wk.
+- name: duckduckgo-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ericthered926/duckduckgo-mcp-server'
+  status: pending
+  notes: DuckDuckGo search integration. Web interaction surface 4,055/wk.
+- name: malicious-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - malicious-mcp-server
+  status: pending
+  notes: A deliberately malicious MCP server for E2E testing purposes. High attack
+    surface by design 3,967/wk.
+- name: musea-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vizejs/musea-mcp-server'
+  status: pending
+  notes: MCP server for building Vue.js design systems. Component analysis, documentation,
+    variant generation 3,889/wk.
+- name: flightradar-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - flightradar-mcp-server
+  status: pending
+  notes: Flight tracking via Flightradar24 public API. Public API surface 3,625/wk.
+- name: element-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@siemens/element-mcp'
+  status: pending
+  notes: Siemens Element design system MCP server. Schema quality 3,605/wk.
+- name: pubmed-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/pubmed-mcp-server'
+  status: pending
+  notes: PubMed biomedical literature search. Public API — large schema surface 3,385/wk.
+- name: shadcn-ui-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@jpisnice/shadcn-ui-mcp-server'
+  status: pending
+  notes: shadcn/ui component docs and generation. Schema quality 3,046/wk.
+- name: mcp-server-hotnews
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@wopal/mcp-server-hotnews'
+  status: pending
+  notes: Chinese trending topics aggregator. Public API scraping 2,944/wk.
+- name: mediawiki-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@professional-wiki/mediawiki-mcp-server'
+  status: pending
+  notes: Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
+    2,844/wk.
+- name: mantine-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mantine/mcp-server'
+  status: pending
+  notes: MCP server for Mantine documentation. Schema quality 2,390/wk.
+- name: ssh-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@fangjunjie/ssh-mcp-server'
+  status: pending
+  notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk.
+- name: mcp-webresearch
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mzxrai/mcp-webresearch'
+  status: skip
+  notes: Web research + scraping via Puppeteer. SKIP — abre Chrome visible (Puppeteer)
+    2,201/wk.
+- name: korean-law-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - korean-law-mcp
+  status: pending
+  notes: Korean law database. Public API — schema + injection surface 2,039/wk.
+- name: remnux-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@remnux/mcp-server'
+  status: pending
+  notes: REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
+- name: mcp-javadc
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@idachev/mcp-javadc'
+  status: pending
+  notes: Java decompiler. Binary analysis / file processing surface 1,767/wk.
+- name: mcp-fetch
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@kazuph/mcp-fetch'
+  status: pending
+  notes: Fetch URL + save images. SSRF + path write 1,729/wk.
+- name: docx-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@usejunior/docx-mcp'
+  status: pending
+  notes: DOCX read/write operations. File processing + path ops 1,478/wk.
+- name: spartan-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@spartan-ng/mcp'
+  status: pending
+  notes: Spartan Angular UI component docs. Schema quality 1,455/wk.
+- name: mcp-postgres
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-postgres
+  status: pending
+  notes: PostgreSQL MCP — query execution (test DB). SQL injection surface 1,396/wk.
+- name: markmap-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@jinzcdev/markmap-mcp-server'
+  status: pending
+  notes: Markmap mind-map generation from Markdown 1,319/wk.
+- name: mcp-server-code-runner
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-code-runner
+  status: pending
+  notes: Code Runner MCP Server. Code execution attack surface 1,248/wk.
+- name: mcp-read-website-fast
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@just-every/mcp-read-website-fast'
+  status: pending
+  notes: Fast web content fetch. SSRF attack surface 1,233/wk.
+- name: mcp-screenshot-website-fast
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@just-every/mcp-screenshot-website-fast'
+  status: skip
+  notes: Screenshot via Puppeteer. SKIP — abre Chrome visible (Puppeteer) 1,138/wk.
+- name: mysql-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mysql-mcp-server
+  status: pending
+  notes: MySQL read-only queries (test DB). SQL surface 1,060/wk.
+- name: drawio-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - drawio-mcp-server
+  status: skip
+  notes: Draw.io diagram editing. SKIP — abre draw.io UI visible 925/wk.
+- name: regle-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@regle/mcp-server'
+  status: pending
+  notes: MCP Server for Regle 908/wk.
+- name: jamf-docs-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@get-technology-inc/jamf-docs-mcp-server'
+  status: pending
+  notes: Jamf MDM documentation server 905/wk.
+- name: european-parliament-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - european-parliament-mcp-server
+  status: pending
+  notes: EU Parliament open data. Public API surface 889/wk.
+- name: fetch-url-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@j0hanz/fetch-url-mcp'
+  status: pending
+  notes: URL fetch → markdown conversion. SSRF attack surface 839/wk.
+- name: myclaw-toolkit
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - myclaw-toolkit
+  status: pending
+  notes: 23-in-1 dev toolkit (search, crypto, QR, rates, etc.) 787/wk.
+- name: kernlang-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@kernlang/mcp-server'
+  status: pending
+  notes: KERN DSL compiler. Code exec + file write surface 762/wk.
+- name: mcp-server-docker
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-docker
+  status: pending
+  notes: MCP server for executing commands in Docker containers. Container escape
+    surface 677/wk.
+- name: upg-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@unified-product-graph/mcp-server'
+  status: pending
+  notes: Local MCP server for .upg files. Path traversal surface 652/wk.
+- name: mcp-mysql-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@berthojoris/mcp-mysql-server'
+  status: pending
+  notes: MySQL per-project permission model. SQL injection surface 636/wk.
+- name: agent-orchestrator-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agent-orchestrator-mcp-server
+  status: pending
+  notes: Local implementation of agent-orchestrator MCP server. Tool injection + scope
+    surface 605/wk.
+- name: playwright-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - playwright-mcp-server
+  status: pending
+  notes: MCP server for generating Playwright tests (distinct from @playwright/mcp).
+    Schema surface 593/wk.
+- name: desktop-touch-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@harusame64/desktop-touch-mcp'
+  status: skip
+  notes: Windows desktop automation — 29 tools. SKIP — interactúa con el desktop directamente
+    573/wk.
+- name: codeloop-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - codeloop-mcp-server
+  status: pending
+  notes: CodeLoop verification, self-repair, and recommendation layer for AI coding
+    agents 390/wk.
+- name: openapi-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - openapi-mcp-server
+  status: pending
+  notes: MCP server for interacting with openapisearch.com API 298/wk.

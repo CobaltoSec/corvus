@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V16-CS02-SETUP] — 2026-06-26 — CS02 Scan Infrastructure
+
+- **targets-master.yaml** (CS02): 49 Tier D targets con nombres únicos derivados de scope npm — sin colisiones en output dirs
+- **cs02.py**: CLI de scan/status/update/add para CS02 (fork de cs01.py, tier D support, 42 pending)
+- **Skips documentados** (7): draw.io x2 (abren UI), fetcher-mcp/mcp-webresearch/mcp-screenshot (Playwright/Puppeteer), desktop-touch-mcp (OS automation), nx-mcp (cuelga buscando workspace Nx)
+- **Bug identificado**: `StdioTransport` timeout 30s aplica al MCP handshake pero NO al startup del proceso — fix pendiente en `stdio.py`
+- **Gap analysis malicious-mcp-server v1.5.0**: 3 gaps concretos en Corvus documentados (inputSchema credential harvesting MCP02, output_encoding módulo nuevo, resource content scan MCP01)
+- **OWASP MCP Top 10 coverage**: 4 completos, 4 parciales, 1 by-design (MCP09), 0 sin módulo tras identificar gaps
+- **Visión 30-40d**: documentada en SIGUIENTE.md — dataset 200+ servers, v1.0, arXiv, Ekoparty
+
 ## [RT-CORVUS-V15-CS02-SCRAPE] — 2026-06-26 — CS02 Target Discovery
 
 - **scraper.py**: discovery npm registry (4 queries, 930 pkgs) + Smithery API (272 servers) → 84 candidatos threshold=200/wk
