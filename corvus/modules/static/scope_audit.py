@@ -1,11 +1,26 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from ..base import ScanModule
 from ...core.models import Finding, MCPSurface, OWASPCategory, Severity
 from ...core.session import ScanSession
 from ...transport.base import MCPTransport
+
+# inputSchema field names that indicate credential harvesting (HIGH)
+_HIGH_SCHEMA_RE = re.compile(
+    r"password|secret|jwt|(?:api|auth|access|signing)[_\-]?key"
+    r"|credential|private[_\-]?key|passphrase|client[_\-]?secret",
+    re.I,
+)
+
+# inputSchema field names that indicate PII collection (MEDIUM)
+_MEDIUM_SCHEMA_RE = re.compile(
+    r"\bssn\b|social[_\-]?security|credit[_\-]?card"
+    r"|medical[_\-]?record|driver[_\-]?licen|passport|date[_\-]?of[_\-]?birth|bank[_\-]?account",
+    re.I,
+)
 
 # Tool name contains privilege keyword anywhere
 _HIGH_NAME_SCOPE = re.compile(
@@ -60,6 +75,9 @@ class ScopeAuditModule(ScanModule):
             result = self._check(tool.name, tool.description)
             if result:
                 findings.append(result)
+            schema_result = self._check_schema(tool.name, tool.input_schema)
+            if schema_result:
+                findings.append(schema_result)
         return findings
 
     def _check(self, name: str, description: str) -> Finding | None:
@@ -150,5 +168,53 @@ class ScopeAuditModule(ScanModule):
                     ),
                     confidence=70,
                 )
+
+        return None
+
+    def _check_schema(self, name: str, input_schema: dict[str, Any]) -> Finding | None:
+        properties = input_schema.get("properties", {})
+        if not isinstance(properties, dict) or not properties:
+            return None
+
+        high_fields = [f for f in properties if _HIGH_SCHEMA_RE.search(f)]
+        medium_fields = [f for f in properties if _MEDIUM_SCHEMA_RE.search(f) and f not in high_fields]
+
+        if high_fields:
+            return Finding(
+                owasp_category=OWASPCategory.MCP02_SCOPE_CREEP,
+                severity=Severity.HIGH,
+                title=f"Scope Creep — '{name}' inputSchema requests credential fields",
+                description=(
+                    f"Tool '{name}' inputSchema declares field(s) associated with credentials "
+                    f"or secrets: {', '.join(high_fields)}. This may indicate the tool harvests "
+                    "authentication material from the LLM caller."
+                ),
+                tool_name=name,
+                evidence=f"inputSchema properties: {', '.join(high_fields)}",
+                remediation=(
+                    "Do not accept raw credentials as tool input parameters. "
+                    "Use secure credential stores and reference by identifier, not value."
+                ),
+                confidence=80,
+            )
+
+        if medium_fields:
+            return Finding(
+                owasp_category=OWASPCategory.MCP02_SCOPE_CREEP,
+                severity=Severity.MEDIUM,
+                title=f"Scope Creep — '{name}' inputSchema requests PII fields",
+                description=(
+                    f"Tool '{name}' inputSchema declares field(s) associated with PII: "
+                    f"{', '.join(medium_fields)}. Collecting PII through MCP tools may violate "
+                    "data minimization principles and privacy regulations."
+                ),
+                tool_name=name,
+                evidence=f"inputSchema properties: {', '.join(medium_fields)}",
+                remediation=(
+                    "Review whether collecting this PII is strictly necessary. "
+                    "Apply data minimization and ensure appropriate consent and handling."
+                ),
+                confidence=70,
+            )
 
         return None

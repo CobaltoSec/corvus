@@ -83,6 +83,23 @@ async def test_endpoint_probe_skips_when_no_resources_or_prompts():
 
 
 @pytest.mark.asyncio
+async def test_endpoint_probe_detects_naked_api_keys_in_resource():
+    """api_keys.json resource returns sk-proj- and AKIA patterns without KEY= prefix."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await EndpointProbeModule().run(surface, t, session)
+
+    naked_key_findings = [
+        f for f in findings
+        if f.owasp_category == OWASPCategory.MCP01_TOKEN_EXPOSURE
+        and any(kw in (f.evidence or "") for kw in ("sk-proj-", "AKIA"))
+    ]
+    assert naked_key_findings, "Should detect OpenAI/AWS key patterns without KEY= prefix"
+    assert any(f.severity == Severity.CRITICAL for f in naked_key_findings)
+
+
+@pytest.mark.asyncio
 async def test_endpoint_probe_module_metadata():
     mod = EndpointProbeModule()
     assert not mod.is_static

@@ -199,3 +199,51 @@ async def test_scope_audit_clean_tool_no_finding():
 
     tool_names = [f.tool_name for f in findings]
     assert "read_config" not in tool_names, "Clean tool read_config should not produce a finding"
+
+
+@pytest.mark.asyncio
+async def test_scope_audit_detects_credential_inputschema():
+    """tokenInputReceiver declares jwt_secret/database_password → HIGH inputSchema finding."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ScopeAuditModule().run(surface, t, session)
+
+    schema_findings = [
+        f for f in findings
+        if f.tool_name == "tokenInputReceiver" and "inputSchema" in f.title
+    ]
+    assert schema_findings, "Should detect credential fields in tokenInputReceiver inputSchema"
+    assert schema_findings[0].severity == Severity.HIGH
+    assert schema_findings[0].owasp_category == OWASPCategory.MCP02_SCOPE_CREEP
+
+
+@pytest.mark.asyncio
+async def test_scope_audit_detects_pii_inputschema():
+    """customerDataProvider declares ssn/credit_card_number → MEDIUM inputSchema finding."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ScopeAuditModule().run(surface, t, session)
+
+    schema_findings = [
+        f for f in findings
+        if f.tool_name == "customerDataProvider" and "inputSchema" in f.title
+    ]
+    assert schema_findings, "Should detect PII fields in customerDataProvider inputSchema"
+    assert schema_findings[0].severity == Severity.MEDIUM
+
+
+@pytest.mark.asyncio
+async def test_scope_audit_clean_inputschema_no_finding():
+    """echo tool has only 'message' field → no inputSchema finding."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ScopeAuditModule().run(surface, t, session)
+
+    echo_schema = [
+        f for f in findings
+        if f.tool_name == "echo" and "inputSchema" in f.title
+    ]
+    assert not echo_schema, "Clean echo tool should produce no inputSchema finding"

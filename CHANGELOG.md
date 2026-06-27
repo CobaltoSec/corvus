@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V16] — 2026-06-27 — Watchdog fix + Gap 1+3 detection
+
+- **`stdio.py`** — `startup_timeout=45s`: watchdog task + kill-on-timeout en `send_request`; asyncio version parcial (threading.Timer pendiente para Windows ProactorEventLoop)
+- **Gap 1 — `scope_audit.py`**: `_check_schema()` detecta credential fields (HIGH: `password`, `secret`, `jwt`, `api_key`, etc.) y PII fields (MEDIUM: `ssn`, `credit_card`, `medical_record`, etc.) en `inputSchema` de tools
+- **Gap 3 — `endpoint_probe.py`**: 5 patrones naked credential value en `_TOKEN_SIGNALS`: `sk-proj-`, `AKIA[0-9A-Z]{16}`, `sk_live_`, `ghp_`, `xoxb-`
+- **mock_server.py**: tools `tokenInputReceiver` (credential fields HIGH) + `customerDataProvider` (PII fields MEDIUM) + resource `api_keys.json` (naked keys)
+- **Tests**: 160 → 164 (3 scope_audit inputSchema + 1 endpoint_probe naked keys)
+- **CS02 scan**: bloqueado por watchdog asyncio inefectivo en Windows — diferido a fix threading.Timer
+
 ## [RT-CORVUS-V16-CS02-SETUP] — 2026-06-26 — CS02 Scan Infrastructure
 
 - **targets-master.yaml** (CS02): 49 Tier D targets con nombres únicos derivados de scope npm — sin colisiones en output dirs

@@ -26,13 +26,15 @@ class StdioTransport(MCPTransport):
     Communicates via stdin/stdout using newline-delimited JSON-RPC 2.0.
     """
 
-    def __init__(self, command: list[str], timeout: float = 30.0, log_requests: bool = False):
+    def __init__(self, command: list[str], timeout: float = 30.0, log_requests: bool = False, startup_timeout: float = 45.0):
         self.command = command
         self.timeout = timeout
+        self._startup_timeout = startup_timeout
         self._log_requests = log_requests
         self._process: asyncio.subprocess.Process | None = None
         self._req_id = 0
         self._exchanges: list[RawExchange] = []
+        self._watchdog_task: asyncio.Task | None = None
 
     @property
     def exchanges(self) -> list[RawExchange]:
@@ -86,7 +88,24 @@ class StdioTransport(MCPTransport):
         except asyncio.TimeoutError:
             pass  # Still running — startup OK
 
+        # Startup watchdog: kills the process if it doesn't respond within startup_timeout.
+        # Defends against npx hanging on workspace/config lookup before the MCP handshake
+        # (Windows ProactorEventLoop doesn't reliably cancel asyncio readline on dead pipes).
+        if self._startup_timeout > 0:
+            self._watchdog_task = asyncio.create_task(self._kill_after(self._startup_timeout))
+
+    async def _kill_after(self, delay: float) -> None:
+        await asyncio.sleep(delay)
+        if self._process and self._process.returncode is None:
+            try:
+                self._process.kill()
+            except (ProcessLookupError, OSError):
+                pass
+
     async def disconnect(self) -> None:
+        if self._watchdog_task and not self._watchdog_task.done():
+            self._watchdog_task.cancel()
+            self._watchdog_task = None
         if self._process is None:
             return
         try:
@@ -113,9 +132,14 @@ class StdioTransport(MCPTransport):
             remaining = self.timeout - elapsed
             if remaining <= 0:
                 raise asyncio.TimeoutError()
-            raw = await asyncio.wait_for(
-                self._process.stdout.readline(), timeout=remaining
-            )
+            try:
+                raw = await asyncio.wait_for(
+                    self._process.stdout.readline(), timeout=remaining
+                )
+            except asyncio.TimeoutError:
+                if self._process and self._process.returncode is None:
+                    self._process.kill()
+                raise
             if not raw:
                 raise RuntimeError("Server closed stdout unexpectedly")
             response = json.loads(raw.decode())
@@ -138,6 +162,9 @@ class StdioTransport(MCPTransport):
             raise JSONRPCError(err.get("code", -1), err.get("message", "unknown"), err.get("data"))
 
         result = response.get("result")
+        if self._watchdog_task and not self._watchdog_task.done():
+            self._watchdog_task.cancel()
+            self._watchdog_task = None
         if self._log_requests:
             self._exchanges.append(RawExchange(
                 ts=datetime.datetime.now().isoformat(),

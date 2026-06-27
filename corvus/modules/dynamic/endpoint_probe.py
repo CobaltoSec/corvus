@@ -18,6 +18,17 @@ _TOKEN_SIGNALS = [
      "sensitive system file path", Severity.HIGH, 85),
     (re.compile(r'-----BEGIN (RSA |EC )?PRIVATE KEY-----'),
      "private key material", Severity.CRITICAL, 85),
+    # Well-known credential value formats (no KEY= prefix needed)
+    (re.compile(r"sk-proj-[a-zA-Z0-9_\-]{20,}"),
+     "OpenAI project API key", Severity.CRITICAL, 90),
+    (re.compile(r"AKIA[0-9A-Z]{16}"),
+     "AWS access key ID", Severity.CRITICAL, 92),
+    (re.compile(r"sk_live_[a-zA-Z0-9]{24,}"),
+     "Stripe live secret key", Severity.CRITICAL, 90),
+    (re.compile(r"ghp_[a-zA-Z0-9]{36}"),
+     "GitHub personal access token", Severity.CRITICAL, 90),
+    (re.compile(r"xoxb-[0-9]+-[0-9]+-[a-zA-Z0-9]+"),
+     "Slack bot token", Severity.CRITICAL, 90),
     (re.compile(r"(Flask|Express|FastAPI|uvicorn|starlette|Django)/\d+\.\d+", re.I),
      "framework version string", Severity.INFO, 70),
 ]
