@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V17] — 2026-06-28 — FP calibration + README research section + v0.9.1
+
+- **`token_exposure.py`** — A2: `_is_type_annotation_match()` filtra TypeScript type annotations (`MaybeRefOrGetter<boolean>`, `Ref<string>`) que matcheaban el regex de credential pero no son credenciales reales. Fix para CS02-FP01/FP02 (regle-mcp-server Vue.js docs).
+- **`cmd_injection.py`** — A3: `_is_json_key_echo` → `_is_input_echo` expandido con `_ECHO_FIELD_NAMES` frozenset (query, search, symbol, term, etc.). Cubre el caso donde el field name del echo ≠ param name (CS02-FP03: 10 targets con search tools).
+- **`README.md`** — Overhaul completo: badges (PyPI/CI/Python), versión v0.9.1, tabla 18 módulos (static 7 + dynamic 11 con OWASP IDs correctos), sección "Research: MCP Ecosystem Security Audit" (CS01+CS02 combined dataset, 4 GHSAs, 65% servers con ≥1 HIGH).
+- **`pyproject.toml`** — bump 0.9.0 → 0.9.1
+- **Tests** — 169 → 174 (+3 A2 token_exposure calibration + 2 A3 cmd_injection calibration)
+
 ## [RT-CORVUS-V16b] — 2026-06-28 — CS02 scan completo + Gap 2 + watchdog Windows fix
 
 - **`stdio.py`** — watchdog real para Windows: `threading.Timer` + `_kill_process_tree()` (taskkill /F /T mata árbol de procesos node/cmd); `asyncio.create_task` no funcionaba en ProactorEventLoop bloqueado por `readline()`; startup check timeout 0.3→2.0s (Python startup Windows)
