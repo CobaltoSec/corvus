@@ -160,6 +160,30 @@ def test_is_input_echo_does_not_suppress_execution_context():
         "Payload in non-echo field should not suppress the finding"
 
 
+def test_is_input_echo_detects_plaintext_echo_in_search_param():
+    """Plain-text search response echoing a query-field payload should be detected."""
+    from corvus.modules.dynamic.cmd_injection import _is_input_echo
+    response = "No results found for '../../etc/passwd'. Try a different query."
+    assert _is_input_echo("query", "../../etc/passwd", response), \
+        "Plain-text echo in a known search param should be detected as input echo"
+
+
+def test_is_input_echo_detects_plaintext_echo_search_field():
+    """Plain-text echo via 'search' param should also be suppressed."""
+    from corvus.modules.dynamic.cmd_injection import _is_input_echo
+    response = "Searching for: ../../etc/passwd — 0 matches"
+    assert _is_input_echo("search", "../../etc/passwd", response), \
+        "Plain-text echo in 'search' param should be detected as input echo"
+
+
+def test_is_input_echo_plaintext_non_echo_field_not_suppressed():
+    """Plain-text reflection in a non-echo param should NOT be suppressed."""
+    from corvus.modules.dynamic.cmd_injection import _is_input_echo
+    response = "File not found: ../../etc/passwd"
+    assert not _is_input_echo("file_path", "../../etc/passwd", response), \
+        "Plain-text reflection in non-echo param (file_path) should not be suppressed"
+
+
 # ---------------------------------------------------------------------------
 # B3a — cmd_injection integer/array params
 # ---------------------------------------------------------------------------

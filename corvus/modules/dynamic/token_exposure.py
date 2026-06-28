@@ -132,12 +132,19 @@ def _extract_text(result: Any) -> str:
     return " ".join(c.get("text", "") for c in content if isinstance(c, dict))
 
 
+# TypeScript primitive type keywords — bare values like TOKEN: string or SECRET: boolean
+_TS_PRIMITIVE_TYPES = frozenset({
+    "string", "number", "boolean", "null", "undefined",
+    "void", "never", "any", "unknown", "object",
+})
+
+
 def _is_type_annotation_match(match_text: str) -> bool:
     """Return True if the regex match looks like a TypeScript/Vue.js type annotation.
 
     Prevents false positives when tool documentation returns TypeScript interface
     definitions that happen to contain field names like TOKEN or SECRET followed
-    by a type reference (e.g. 'TOKEN: MaybeRefOrGetter<boolean>').
+    by a type reference (e.g. 'TOKEN: MaybeRefOrGetter<boolean>', 'SECRET: string').
     """
     parts = re.split(r'[=:]\s*', match_text, maxsplit=1)
     if len(parts) < 2:
@@ -146,8 +153,14 @@ def _is_type_annotation_match(match_text: str) -> bool:
     # TypeScript generic type: contains < or > (e.g. MaybeRefOrGetter<boolean>)
     if '<' in value or '>' in value:
         return True
+    # Union or intersection type: contains | or & (e.g. string | null)
+    if '|' in value or '&' in value:
+        return True
     # PascalCase identifier with no digits or special chars — likely a type name
     if re.match(r'^[A-Z][a-zA-Z]{2,}$', value):
+        return True
+    # TypeScript primitive type keyword (e.g. TOKEN: string, SECRET: boolean)
+    if value.lower() in _TS_PRIMITIVE_TYPES:
         return True
     return False
 

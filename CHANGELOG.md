@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V18] — 2026-06-28 — FP calibration v2 (plain-text echo + TS primitives)
+
+- **`cmd_injection.py`** — `_is_input_echo()` extendido a plain-text: si el param está en `_ECHO_FIELD_NAMES` (query, search, term, etc.) y el payload aparece en una respuesta plain-text → LOW en lugar de HIGH. Cubre search tools que no retornan JSON.
+- **`token_exposure.py`** — `_is_type_annotation_match()` extendido con `_TS_PRIMITIVE_TYPES` (string, boolean, number, null, undefined, void, never, any, unknown, object) y detección de union/intersection types (`|`, `&`). Cubre `TOKEN: string`, `SECRET: boolean | null`.
+- **`pyproject.toml`** — bump 0.9.1 → 0.9.2
+- **Tests** — 174 → 180 (+3 cmd_injection plain-text echo + 3 token_exposure primitivos/union)
+
 ## [RT-CORVUS-V17] — 2026-06-28 — FP calibration + README research section + v0.9.1
 
 - **`token_exposure.py`** — A2: `_is_type_annotation_match()` filtra TypeScript type annotations (`MaybeRefOrGetter<boolean>`, `Ref<string>`) que matcheaban el regex de credential pero no son credenciales reales. Fix para CS02-FP01/FP02 (regle-mcp-server Vue.js docs).

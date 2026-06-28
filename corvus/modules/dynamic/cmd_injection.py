@@ -272,12 +272,14 @@ def _deny_in_context(text: str) -> bool:
 def _is_input_echo(param: str, payload: str, text: str) -> bool:
     """Return True if the payload appears as an echoed input value in the response.
 
-    Covers two cases:
-    - Exact param name match: {"path": "../../etc/passwd", ...}
-    - Common echo field names: {"query": "../../etc/passwd", "results": [...]}
+    Covers three cases:
+    - JSON exact match: {"path": "../../etc/passwd", ...}
+    - JSON echo field: {"query": "../../etc/passwd", "results": [...]}
+    - Plain-text echo: param is a known search/query field and payload appears in response
+      (e.g. "No results found for '../../etc/passwd'")
 
-    Search and lookup tools legitimately echo back their input in these fields;
-    a reflected payload there is not an injection signal.
+    Search and lookup tools legitimately echo back their input; a reflected payload
+    there is not an injection signal.
     """
     try:
         data = json.loads(text)
@@ -288,4 +290,10 @@ def _is_input_echo(param: str, payload: str, text: str) -> bool:
                         return True
     except (json.JSONDecodeError, ValueError):
         pass
+
+    # Plain-text echo: if the param is a known search/query field, any verbatim
+    # appearance of the payload in a plain-text response is likely display echo.
+    if param.lower() in _ECHO_FIELD_NAMES and payload in text:
+        return True
+
     return False

@@ -189,6 +189,32 @@ def test_type_annotation_match_passes_real_credential():
         "Real GitHub token should NOT be detected as type annotation"
 
 
+def test_type_annotation_match_detects_ts_primitives():
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    assert _is_type_annotation_match("TOKEN: string"), \
+        "TypeScript primitive 'string' should be detected as type annotation"
+    assert _is_type_annotation_match("SECRET: boolean"), \
+        "TypeScript primitive 'boolean' should be detected as type annotation"
+    assert _is_type_annotation_match("API_KEY: number"), \
+        "TypeScript primitive 'number' should be detected as type annotation"
+
+
+def test_type_annotation_match_detects_union_types():
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    assert _is_type_annotation_match("API_KEY: string | null"), \
+        "Union type 'string | null' should be detected as type annotation"
+    assert _is_type_annotation_match("TOKEN: boolean | undefined"), \
+        "Union type 'boolean | undefined' should be detected as type annotation"
+
+
+def test_type_annotation_match_does_not_suppress_alphanumeric_value():
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    assert not _is_type_annotation_match("API_KEY = abc123xyz"), \
+        "Alphanumeric credential value should NOT be suppressed"
+    assert not _is_type_annotation_match("TOKEN: xoxb-slack-token-here"), \
+        "Slack-format token should NOT be suppressed"
+
+
 @pytest.mark.asyncio
 async def test_token_exposure_no_fp_for_ts_type_annotation():
     """Tool response containing TypeScript type docs should not produce CRITICAL."""
