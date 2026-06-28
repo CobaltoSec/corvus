@@ -1,13 +1,19 @@
 # Corvus
 
+[![PyPI](https://img.shields.io/pypi/v/cobaltosec-corvus)](https://pypi.org/project/cobaltosec-corvus/)
+[![Tests](https://github.com/CobaltoSec/corvus/actions/workflows/ci.yml/badge.svg)](https://github.com/CobaltoSec/corvus/actions)
+[![Python](https://img.shields.io/pypi/pyversions/cobaltosec-corvus)](https://pypi.org/project/cobaltosec-corvus/)
+
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
-Corvus v0.7.0  MCP Security Scanner
+Corvus v0.9.1  MCP Security Scanner
 Target     : python my_mcp_server.py
 Transport  : stdio
-Modules    : tool-poisoning, schema-audit, shadow-tool, auth-audit, log-audit,
-             param-injection, info-disclosure, schema-bypass, response-flood, rug-pull
+Modules    : tool-poisoning, scope-audit, shadow-tool, supply-chain, auth-audit,
+             log-audit, schema-audit, cmd-injection, token-exposure, schema-bypass,
+             response-flood, rug-pull, ssrf, endpoint-probe, param-smuggling,
+             init-audit, proto-fuzz, output-encoding
 
 Enumerating surface...
   Tools      : 12
@@ -15,10 +21,10 @@ Enumerating surface...
   Prompts    : 2
   Server     : my-server 1.0.0
 
-[MCP01] Tool Poisoning (static)
+[MCP03] Tool Poisoning (static)
   [HIGH] Potential prompt injection in description of 'execute_code'
 
-[MCP02] Parameter Injection (dynamic)
+[MCP05] Command Injection (dynamic)
   [HIGH] Command injection confirmed in tool 'run_shell', param 'command'
   [MEDIUM] Path traversal accepted in tool 'read_file', param 'path'
 
@@ -59,7 +65,7 @@ corvus scan --transport http --url http://localhost:8080 --header "Authorization
 corvus scan --transport stdio --cmd "python my_server.py" --module static
 
 # Specific module
-corvus scan --transport stdio --cmd "python my_server.py" --module param-injection
+corvus scan --transport stdio --cmd "python my_server.py" --module cmd-injection
 
 # SARIF output (for CI/CD integration)
 corvus scan --transport stdio --cmd "python my_server.py" --sarif
@@ -104,20 +110,35 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 
 ## Modules
 
-Full coverage of OWASP MCP Top 10:
+18 built-in modules covering the full OWASP MCP Top 10 plus protocol and supply chain extensions:
 
-| Name | OWASP | Type | What it tests |
-|------|-------|------|---------------|
-| `tool-poisoning` | MCP01 | static | Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions |
-| `param-injection` | MCP02 | dynamic | Command, path, prompt, and SQL injection payloads per parameter — schema-aware |
-| `shadow-tool` | MCP03 | static | Tool names that shadow built-ins or signal dangerous operations (namespace squatting, trust hijacking) |
-| `info-disclosure` | MCP04 | dynamic | Credentials, filesystem paths, stack traces, and tokens leaked in tool responses |
-| `schema-bypass` | MCP05 | dynamic | Whether tools properly reject inputs that violate their declared schema |
-| `rug-pull` | MCP06 | dynamic | Re-enumerates the server after dynamic testing; diffs against initial snapshot to detect added, removed, or mutated tools |
-| `response-flood` | MCP07 | dynamic | Excessively large or highly repetitive responses that could overflow an LLM context window or inject looping instructions |
-| `auth-audit` | MCP08 | static | Tool names and descriptions suggesting missing, optional, or bypassable authentication |
-| `schema-audit` | MCP09 | static | Weak schema definitions (missing required fields, unconstrained types) that expand the attack surface |
-| `log-audit` | MCP10 | static | Tools that expose or tamper with audit logs — enables anti-forensic techniques or leaks operational data |
+### Static modules (no live tool calls)
+
+| Name | OWASP | What it tests |
+|------|-------|---------------|
+| `tool-poisoning` | MCP03 | Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions |
+| `shadow-tool` | EXT03 | Tool names and descriptions signaling dangerous operations — namespace squatting, trust hijacking |
+| `scope-audit` | MCP02 | Credential and PII fields in tool `inputSchema` — tools that request passwords, tokens, or SSNs as parameters |
+| `supply-chain` | MCP04 | Known-vulnerable npm packages extracted from the server command (`npm audit`) |
+| `auth-audit` | MCP07 | Tool names and descriptions suggesting missing, optional, or bypassable authentication |
+| `log-audit` | MCP08 | Tools exposing or tampering with audit logs — enables anti-forensic techniques or leaks operational data |
+| `schema-audit` | EXT02 | Weak schema definitions (missing required fields, unconstrained types) that expand the attack surface |
+
+### Dynamic modules (live tool calls)
+
+| Name | OWASP | What it tests |
+|------|-------|---------------|
+| `cmd-injection` | MCP05 | Command, path, SQL, and prompt injection payloads per parameter — schema-aware, confirmation-required |
+| `token-exposure` | MCP01 | Credentials, filesystem paths, stack traces, and tokens leaked in tool responses |
+| `proto-fuzz` | EXT01 | Protocol-level crash testing — unknown methods, oversized method names, null request IDs |
+| `param-smuggling` | EXT01 | Hidden parameter backdoors — appends undeclared params and measures behavior differences |
+| `schema-bypass` | EXT01 | Whether tools properly reject inputs that violate their declared schema |
+| `ssrf` | EXT04 | SSRF via URL/host parameters — probes internal metadata endpoints, measures timing anomalies |
+| `endpoint-probe` | MCP01 | Path traversal, SSRF, template injection, and credential exposure via `resources/read` and `prompts/get` |
+| `output-encoding` | MCP10 | Invisible Unicode in tool outputs — control chars, zero-width chars, bidi overrides that hide malicious content |
+| `response-flood` | MCP10 | Excessively large or repetitive responses that overflow an LLM context window |
+| `rug-pull` | MCP06 | Re-enumerates the server after dynamic testing; diffs to detect tools added, removed, or mutated mid-session |
+| `init-audit` | MCP07 | Audits the initialize handshake — serverInfo injection chars, protocol version downgrade acceptance |
 
 ### Module groups
 
@@ -132,7 +153,7 @@ Full coverage of OWASP MCP Top 10:
 --module dynamic
 
 # Individual module
---module param-injection
+--module cmd-injection
 ```
 
 ## Transports
@@ -299,6 +320,37 @@ my-check = "my_package.modules.my_check:MyCustomModule"
 ```
 
 After `pip install my-package`, Corvus auto-discovers the module.
+
+## Research: MCP Ecosystem Security Audit
+
+Corvus has been battle-tested against the real-world MCP ecosystem across two case studies — 43 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
+
+| | CS01 (Tier A/B/C) | CS02 (Tier D) | Combined |
+|---|---|---|---|
+| Servers audited | 23 | 20 | **43** |
+| True positives | 43 | 12 | **55** |
+| HIGH findings | 27 | 10 | **37** |
+| CRITICAL findings | 1 | 0 | **1** |
+| FP rate | 30.6% | 40% | ~34% |
+
+Key findings from the wild:
+
+- **35% of MCP servers crash** on a single malformed JSON-RPC request — reproducible DoS with no authentication required
+- **Shadow tool injection** confirmed in `mcp-server-docker`, `postgres-mcp-server`, `lsp-mcp-server` — tool descriptions that instruct an AI agent to execute arbitrary operations
+- **Supply chain cascade**: `@modelcontextprotocol/sdk ≤1.25.1` advisory propagates to the majority of JS-based servers in the ecosystem
+- **Invisible Unicode** (zero-width chars, bidi overrides) in tool descriptions — undetectable to human reviewers, can manipulate AI agent reasoning
+- **65% of audited servers** have at least one HIGH-severity confirmed finding
+
+Full datasets, curated findings, and methodology in [`case-studies/`](case-studies/).
+
+### Responsible Disclosure
+
+| Advisory | Package | Finding | Status |
+|----------|---------|---------|--------|
+| [GHSA-mf64-cgv4-ppcx](https://github.com/advisories/GHSA-mf64-cgv4-ppcx) | @playwright/mcp | Path traversal via filesystem tools | Coordinated disclosure (MSRC) |
+| [GHSA-7w27-7xwv-x6x2](https://github.com/advisories/GHSA-7w27-7xwv-x6x2) | mcp-server-sqlite | SQL injection via query tools | Disclosed |
+| [GHSA-7763-c5gf-v5fj](https://github.com/advisories/GHSA-7763-c5gf-v5fj) | mcp-shell-server | Command injection via shell tools | Disclosed |
+| [GHSA-pr6r-h66r-m47j](https://github.com/advisories/GHSA-pr6r-h66r-m47j) | server-everything | Token exposure via env tool | Disclosed |
 
 ## Development
 

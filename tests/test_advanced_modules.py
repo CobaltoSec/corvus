@@ -139,6 +139,28 @@ async def test_proto_fuzz_module_metadata():
 
 
 # ---------------------------------------------------------------------------
+# A3 — cmd_injection FP calibration: query echo in search tools
+# ---------------------------------------------------------------------------
+
+def test_is_input_echo_detects_query_field():
+    """Payload echoed in 'query' field should be detected as input echo."""
+    from corvus.modules.dynamic.cmd_injection import _is_input_echo
+    import json
+    response = json.dumps({"query": "../../etc/passwd", "results": []})
+    assert _is_input_echo("search_query", "../../etc/passwd", response), \
+        "Payload in 'query' field should be detected as input echo even if param name differs"
+
+
+def test_is_input_echo_does_not_suppress_execution_context():
+    """Payload in an unexpected field should NOT be detected as input echo."""
+    from corvus.modules.dynamic.cmd_injection import _is_input_echo
+    import json
+    response = json.dumps({"result": "../../etc/passwd was accessed", "status": "ok"})
+    assert not _is_input_echo("path", "../../etc/passwd", response), \
+        "Payload in non-echo field should not suppress the finding"
+
+
+# ---------------------------------------------------------------------------
 # B3a — cmd_injection integer/array params
 # ---------------------------------------------------------------------------
 

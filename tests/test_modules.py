@@ -8,7 +8,7 @@ from corvus.core.models import OWASPCategory, Severity
 from corvus.modules.static.tool_poisoning import ToolPoisoningModule
 from corvus.modules.static.schema_audit import SchemaAuditModule
 from corvus.modules.dynamic.cmd_injection import (
-    CmdInjectionModule as ParamInjectionModule, _reflected, _is_json_key_echo,
+    CmdInjectionModule as ParamInjectionModule, _reflected, _is_input_echo as _is_json_key_echo,
     _traversal_confirmed, _is_traversal_payload,
 )
 from corvus.modules.dynamic.token_exposure import TokenExposureModule as InfoDisclosureModule

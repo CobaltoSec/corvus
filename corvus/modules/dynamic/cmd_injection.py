@@ -42,6 +42,13 @@ _ARRAY_PAYLOADS: list[Any] = [["../../etc/passwd"], ["; echo INJECTED #"], ["{{7
 # B5: tool names that are DB operations by design — skip SQL payloads for these
 _DB_TOOL_NAME = re.compile(r"write_query|execute_query|run_sql|run_query|exec_sql", re.I)
 
+# A3: common field names where tools legitimately echo back their input (search results, etc.)
+_ECHO_FIELD_NAMES = frozenset({
+    "query", "search", "q", "term", "filter", "input", "keyword",
+    "symbol", "name", "text", "prompt", "request", "pattern",
+    "expression", "symbol_name", "class_name", "function_name",
+})
+
 
 class CmdInjectionModule(ScanModule):
     owasp_id = "MCP05"
@@ -171,7 +178,7 @@ class CmdInjectionModule(ScanModule):
                                 f"confirmed (field: {category})."
                             )
                         elif _reflected(payload, text):
-                            if _is_json_key_echo(param, payload, text):
+                            if _is_input_echo(param, payload, text):
                                 severity = Severity.LOW
                                 confirmed = False
                                 confidence = 30
@@ -262,13 +269,23 @@ def _deny_in_context(text: str) -> bool:
     return any(kw in lower for kw in _SANITIZATION_SIGNALS)
 
 
-def _is_json_key_echo(param: str, payload: str, text: str) -> bool:
-    """Return True if the payload appears as the value of a top-level JSON key named after
-    the parameter — typical of tools that echo their own inputs in the result record."""
+def _is_input_echo(param: str, payload: str, text: str) -> bool:
+    """Return True if the payload appears as an echoed input value in the response.
+
+    Covers two cases:
+    - Exact param name match: {"path": "../../etc/passwd", ...}
+    - Common echo field names: {"query": "../../etc/passwd", "results": [...]}
+
+    Search and lookup tools legitimately echo back their input in these fields;
+    a reflected payload there is not an injection signal.
+    """
     try:
         data = json.loads(text)
-        if isinstance(data, dict) and data.get(param) == payload:
-            return True
+        if isinstance(data, dict):
+            for key, val in data.items():
+                if isinstance(val, str) and val == payload:
+                    if key == param or key.lower() in _ECHO_FIELD_NAMES:
+                        return True
     except (json.JSONDecodeError, ValueError):
         pass
     return False

@@ -105,6 +105,8 @@ class TokenExposureModule(ScanModule):
                 for pattern, label, severity, conf in _SIGNALS:
                     m = pattern.search(text)
                     if m:
+                        if label == "credential in response" and _is_type_annotation_match(m.group(0)):
+                            continue  # TypeScript type annotation, not a real credential
                         findings.append(Finding(
                             owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
                             severity=severity,
@@ -128,6 +130,26 @@ def _extract_text(result: Any) -> str:
         return ""
     content = result.get("content", []) if isinstance(result, dict) else []
     return " ".join(c.get("text", "") for c in content if isinstance(c, dict))
+
+
+def _is_type_annotation_match(match_text: str) -> bool:
+    """Return True if the regex match looks like a TypeScript/Vue.js type annotation.
+
+    Prevents false positives when tool documentation returns TypeScript interface
+    definitions that happen to contain field names like TOKEN or SECRET followed
+    by a type reference (e.g. 'TOKEN: MaybeRefOrGetter<boolean>').
+    """
+    parts = re.split(r'[=:]\s*', match_text, maxsplit=1)
+    if len(parts) < 2:
+        return False
+    value = parts[1].strip('"\'').strip()
+    # TypeScript generic type: contains < or > (e.g. MaybeRefOrGetter<boolean>)
+    if '<' in value or '>' in value:
+        return True
+    # PascalCase identifier with no digits or special chars — likely a type name
+    if re.match(r'^[A-Z][a-zA-Z]{2,}$', value):
+        return True
+    return False
 
 
 def _is_html_catch_all(text: str) -> bool:

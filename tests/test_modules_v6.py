@@ -170,6 +170,45 @@ async def test_rug_pull_downgrades_stateful_tool_disappearance():
 
 
 # ---------------------------------------------------------------------------
+# A2 — token_exposure FP calibration: TypeScript type annotations
+# ---------------------------------------------------------------------------
+
+def test_type_annotation_match_detects_ts_generic():
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    assert _is_type_annotation_match("TOKEN: MaybeRefOrGetter<boolean>"), \
+        "TypeScript generic should be detected as type annotation"
+    assert _is_type_annotation_match("SECRET: Ref<string>"), \
+        "Ref<T> generic should be detected as type annotation"
+
+
+def test_type_annotation_match_passes_real_credential():
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    assert not _is_type_annotation_match("API_KEY = sk-proj-abc123XYZ456"), \
+        "Real API key should NOT be detected as type annotation"
+    assert not _is_type_annotation_match('TOKEN = "ghp_realtoken123"'), \
+        "Real GitHub token should NOT be detected as type annotation"
+
+
+@pytest.mark.asyncio
+async def test_token_exposure_no_fp_for_ts_type_annotation():
+    """Tool response containing TypeScript type docs should not produce CRITICAL."""
+    from corvus.modules.dynamic.token_exposure import _SIGNALS
+    import re
+    cred_patterns = [(pat, label) for pat, label, sev, _ in _SIGNALS if label == "credential in response"]
+    assert cred_patterns, "credential in response signal missing"
+    pat, _ = cred_patterns[0]
+
+    # Simulates what regle-mcp-server returns in its validation rule docs
+    ts_doc_response = "TOKEN: MaybeRefOrGetter<boolean>, SECRET: Ref<string[]>"
+    # The pattern matches, but _is_type_annotation_match should filter it
+    from corvus.modules.dynamic.token_exposure import _is_type_annotation_match
+    m = pat.search(ts_doc_response)
+    assert m, "Pattern should still match the raw text"
+    assert _is_type_annotation_match(m.group(0)), \
+        "Match in TypeScript docs should be identified as type annotation"
+
+
+# ---------------------------------------------------------------------------
 # B5 — cmd_injection FP calibration: SQL tools by design
 # ---------------------------------------------------------------------------
 
