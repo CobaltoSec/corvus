@@ -6,6 +6,7 @@ import json
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from typing import Any
 
@@ -34,7 +35,7 @@ class StdioTransport(MCPTransport):
         self._process: asyncio.subprocess.Process | None = None
         self._req_id = 0
         self._exchanges: list[RawExchange] = []
-        self._watchdog_task: asyncio.Task | None = None
+        self._watchdog_timer: threading.Timer | None = None
 
     @property
     def exchanges(self) -> list[RawExchange]:
@@ -68,10 +69,11 @@ class StdioTransport(MCPTransport):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-        # Detect immediate crash: wait up to 300ms for the process to exit.
+        # Detect immediate crash: wait up to 2s for the process to exit.
         # If it exits, it crashed before handling any requests.
+        # 2s is needed on Windows where interpreter startup (Python, node) can take 500ms-1.5s.
         try:
-            await asyncio.wait_for(self._process.wait(), timeout=0.3)
+            await asyncio.wait_for(self._process.wait(), timeout=2.0)
             stderr_bytes = b""
             try:
                 stderr_bytes = await asyncio.wait_for(
@@ -89,23 +91,36 @@ class StdioTransport(MCPTransport):
             pass  # Still running — startup OK
 
         # Startup watchdog: kills the process if it doesn't respond within startup_timeout.
-        # Defends against npx hanging on workspace/config lookup before the MCP handshake
-        # (Windows ProactorEventLoop doesn't reliably cancel asyncio readline on dead pipes).
+        # Defends against npx hanging on workspace/config lookup before the MCP handshake.
+        # threading.Timer runs in its own thread — not blocked by the event loop's readline().
         if self._startup_timeout > 0:
-            self._watchdog_task = asyncio.create_task(self._kill_after(self._startup_timeout))
+            self._watchdog_timer = threading.Timer(
+                self._startup_timeout, self._kill_process_tree
+            )
+            self._watchdog_timer.daemon = True
+            self._watchdog_timer.start()
 
-    async def _kill_after(self, delay: float) -> None:
-        await asyncio.sleep(delay)
-        if self._process and self._process.returncode is None:
-            try:
+    def _kill_process_tree(self) -> None:
+        """Kill the subprocess and all descendants (sync-safe, callable from threads)."""
+        if self._process is None or self._process.returncode is not None:
+            return
+        try:
+            if sys.platform == "win32":
+                # taskkill /F /T kills the full tree so child node processes
+                # release the stdout pipe and don't block readline().
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(self._process.pid)],
+                    capture_output=True,
+                )
+            else:
                 self._process.kill()
-            except (ProcessLookupError, OSError):
-                pass
+        except (ProcessLookupError, OSError):
+            pass
 
     async def disconnect(self) -> None:
-        if self._watchdog_task and not self._watchdog_task.done():
-            self._watchdog_task.cancel()
-            self._watchdog_task = None
+        if self._watchdog_timer is not None:
+            self._watchdog_timer.cancel()
+            self._watchdog_timer = None
         if self._process is None:
             return
         try:
@@ -138,7 +153,7 @@ class StdioTransport(MCPTransport):
                 )
             except asyncio.TimeoutError:
                 if self._process and self._process.returncode is None:
-                    self._process.kill()
+                    self._kill_process_tree()
                 raise
             if not raw:
                 raise RuntimeError("Server closed stdout unexpectedly")
@@ -162,9 +177,9 @@ class StdioTransport(MCPTransport):
             raise JSONRPCError(err.get("code", -1), err.get("message", "unknown"), err.get("data"))
 
         result = response.get("result")
-        if self._watchdog_task and not self._watchdog_task.done():
-            self._watchdog_task.cancel()
-            self._watchdog_task = None
+        if self._watchdog_timer is not None:
+            self._watchdog_timer.cancel()
+            self._watchdog_timer = None
         if self._log_requests:
             self._exchanges.append(RawExchange(
                 ts=datetime.datetime.now().isoformat(),
@@ -183,5 +198,8 @@ class StdioTransport(MCPTransport):
 
     async def _write(self, msg: dict[str, Any]) -> None:
         line = (json.dumps(msg) + "\n").encode()
-        self._process.stdin.write(line)
-        await self._process.stdin.drain()
+        try:
+            self._process.stdin.write(line)
+            await self._process.stdin.drain()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass

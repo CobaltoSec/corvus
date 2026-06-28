@@ -10,11 +10,12 @@ targets:
   - npx
   - -y
   - '@ui5/mcp-server'
-  status: error
+  status: done
   notes: MCP server for SAPUI5/OpenUI5 development. SAP UI5 dev tools — large schema
     surface 117,814/wk.
-  last_scanned: '2026-06-26'
-  findings_summary: ERROR (no report.json)
+  last_scanned: '2026-06-28'
+  findings_summary: 1H 1M
+  curation: pending
 - name: nx-mcp
   tier: D
   transport: stdio
@@ -32,9 +33,11 @@ targets:
   - npx
   - -y
   - '@wonderwhy-er/desktop-commander'
-  status: pending
+  status: error
   notes: MCP server for terminal operations and file editing. Terminal + file editing
     (30+ tools) — huge attack surface 30,359/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: drawio-mcp
   tier: D
   transport: stdio
@@ -51,9 +54,12 @@ targets:
   - npx
   - -y
   - mcp-server-nationalparks
-  status: pending
+  status: done
   notes: MCP Server for the National Park Service (NPS) API. Public API — schema quality
     surface 13,831/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 2H 1I
+  curation: pending
 - name: fetcher-mcp
   tier: D
   transport: stdio
@@ -71,9 +77,12 @@ targets:
   - npx
   - -y
   - lsp-mcp-server
-  status: pending
+  status: done
   notes: MCP server bridging Claude Code to Language Server Protocol servers. LSP
     bridge — protocol attack surface 11,770/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 7H 25M 6L 1I
+  curation: pending
 - name: obsidian-mcp-server
   tier: D
   transport: stdio
@@ -81,8 +90,10 @@ targets:
   - npx
   - -y
   - obsidian-mcp-server
-  status: pending
+  status: error
   notes: Obsidian vault read/write via REST API plugin. File system access 5,866/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: cclsp
   tier: D
   transport: stdio
@@ -90,9 +101,11 @@ targets:
   - npx
   - -y
   - cclsp
-  status: pending
+  status: error
   notes: MCP server for accessing LSP functionality. Code intelligence attack surface
     5,309/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: postgres-mcp-server
   tier: D
   transport: stdio
@@ -100,9 +113,12 @@ targets:
   - npx
   - -y
   - '@henkey/postgres-mcp-server'
-  status: pending
+  status: done
   notes: PostgreSQL database management capabilities for AI assistants. SQL injection
     surface (test DB) 4,933/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 5H 2I
+  curation: pending
 - name: duckduckgo-mcp-server
   tier: D
   transport: stdio
@@ -110,8 +126,11 @@ targets:
   - npx
   - -y
   - '@ericthered926/duckduckgo-mcp-server'
-  status: pending
+  status: done
   notes: DuckDuckGo search integration. Web interaction surface 4,055/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 4M
+  curation: pending
 - name: malicious-mcp-server
   tier: D
   transport: stdio
@@ -119,9 +138,11 @@ targets:
   - npx
   - -y
   - malicious-mcp-server
-  status: pending
+  status: error
   notes: A deliberately malicious MCP server for E2E testing purposes. High attack
     surface by design 3,967/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: musea-mcp-server
   tier: D
   transport: stdio
@@ -129,9 +150,11 @@ targets:
   - npx
   - -y
   - '@vizejs/musea-mcp-server'
-  status: pending
+  status: error
   notes: MCP server for building Vue.js design systems. Component analysis, documentation,
     variant generation 3,889/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: flightradar-mcp-server
   tier: D
   transport: stdio
@@ -139,8 +162,11 @@ targets:
   - npx
   - -y
   - flightradar-mcp-server
-  status: pending
+  status: done
   notes: Flight tracking via Flightradar24 public API. Public API surface 3,625/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 1H 2M
+  curation: pending
 - name: element-mcp
   tier: D
   transport: stdio
@@ -148,8 +174,11 @@ targets:
   - npx
   - -y
   - '@siemens/element-mcp'
-  status: pending
+  status: done
   notes: Siemens Element design system MCP server. Schema quality 3,605/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 5M 4L
+  curation: pending
 - name: pubmed-mcp-server
   tier: D
   transport: stdio
@@ -157,8 +186,11 @@ targets:
   - npx
   - -y
   - '@cyanheads/pubmed-mcp-server'
-  status: pending
+  status: done
   notes: PubMed biomedical literature search. Public API — large schema surface 3,385/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 5H 1L 1I
+  curation: pending
 - name: shadcn-ui-mcp-server
   tier: D
   transport: stdio
@@ -166,8 +198,11 @@ targets:
   - npx
   - -y
   - '@jpisnice/shadcn-ui-mcp-server'
-  status: pending
+  status: done
   notes: shadcn/ui component docs and generation. Schema quality 3,046/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 1H 1M 1I
+  curation: pending
 - name: mcp-server-hotnews
   tier: D
   transport: stdio
@@ -175,8 +210,11 @@ targets:
   - npx
   - -y
   - '@wopal/mcp-server-hotnews'
-  status: pending
+  status: done
   notes: Chinese trending topics aggregator. Public API scraping 2,944/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 2M
+  curation: pending
 - name: mediawiki-mcp-server
   tier: D
   transport: stdio
@@ -184,9 +222,11 @@ targets:
   - npx
   - -y
   - '@professional-wiki/mediawiki-mcp-server'
-  status: pending
+  status: error
   notes: Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
     2,844/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mantine-mcp-server
   tier: D
   transport: stdio
@@ -194,8 +234,11 @@ targets:
   - npx
   - -y
   - '@mantine/mcp-server'
-  status: pending
+  status: done
   notes: MCP server for Mantine documentation. Schema quality 2,390/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 3H 3M 4L
+  curation: pending
 - name: ssh-mcp-server
   tier: D
   transport: stdio
@@ -203,8 +246,10 @@ targets:
   - npx
   - -y
   - '@fangjunjie/ssh-mcp-server'
-  status: pending
+  status: error
   notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-webresearch
   tier: D
   transport: stdio
@@ -222,8 +267,10 @@ targets:
   - npx
   - -y
   - korean-law-mcp
-  status: pending
+  status: error
   notes: Korean law database. Public API — schema + injection surface 2,039/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: remnux-mcp-server
   tier: D
   transport: stdio
@@ -231,8 +278,10 @@ targets:
   - npx
   - -y
   - '@remnux/mcp-server'
-  status: pending
+  status: error
   notes: REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-javadc
   tier: D
   transport: stdio
@@ -240,8 +289,11 @@ targets:
   - npx
   - -y
   - '@idachev/mcp-javadc'
-  status: pending
+  status: done
   notes: Java decompiler. Binary analysis / file processing surface 1,767/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 2H 7M 5L
+  curation: pending
 - name: mcp-fetch
   tier: D
   transport: stdio
@@ -249,8 +301,10 @@ targets:
   - npx
   - -y
   - '@kazuph/mcp-fetch'
-  status: pending
+  status: error
   notes: Fetch URL + save images. SSRF + path write 1,729/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: docx-mcp
   tier: D
   transport: stdio
@@ -258,8 +312,11 @@ targets:
   - npx
   - -y
   - '@usejunior/docx-mcp'
-  status: pending
+  status: done
   notes: DOCX read/write operations. File processing + path ops 1,478/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 3H 39M 40L 5I
+  curation: pending
 - name: spartan-mcp
   tier: D
   transport: stdio
@@ -267,8 +324,11 @@ targets:
   - npx
   - -y
   - '@spartan-ng/mcp'
-  status: pending
+  status: done
   notes: Spartan Angular UI component docs. Schema quality 1,455/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 3H 3I
+  curation: pending
 - name: mcp-postgres
   tier: D
   transport: stdio
@@ -276,8 +336,10 @@ targets:
   - npx
   - -y
   - mcp-postgres
-  status: pending
+  status: error
   notes: PostgreSQL MCP — query execution (test DB). SQL injection surface 1,396/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: markmap-mcp-server
   tier: D
   transport: stdio
@@ -285,8 +347,10 @@ targets:
   - npx
   - -y
   - '@jinzcdev/markmap-mcp-server'
-  status: pending
+  status: error
   notes: Markmap mind-map generation from Markdown 1,319/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-server-code-runner
   tier: D
   transport: stdio
@@ -294,8 +358,10 @@ targets:
   - npx
   - -y
   - mcp-server-code-runner
-  status: pending
+  status: error
   notes: Code Runner MCP Server. Code execution attack surface 1,248/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-read-website-fast
   tier: D
   transport: stdio
@@ -303,8 +369,10 @@ targets:
   - npx
   - -y
   - '@just-every/mcp-read-website-fast'
-  status: pending
+  status: error
   notes: Fast web content fetch. SSRF attack surface 1,233/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-screenshot-website-fast
   tier: D
   transport: stdio
@@ -321,8 +389,10 @@ targets:
   - npx
   - -y
   - mysql-mcp-server
-  status: pending
+  status: error
   notes: MySQL read-only queries (test DB). SQL surface 1,060/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: drawio-mcp-server
   tier: D
   transport: stdio
@@ -339,8 +409,11 @@ targets:
   - npx
   - -y
   - '@regle/mcp-server'
-  status: pending
+  status: done
   notes: MCP Server for Regle 908/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 2C 1H 4M 15L
+  curation: pending
 - name: jamf-docs-mcp-server
   tier: D
   transport: stdio
@@ -348,8 +421,11 @@ targets:
   - npx
   - -y
   - '@get-technology-inc/jamf-docs-mcp-server'
-  status: pending
+  status: done
   notes: Jamf MDM documentation server 905/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 5H 13M 2L
+  curation: pending
 - name: european-parliament-mcp-server
   tier: D
   transport: stdio
@@ -357,8 +433,11 @@ targets:
   - npx
   - -y
   - european-parliament-mcp-server
-  status: pending
+  status: done
   notes: EU Parliament open data. Public API surface 889/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 1H 1M 1L 6I
+  curation: pending
 - name: fetch-url-mcp
   tier: D
   transport: stdio
@@ -366,8 +445,10 @@ targets:
   - npx
   - -y
   - '@j0hanz/fetch-url-mcp'
-  status: pending
+  status: error
   notes: URL fetch → markdown conversion. SSRF attack surface 839/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: myclaw-toolkit
   tier: D
   transport: stdio
@@ -375,8 +456,10 @@ targets:
   - npx
   - -y
   - myclaw-toolkit
-  status: pending
+  status: error
   notes: 23-in-1 dev toolkit (search, crypto, QR, rates, etc.) 787/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: kernlang-mcp-server
   tier: D
   transport: stdio
@@ -384,8 +467,10 @@ targets:
   - npx
   - -y
   - '@kernlang/mcp-server'
-  status: pending
+  status: error
   notes: KERN DSL compiler. Code exec + file write surface 762/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: mcp-server-docker
   tier: D
   transport: stdio
@@ -393,9 +478,12 @@ targets:
   - npx
   - -y
   - mcp-server-docker
-  status: pending
+  status: done
   notes: MCP server for executing commands in Docker containers. Container escape
     surface 677/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 3H 3M 2L
+  curation: pending
 - name: upg-mcp-server
   tier: D
   transport: stdio
@@ -403,8 +491,11 @@ targets:
   - npx
   - -y
   - '@unified-product-graph/mcp-server'
-  status: pending
+  status: done
   notes: Local MCP server for .upg files. Path traversal surface 652/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 1M
+  curation: pending
 - name: mcp-mysql-server
   tier: D
   transport: stdio
@@ -412,8 +503,10 @@ targets:
   - npx
   - -y
   - '@berthojoris/mcp-mysql-server'
-  status: pending
+  status: error
   notes: MySQL per-project permission model. SQL injection surface 636/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: agent-orchestrator-mcp-server
   tier: D
   transport: stdio
@@ -421,9 +514,11 @@ targets:
   - npx
   - -y
   - agent-orchestrator-mcp-server
-  status: pending
+  status: error
   notes: Local implementation of agent-orchestrator MCP server. Tool injection + scope
     surface 605/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: playwright-mcp-server
   tier: D
   transport: stdio
@@ -431,9 +526,11 @@ targets:
   - npx
   - -y
   - playwright-mcp-server
-  status: pending
+  status: error
   notes: MCP server for generating Playwright tests (distinct from @playwright/mcp).
     Schema surface 593/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)
 - name: desktop-touch-mcp
   tier: D
   transport: stdio
@@ -451,9 +548,12 @@ targets:
   - npx
   - -y
   - codeloop-mcp-server
-  status: pending
+  status: done
   notes: CodeLoop verification, self-repair, and recommendation layer for AI coding
     agents 390/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: 1M
+  curation: pending
 - name: openapi-mcp-server
   tier: D
   transport: stdio
@@ -461,5 +561,7 @@ targets:
   - npx
   - -y
   - openapi-mcp-server
-  status: pending
+  status: error
   notes: MCP server for interacting with openapisearch.com API 298/wk.
+  last_scanned: '2026-06-28'
+  findings_summary: ERROR (no report.json)

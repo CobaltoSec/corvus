@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V16b] — 2026-06-28 — CS02 scan completo + Gap 2 + watchdog Windows fix
+
+- **`stdio.py`** — watchdog real para Windows: `threading.Timer` + `_kill_process_tree()` (taskkill /F /T mata árbol de procesos node/cmd); `asyncio.create_task` no funcionaba en ProactorEventLoop bloqueado por `readline()`; startup check timeout 0.3→2.0s (Python startup Windows)
+- **`batch.py`** — 22 módulos sincronizados (5 faltaban: ssrf, endpoint-probe, param-smuggling, init-audit, proto-fuzz + output-encoding); `asyncio.timeout(120)` por target como safety net; `_TARGET_SCAN_TIMEOUT=120`
+- **Gap 2 — `output_encoding.py`**: detector invisible/dangerous Unicode — control chars (HIGH), zero-width chars (HIGH), bidi overrides (CRITICAL); regexes construidas con `chr()` para evitar literales invisibles
+- **`mock_server.py`**: tool `stealth_formatter` con payload `\x00 + U+200B + U+202E` para tests output_encoding
+- **Tests**: 164 → 169 (5 nuevos output_encoding)
+- **CS02 batch scan** — 20/42 targets exitosos; 22 startup errors (credenciales/config required); 7 skip; 257 raw findings
+- **findings-curated.md CS02**: 14 findings (10 TP HIGH: shadow-tools/proto-crash/scope-creep/supply-chain/response-flood; 4 FP: token-exposure docs, injection echo)
+- **report.md CS02**: análisis completo — 35% servers vulnerable a protocol crash, Gap 1 detección automática confirmada, FP rate 40%, recomendaciones de calibración
+- **`.gitignore`**: batch-scans CS02 + artifact files de scan (path traversal, upg, null bytes)
+
 ## [RT-CORVUS-V16] — 2026-06-27 — Watchdog fix + Gap 1+3 detection
 
 - **`stdio.py`** — `startup_timeout=45s`: watchdog task + kill-on-timeout en `send_request`; asyncio version parcial (threading.Timer pendiente para Windows ProactorEventLoop)

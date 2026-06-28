@@ -17,6 +17,12 @@ from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
 from .modules.dynamic.rug_pull import RugPullModule
 from .modules.dynamic.schema_bypass import SchemaBypassModule
+from .modules.dynamic.ssrf import SSRFModule
+from .modules.dynamic.endpoint_probe import EndpointProbeModule
+from .modules.dynamic.param_smuggling import ParamSmugglingModule
+from .modules.dynamic.init_audit import InitAuditModule
+from .modules.dynamic.proto_fuzz import ProtoFuzzModule
+from .modules.dynamic.output_encoding import OutputEncodingModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
@@ -33,6 +39,8 @@ _ALL_MODULES = [
     ToolPoisoningModule, SchemaAuditModule, ShadowToolModule,
     AuthAuditModule, LogAuditModule, CmdInjectionModule,
     TokenExposureModule, SchemaBypassModule, ResponseFloodModule, RugPullModule,
+    SSRFModule, EndpointProbeModule, ParamSmugglingModule,
+    InitAuditModule, ProtoFuzzModule, OutputEncodingModule,
 ]
 
 
@@ -117,6 +125,9 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
     return result
 
 
+_TARGET_SCAN_TIMEOUT = 120  # seconds — hard cap per target regardless of per-request timeouts
+
+
 async def run_batch(
     targets: list[BatchTarget],
     output_dir: Path,
@@ -137,28 +148,29 @@ async def run_batch(
             xport = HttpTransport(target.url or "", timeout=timeout)
 
         try:
-            async with xport:
-                session = ScanSession(
-                    target=" ".join(target.cmd) if target.cmd else target.url or "",
-                    transport=target.transport,
-                    output_dir=target_dir,
-                )
-                surface = await MCPEnumerator(xport).enumerate()
+            async with asyncio.timeout(_TARGET_SCAN_TIMEOUT):
+                async with xport:
+                    session = ScanSession(
+                        target=" ".join(target.cmd) if target.cmd else target.url or "",
+                        transport=target.transport,
+                        output_dir=target_dir,
+                    )
+                    surface = await MCPEnumerator(xport).enumerate()
 
-                for mod_cls in _ALL_MODULES:
-                    mod = mod_cls()
-                    findings = await mod.run(surface, xport, session)
-                    for f in findings:
-                        session.add_finding(f)
+                    for mod_cls in _ALL_MODULES:
+                        mod = mod_cls()
+                        findings = await mod.run(surface, xport, session)
+                        for f in findings:
+                            session.add_finding(f)
 
-                if min_confidence is not None:
-                    session.findings = [f for f in session.findings if f.confidence >= min_confidence]
+                    if min_confidence is not None:
+                        session.findings = [f for f in session.findings if f.confidence >= min_confidence]
 
-                scan_result = session.to_result(surface, [m().name for m in _ALL_MODULES])
-                gen = ReportGenerator(target_dir)
-                gen.write(scan_result)
-                if sarif:
-                    gen.write_sarif(scan_result)
+                    scan_result = session.to_result(surface, [m().name for m in _ALL_MODULES])
+                    gen = ReportGenerator(target_dir)
+                    gen.write(scan_result)
+                    if sarif:
+                        gen.write_sarif(scan_result)
 
                 batch_result.add(target.name, target.transport, scan_result.finding_count)
         except Exception as e:
