@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -27,11 +28,19 @@ class StdioTransport(MCPTransport):
     Communicates via stdin/stdout using newline-delimited JSON-RPC 2.0.
     """
 
-    def __init__(self, command: list[str], timeout: float = 30.0, log_requests: bool = False, startup_timeout: float = 45.0):
+    def __init__(
+        self,
+        command: list[str],
+        timeout: float = 30.0,
+        log_requests: bool = False,
+        startup_timeout: float = 45.0,
+        env: dict[str, str] | None = None,
+    ):
         self.command = command
         self.timeout = timeout
         self._startup_timeout = startup_timeout
         self._log_requests = log_requests
+        self._env = env  # Extra env vars merged on top of os.environ at connect time
         self._process: asyncio.subprocess.Process | None = None
         self._req_id = 0
         self._exchanges: list[RawExchange] = []
@@ -43,6 +52,9 @@ class StdioTransport(MCPTransport):
 
     async def connect(self) -> None:
         cmd = list(self.command)
+        # Merge extra env vars on top of the current environment so the subprocess
+        # still has PATH, APPDATA, etc. — required for npx/node to resolve binaries.
+        proc_env = {**os.environ, **self._env} if self._env else None
 
         # On Windows, .cmd/.bat scripts (e.g. npx.cmd, node.cmd) cannot be
         # launched with create_subprocess_exec — they require shell=True.
@@ -54,6 +66,7 @@ class StdioTransport(MCPTransport):
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
+                    env=proc_env,
                 )
             else:
                 self._process = await asyncio.create_subprocess_exec(
@@ -61,6 +74,7 @@ class StdioTransport(MCPTransport):
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
+                    env=proc_env,
                 )
         else:
             self._process = await asyncio.create_subprocess_exec(
@@ -68,6 +82,7 @@ class StdioTransport(MCPTransport):
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                env=proc_env,
             )
         # Detect immediate crash: wait up to 2s for the process to exit.
         # If it exits, it crashed before handling any requests.

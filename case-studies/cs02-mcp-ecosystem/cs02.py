@@ -203,6 +203,8 @@ def cmd_scan(args: argparse.Namespace, data: dict) -> None:
             entry["cmd"] = t["cmd"]
         if t.get("url"):
             entry["url"] = t["url"]
+        if t.get("env_vars"):
+            entry["env_vars"] = t["env_vars"]
         batch_targets.append(entry)
 
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as f:
@@ -218,6 +220,10 @@ def cmd_scan(args: argparse.Namespace, data: dict) -> None:
     cmd = [corvus, "batch", batch_path, "--output-dir", str(output_dir), "--sarif"]
     if args.min_confidence:
         cmd += ["--min-confidence", str(args.min_confidence)]
+    if getattr(args, "timeout", None):
+        cmd += ["--timeout", str(args.timeout)]
+    if getattr(args, "target_timeout", None):
+        cmd += ["--target-timeout", str(args.target_timeout)]
 
     print(f"$ {' '.join(cmd)}\n")
     subprocess.run(cmd, check=False)
@@ -284,6 +290,8 @@ def main() -> None:
     p_scan.add_argument("--redone", action="store_true", help="Re-scan only done targets (excludes skip)")
     p_scan.add_argument("--exclude", nargs="+", metavar="NAME", help="Exclude specific targets by name")
     p_scan.add_argument("--min-confidence", type=int, metavar="N", help="Pass --min-confidence to corvus")
+    p_scan.add_argument("--timeout", type=int, metavar="N", help="Per-request timeout in seconds (default: 30)")
+    p_scan.add_argument("--target-timeout", type=int, metavar="N", help="Max seconds per target (default: 600)")
 
     p_update = sub.add_parser("update", help="Update state from existing corvus output dir")
     p_update.add_argument("output_dir", help="Path to corvus batch output dir")

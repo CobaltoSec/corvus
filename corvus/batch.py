@@ -45,11 +45,19 @@ _ALL_MODULES = [
 
 
 class BatchTarget:
-    def __init__(self, name: str, transport: str, cmd: list[str] | None, url: str | None):
+    def __init__(
+        self,
+        name: str,
+        transport: str,
+        cmd: list[str] | None,
+        url: str | None,
+        env_vars: dict[str, str] | None = None,
+    ):
         self.name = name
         self.transport = transport
         self.cmd = cmd
         self.url = url
+        self.env_vars = env_vars
 
 
 class BatchResult:
@@ -120,12 +128,16 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
         else:
             raise ValueError(f"Unknown transport '{transport}' in target '{entry['name']}'")
 
-        result.append(BatchTarget(name=entry["name"], transport=transport, cmd=cmd, url=url))
+        env_vars = entry.get("env_vars") or None
+        if env_vars is not None and not isinstance(env_vars, dict):
+            raise ValueError(f"Target '{entry['name']}': env_vars must be a dict")
+
+        result.append(BatchTarget(name=entry["name"], transport=transport, cmd=cmd, url=url, env_vars=env_vars))
 
     return result
 
 
-_TARGET_SCAN_TIMEOUT = 120  # seconds — hard cap per target regardless of per-request timeouts
+_TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-request timeouts
 
 
 async def run_batch(
@@ -133,6 +145,7 @@ async def run_batch(
     output_dir: Path,
     *,
     timeout: int = 30,
+    target_timeout: int = _TARGET_SCAN_TIMEOUT,
     min_confidence: int | None = None,
     sarif: bool = False,
 ) -> BatchResult:
@@ -143,12 +156,12 @@ async def run_batch(
         target_dir.mkdir(parents=True, exist_ok=True)
 
         if target.transport == "stdio":
-            xport = StdioTransport(target.cmd or [], timeout=timeout)
+            xport = StdioTransport(target.cmd or [], timeout=timeout, env=target.env_vars)
         else:
             xport = HttpTransport(target.url or "", timeout=timeout)
 
         try:
-            async with asyncio.timeout(_TARGET_SCAN_TIMEOUT):
+            async with asyncio.timeout(target_timeout):
                 async with xport:
                     session = ScanSession(
                         target=" ".join(target.cmd) if target.cmd else target.url or "",

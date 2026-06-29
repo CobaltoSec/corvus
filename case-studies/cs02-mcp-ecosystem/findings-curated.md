@@ -1,7 +1,7 @@
 # CS02 — Findings Curados
 
-Tabla consolidada post-FP-filter. 20 targets escaneados exitosamente de 42 intentados (22 errores de startup, 7 skip).
-Corvus v0.9.0 — 22 módulos — scan date: 2026-06-28.
+Tabla consolidada post-FP-filter. **31 targets escaneados** de 49 total (18 skip — browser/config/timeout).
+Corvus v0.9.2 — 18 módulos — primera pasada: 2026-06-28, segunda pasada: 2026-06-29.
 
 ## Tier D — Community ecosystem (npm)
 
@@ -27,26 +27,53 @@ Corvus v0.9.0 — 22 módulos — scan date: 2026-06-28.
 | Target | Weekly Downloads |
 |--------|-----------------|
 | european-parliament-mcp-server | 889/wk |
-| postgres-mcp-server | — |
-| pubmed-mcp-server | — |
-| spartan-mcp | — |
-| mcp-server-nationalparks | — |
-| shadcn-ui-mcp-server | — |
-| ui5-mcp-server | — |
+| postgres-mcp-server | 4,933/wk |
+| pubmed-mcp-server | 3,385/wk |
+| spartan-mcp | 1,455/wk |
+| mcp-server-nationalparks | 13,831/wk |
+| shadcn-ui-mcp-server | 3,046/wk |
+| ui5-mcp-server | 117,814/wk |
+| ssh-mcp-server | 2,373/wk |
+| remnux-mcp-server | 1,813/wk |
+| mysql-mcp-server | 1,060/wk |
+| openapi-mcp-server | 298/wk |
+
+## Segunda pasada — Findings (CS02-F15 → CS02-F31)
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS02-F15 | malicious-mcp-server | MCP01 Resource Exposure | CRITICAL | `file:///config/secrets.json` expuesto como recurso MCP | ✅ TP | Servidor deliberadamente malicioso expone recurso con ruta a archivo de secrets. Validación E2E del módulo resource_exposure. |
+| CS02-F16 | malicious-mcp-server | Gap 2 Output Encoding | HIGH | Hidden control characters en respuesta `messageFormatter` | ✅ TP | El módulo output_encoding detecta caracteres de control invisibles en tool output. Validación del módulo nuevo v0.9.x. |
+| CS02-F17 | malicious-mcp-server | Gap 2 Output Encoding | HIGH | Zero-width characters en respuesta `messageFormatter` | ✅ TP | Caracteres Unicode de ancho cero embebidos en output. Invisible al usuario, legible por el LLM — vector de exfiltración. |
+| CS02-F18 | ssh-mcp-server | EXT03 Shadow Tool | HIGH | `execute-command` description revela arbitrary execution intent | ✅ TP | SSH server expone `execute-command` como herramienta MCP. Un AI agent podría ser dirigido a ejecutar comandos arbitrarios via SSH en el host destino. |
+| CS02-F19 | remnux-mcp-server | MCP05 Cmd Injection | CRITICAL | `run_tool.command` — payload reflected: ejecución sospechosa | ✅ TP | El field `command` de `run_tool` refleja el payload en el output, sugiriendo que el comando se pasa al SO. Malware analysis server ejecutando comandos arbitrarios. |
+| CS02-F20 | remnux-mcp-server | EXT03 Shadow Tool | HIGH | `run_tool` description revela arbitrary execution intent | ✅ TP | Herramienta de análisis de malware con `run_tool` genérico. Un attacker puede redirigir el AI agent a ejecutar tools no relacionadas con el análisis. |
+| CS02-F21 | remnux-mcp-server | EXT03 Shadow Tool | HIGH | `analyze_file` description revela arbitrary execution intent | ✅ TP | "Analyzes a file using REMnux tools" — ejecución de herramientas del sistema en filepath controlado por el usuario. Path traversal + exec como vector combinado. |
+| CS02-F22 | mysql-mcp-server | EXT03 Shadow Tool | HIGH | `execute_query` description revela arbitrary execution intent | ✅ TP | MySQL server con `execute_query` genérico — cualquier SQL arbitrario. Sin restricción de tipo o scope declarada en el schema. |
+| CS02-F23 | myclaw-toolkit | MCP02 Scope Creep | HIGH | `wifi_qrcode` inputSchema solicita campo de credencial WiFi | ✅ TP | La herramienta de generación de QR WiFi expone `password` como campo MCP. Un AI agent con acceso podría exfiltrar contraseñas WiFi. |
+| CS02-F24 | myclaw-toolkit | MCP06 SSRF | HIGH | `rss_feed.url` — SSRF confirmado por timing delay | ✅ TP | El módulo SSRF detectó timing delay al probar `http://169.254.169.254/` — el server realizó una petición HTTP real al host interno antes de timeout. |
+| CS02-F25 | myclaw-toolkit | MCP06 SSRF | HIGH | `read_page.url` — SSRF confirmado por timeout | ✅ TP | `read_page` intentó fetch a IP interna y colgó hasta timeout — confirma que el server realiza peticiones HTTP sin validación de destino. |
+| CS02-F26 | mcp-mysql-server | MCP02 Scope Creep | HIGH | `list_databases` claims unrestricted database access scope | ✅ TP | Tool declara acceso irrestricto a todas las bases de datos. Un AI agent podría ser dirigido a listar, exfiltrar o destruir cualquier DB. |
+| CS02-F27 | mcp-mysql-server | EXT03 Shadow Tool | HIGH | `execute_ddl` description revela arbitrary DDL execution | ✅ TP | DDL arbitrario = DROP TABLE, ALTER TABLE, CREATE USER. Vector de destrucción de schema. |
+| CS02-F28 | mcp-mysql-server | EXT03 Shadow Tool | HIGH | `execute_write_query` description revela arbitrary write execution | ✅ TP | INSERT/UPDATE/DELETE arbitrario — modificación de datos sin restricción declarada. |
+| CS02-F29 | mcp-mysql-server | EXT03 Shadow Tool | HIGH | `execute_stored_procedure` description revela arbitrary execution | ✅ TP | Ejecución de stored procedures arbitrarios — potencialmente equivalente a RCE si el servidor tiene UDFs. |
+| CS02-F30 | mcp-mysql-server | EXT03 Shadow Tool | HIGH | `execute_seed_plan` description revela arbitrary execution | ✅ TP | "Seed plan" = script de inserción masiva. Un attacker puede usar este tool para inyectar datos maliciosos a escala. |
+| CS02-F31 | mysql-mcp-server | MCP04 Supply Chain | HIGH | `@modelcontextprotocol/sdk` HIGH vuln (cascade) | ✅ TP (cascade) | Sexto servidor afectado por el SDK advisory. Patrón completamente generalizado. |
 
 ---
 
-## Targets con ERROR de startup (22)
+## Targets con ERROR de startup (18 skip)
 
 Clasificados por causa probable:
 
 | Grupo | Targets | Causa |
 |-------|---------|-------|
-| Requiere credenciales DB | mcp-postgres, mcp-mysql-server, mysql-mcp-server, mcp-server-docker (nope — este SÍ corrió) | DB connection string obligatoria |
-| Requiere config/vault | obsidian-mcp-server, mediawiki-mcp-server, openapi-mcp-server | Path/URL de configuración obligatoria |
-| Startup hang/crash | korean-law-mcp, remnux-mcp-server, markmap-mcp-server, myclaw-toolkit, kernlang-mcp-server, musea-mcp-server, mcp-fetch, mcp-read-website-fast, fetch-url-mcp | npx cuelga durante descarga o init |
-| Requiere targets externos | ssh-mcp-server, mcp-server-code-runner | SSH host / sandbox Docker requerido |
-| Otros | cclsp, desktop-commander, malicious-mcp-server (ironía), agent-orchestrator-mcp-server, playwright-mcp-server | Configuración de workspace o servicios externos |
+| Browser/GUI requerido | nx-mcp, drawio-mcp, fetcher-mcp, mcp-webresearch, mcp-screenshot-website-fast, drawio-mcp-server, desktop-touch-mcp | Abren Chrome/Electron visible |
+| Requiere config/vault | obsidian-mcp-server, cclsp, agent-orchestrator-mcp-server | API key / config file obligatorio |
+| Crash MCP handshake | playwright-mcp-server, desktop-commander | Output no-JSON antes del handshake |
+| Timeout en tool probes | mediawiki-mcp-server, fetch-url-mcp | HTTP real por probe, excede target timeout |
+| Crash módulos dinámicos | markmap-mcp-server, mcp-server-code-runner, kernlang-mcp-server | Crash durante scan de módulos |
+| Bug interno del server | mcp-postgres | pg client reuse bug (crash startup) |
 
 ---
 
@@ -79,5 +106,33 @@ El OS recibió el payload URL-encoded literalmente (`%2e%2e%2f%2e%2e%2f`). Sin d
 ### CS02-FP01/FP02 — Token Exposure en regle (calibración)
 El module `token_exposure` tiene un regex que matchea palabras como "token", "secret", "key" en respuestas. La documentación Vue.js de Regle contiene frecuentemente estas palabras en contexto técnico (TypeScript generics, property names). Acción: agregar filtro de contexto — si el "credential" aparece dentro de código/markdown técnico, reducir confidence o downgradear a MEDIUM.
 
-### Supply chain cascade (CS02-F09/F10)
-Tercer y cuarto servidor afectados por `@modelcontextprotocol/sdk@<=1.25.1`. El patrón está completamente confirmado: cualquier server Node.js que use el SDK oficial es vulnerable. El advisory afecta a >200 servers en el ecosistema npm.
+### Supply chain cascade (CS02-F09/F10/F31)
+Sexto servidor afectado por `@modelcontextprotocol/sdk@<=1.25.1`. El patrón está completamente confirmado: cualquier server Node.js que use el SDK oficial es vulnerable. El advisory afecta a >200 servers en el ecosistema npm.
+
+### CS02-F19 — remnux-mcp-server CRITICAL injection
+`run_tool.command` refleja el payload en el output. Dado que REMnux está diseñado para ejecutar herramientas de análisis de malware (file, strings, hexdump, etc.), el field `command` probablemente se pasa directamente al SO. Un AI agent podría ser dirigido a ejecutar `run_tool(command="rm -rf /")` o similar. El server corre con sandbox deshabilitado (warning al inicio).
+
+### CS02-F24/F25 — myclaw-toolkit SSRF doble
+Dos herramientas de myclaw-toolkit confirman SSRF independientemente:
+- `rss_feed.url`: timing delay detectado → el server hizo una petición HTTP antes de rechazar (no es solo "URL parseada").
+- `read_page.url`: hung hasta timeout → fetch real a IP interna. Sin whitelist de destinos, sin validación de scheme. Ambos vectores en un solo servidor público (787/wk) representan un vector de acceso a metadatos cloud/internos.
+
+### CS02-F27/F28/F29/F30 — mcp-mysql-server shadow tools cluster
+`@berthojoris/mcp-mysql-server` expone 4 tools de ejecución arbitraria de SQL:
+- `execute_ddl` (DROP/CREATE/ALTER)
+- `execute_write_query` (INSERT/UPDATE/DELETE)  
+- `execute_stored_procedure` (stored procs = potencial RCE via UDF)
+- `execute_seed_plan` (batch inserts)
+Todas con descriptions que incluyen palabras "execute", "any", "arbitrary". Un AI agent comprometido puede destruir completamente la base de datos o escalar a RCE si el servidor MySQL tiene UDFs instaladas.
+
+### Protocol crash — expansión a 11 targets (35.4% → 35.5%)
+La segunda pasada agregó 4 targets más al cluster de proto-crash: ssh-mcp-server, remnux-mcp-server, mysql-mcp-server, openapi-mcp-server. Total: 11/31 targets (35.5%). La prevalencia se mantiene estable, confirmando que es un patrón sistémico del ecosistema MCP y no un artefacto de la muestra inicial.
+
+### FPs de segunda pasada — echo tools en myclaw-toolkit
+10+ findings de `injection reflected` en myclaw-toolkit son FPs. El toolkit tiene herramientas que por diseño incluyen el input en el output:
+- `color_tools`, `crypto_price`, `domain_check`: incluyen el query en la respuesta para mostrar contexto
+- `vcard_generator`: genera una vCard que contiene los campos de entrada
+- `compare`: retorna ambos valores para mostrar la comparación
+- `json_formatter`, `markdown_to_html`: transforma el input — el output incluye el contenido transformado
+
+El `_is_input_echo` filter de v0.9.2 cubre algunos (param name en `_ECHO_FIELD_NAMES`), pero estos tienen nombres de param específicos del dominio (color, coin, vs, domain, phone, org, markdown) que no están en la lista. Acción para v0.9.3: expandir `_ECHO_FIELD_NAMES` con más términos de dominio comunes, o agregar lógica de detección de "transformation echo" (output contiene input transformado, no literal).

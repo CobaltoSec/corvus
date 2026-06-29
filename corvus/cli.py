@@ -323,13 +323,15 @@ def batch(
         "--fail-on",
         help="Exit 1 if any target has findings at this severity or above")] = None,
     timeout: Annotated[Optional[int], typer.Option(
-        "--timeout", help="Request timeout in seconds per target")] = None,
+        "--timeout", help="Request timeout in seconds per MCP call")] = None,
+    target_timeout: Annotated[Optional[int], typer.Option(
+        "--target-timeout", help="Max seconds per target (default 600)")] = None,
     sarif: Annotated[bool, typer.Option("--sarif", help="Also write SARIF for each target")] = False,
     min_confidence: Annotated[Optional[int], typer.Option(
         "--min-confidence", help="Exclude findings below this confidence score (0-100)")] = None,
 ):
     """Scan multiple MCP servers from a targets YAML file."""
-    asyncio.run(_batch(config, output_dir, fail_on, timeout, sarif, min_confidence))
+    asyncio.run(_batch(config, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence))
 
 
 async def _batch(
@@ -337,6 +339,7 @@ async def _batch(
     output_dir: Path | None,
     fail_on: str | None,
     timeout: int | None,
+    target_timeout: int | None,
     sarif: bool,
     min_confidence: int | None,
 ) -> None:
@@ -361,6 +364,7 @@ async def _batch(
         targets,
         output_dir,
         timeout=timeout or 30,
+        target_timeout=target_timeout or 600,
         min_confidence=min_confidence,
         sarif=sarif,
     )

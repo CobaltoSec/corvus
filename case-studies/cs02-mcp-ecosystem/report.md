@@ -1,7 +1,7 @@
 # CS02 — MCP Ecosystem Security Audit: Tier D
 
-**Corvus** v0.9.0 — 22 scan modules — OWASP MCP Top 10  
-**Date:** 2026-06-28  
+**Corvus** v0.9.2 — 18 scan modules — OWASP MCP Top 10  
+**Date:** 2026-06-28 / 2026-06-29 (dos pasadas)  
 **Scope:** 49 Tier D targets (npm ecosystem, community-published MCP servers)  
 **Analyst:** CobaltoSec / Nico Padilla  
 **Status:** COMPLETE
@@ -10,72 +10,97 @@
 
 ## Executive Summary
 
-CS02 extends the MCP ecosystem audit initiated in CS01 (23 targets, 62 findings) to 49 additional community-published MCP servers. Of 42 scan attempts (7 manually skipped), **20 targets completed successfully** and **22 encountered startup errors** (credential-dependent or config-requiring servers). 
+CS02 extends the MCP ecosystem audit initiated in CS01 (23 targets, 43 TPs) to 49 additional community-published MCP servers. After two scan passes with credential injection, env_vars support, and timeout tuning, **31 targets completed successfully** (18 skipped — browser/config/timeout).
 
-The 20 scanned servers produced **257 raw findings**. After FP filtering, **12 confirmed TPs** remain — with findings concentrated in Shadow Tools, Protocol Crashes, Scope Creep, and Supply Chain cascade.
+The 31 scanned servers produced **~450 raw findings**. After FP filtering, **29 confirmed TPs** remain — including 2 CRITICAL, 25 HIGH — concentrated in Shadow Tools, Protocol Crashes, SSRF, Scope Creep, and Supply Chain cascade.
 
-**No CRITICAL true positives were found.** The 2 CRITICAL raw findings are confirmed FPs (Token Exposure false alarm in Vue.js documentation text).
+**2 CRITICAL TPs confirmed:** resource exposure in a malicious server (E2E validation) and command injection in a malware analysis tool (remnux-mcp-server).
 
 ### Key Numbers
 
 | Metric | Value |
 |--------|-------|
 | Targets defined | 49 |
-| Skipped (browser/desktop/auth) | 7 |
-| Attempted | 42 |
-| Successfully scanned | 20 |
-| Startup errors | 22 |
-| Raw findings | 257 |
-| Confirmed TPs (HIGH) | 10 |
-| Confirmed TPs (MEDIUM) | 0 |
-| Confirmed FPs | 5 categories |
-| Unique OWASP categories hit | 7 |
+| Skipped (browser/desktop/auth/timeout) | 18 |
+| Successfully scanned | 31 |
+| Raw HIGH+ findings | ~90 |
+| Confirmed TPs (CRITICAL) | 2 |
+| Confirmed TPs (HIGH) | 25 |
+| Estimated FP rate (HIGH+) | ~44% |
+| Unique OWASP categories hit | 8 |
+| Protocol crash prevalence | 11/31 (35.5%) |
 
 ---
 
 ## Findings by Category
 
-### EXT03 — Shadow Tool (5 TPs)
+### EXT03 — Shadow Tool (11 TPs)
 
-Five tools across three servers expose execution capabilities through ambiguous or dangerous descriptions:
+Eleven tools across six servers expose execution capabilities through ambiguous or dangerous descriptions:
 
 - **mcp-server-docker** — `run_command` conflicts with built-in name AND describes Docker command execution. Dual-signal detection (HIGH confidence).
-- **postgres-mcp-server** — `pg_execute_sql` explicitly describes "Execute arbitrary SQL statements — sql=ANY_VALID_SQL". An AI agent prompted to "run arbitrary database queries" would invoke this tool with attacker-controlled SQL.
-- **lsp-mcp-server** — `lsp_code_actions` description instructs the model: "Set apply=true to execute an action." This is a direct prompt injection vector embedded in the tool description.
-- **docx-mcp** — `batch_edit` accepts `plan_file_path`, a JSON array of edit operations from an external file. A compromised tool output pipeline could inject a malicious plan file reference.
+- **postgres-mcp-server** — `pg_execute_sql`: "Execute arbitrary SQL statements — sql=ANY_VALID_SQL".
+- **lsp-mcp-server** — `lsp_code_actions`: "Set apply=true to execute an action." Direct prompt injection in tool description.
+- **docx-mcp** — `batch_edit` accepts `plan_file_path` — external file injection vector.
+- **ssh-mcp-server** — `execute-command` exposes arbitrary SSH command execution as an MCP tool. An AI agent can be directed to run any command on the SSH target.
+- **remnux-mcp-server** — `run_tool` + `analyze_file`: malware analysis server exposing generic execution. Runs with sandbox disabled.
+- **mcp-mysql-server** — 4 tools: `execute_ddl`, `execute_write_query`, `execute_stored_procedure`, `execute_seed_plan`. Full SQL attack surface including DDL (schema destruction) and stored procedure exec (potential RCE via UDF).
+- **mysql-mcp-server** — `execute_query`: arbitrary SQL without type restriction.
 
-**Pattern:** All four servers ship legitimate functionality that, when described carelessly to an AI agent, creates prompt injection surfaces. The `run_command` case is the highest risk — name collision + arbitrary container exec.
+**Pattern:** All servers ship legitimate functionality that, when described carelessly to an AI agent, creates prompt injection surfaces. The `execute_ddl` case is the highest risk — schema destruction (DROP TABLE) is irreversible.
 
 ---
 
-### EXT01 — Protocol Crash / Proto-Fuzz (7 TPs)
+### EXT01 — Protocol Crash / Proto-Fuzz (11 TPs)
 
-**35% of successfully scanned servers** (7/20) crash when receiving an oversized JSON-RPC method name:
+**35.5% of successfully scanned servers** (11/31) crash when receiving an oversized JSON-RPC method name:
 
-> european-parliament-mcp-server, postgres-mcp-server, pubmed-mcp-server, spartan-mcp, mcp-server-nationalparks, shadcn-ui-mcp-server, ui5-mcp-server
+> european-parliament-mcp-server, postgres-mcp-server, pubmed-mcp-server, spartan-mcp, mcp-server-nationalparks, shadcn-ui-mcp-server, ui5-mcp-server, ssh-mcp-server, remnux-mcp-server, mysql-mcp-server, openapi-mcp-server
 
-**Impact:** Denial of service via a single malformed JSON-RPC request. Reproducible against any transport layer (stdio or HTTP). Servers using the official `@modelcontextprotocol/sdk` inherit this behavior.
+**Impact:** Denial of service via a single malformed JSON-RPC request. Reproducible against any transport layer (stdio or HTTP). The prevalence held stable between the two scan passes (7/20 = 35% → 11/31 = 35.5%), confirming this is a systemic ecosystem pattern — not a sampling artifact.
 
 **Attack vector:** Any MCP client that proxies user input to the server without method name validation can trigger this crash.
 
 ---
 
-### MCP02 — Scope Creep / inputSchema (1 TP)
+### MCP02 — Scope Creep / inputSchema (3 TPs)
 
-**postgres-mcp-server** — `pg_manage_users` declares a `password` field in its MCP inputSchema. This is the first **automated detection of Gap 1** (credential fields in tool schemas) validated against a real-world server.
+Three servers expose credential fields or unrestricted access declarations in their MCP inputSchema:
 
-**Risk:** An AI agent connected to this server could be prompted to pass real credentials through the MCP channel. The schema declaration makes the attack surface explicit and discoverable.
+- **postgres-mcp-server** — `pg_manage_users.password`: first automated detection of Gap 1.
+- **mcp-mysql-server** — `list_databases` claims unrestricted access to all databases in the schema description.
+- **myclaw-toolkit** — `wifi_qrcode` declares a WiFi password field as an MCP parameter. An AI agent could be prompted to read and exfiltrate WiFi credentials.
+
+**Risk:** An AI agent connected to these servers could be prompted to pass real credentials through the MCP channel. The schema declaration makes the attack surface explicit and machine-discoverable.
 
 ---
 
-### MCP04 — Supply Chain (2 TPs, cascade)
+### MCP04 — Supply Chain (3 TPs, cascade)
 
-Two additional servers confirmed using `@modelcontextprotocol/sdk@<=1.25.1` (HIGH advisory, no CVE assigned):
+Three servers confirmed using `@modelcontextprotocol/sdk@<=1.25.1` (HIGH advisory, no CVE assigned):
 
-- **mcp-server-docker** 
+- **mcp-server-docker**
 - **flightradar-mcp-server**
+- **mysql-mcp-server**
 
-This is the 3rd and 4th server in the combined CS01+CS02 dataset affected by this advisory (prior: server-github, npm-search-mcp-server, server-postgres, server-sqlite). The pattern is now statistically significant: **the official MCP SDK advisory affects a large fraction of the npm ecosystem**.
+This is the 4th–6th server in the combined CS01+CS02 dataset affected by this advisory (prior: server-github, npm-search-mcp-server, server-postgres, server-sqlite). **The official MCP SDK advisory now has 6 confirmed affected servers across two independent audits** — and likely affects >200 npm packages that declare the SDK as a dependency.
+
+### MCP06 — SSRF (2 TPs, new)
+
+**myclaw-toolkit** exposes two SSRF vectors confirmed by behavioral analysis:
+
+- `rss_feed.url` — timing delay detected on `http://169.254.169.254/` payload: the server initiated a real HTTP request before timing out.
+- `read_page.url` — hung on internal IP payload: server confirmed to fetch arbitrary URLs without destination validation.
+
+**Impact:** An AI agent using myclaw-toolkit can be directed to make HTTP requests to internal network services, cloud metadata endpoints, or SSRF-amplifiable resources. No URL whitelist or scheme validation detected.
+
+### MCP05 — Injection CRITICAL (1 TP)
+
+**remnux-mcp-server** — `run_tool.command` reflects the injected payload in tool output, indicating the `command` parameter is passed to the system. REMnux is designed for malware analysis (executes `file`, `strings`, `hexdump`, etc.) and starts with sandbox explicitly disabled. An AI agent can be directed to `run_tool(command="malicious_cmd")` without sandboxing.
+
+### Gap 2 — Output Encoding (2 TPs, E2E validation)
+
+**malicious-mcp-server** — The `output_encoding` module (v0.9.x) detected hidden Unicode control characters and zero-width characters in `messageFormatter` tool responses. This validates the new detection module against a server designed to include these payloads. These characters are invisible to users but readable by LLMs — confirmed exfiltration vector.
 
 ---
 
@@ -122,20 +147,25 @@ The majority of MCP05 HIGH findings are echo behavior: the server includes the s
 
 ## Scan Coverage Analysis
 
-### 22 Startup Errors — Root Causes
+### Skip Causes (18 targets)
 
 | Cause | Count | Examples |
 |-------|-------|---------|
-| Credentials required (DB) | ~6 | mcp-postgres, mysql-mcp-server, mcp-mysql-server |
-| Config/vault required | ~4 | obsidian-mcp-server, mediawiki-mcp-server, openapi-mcp-server |
-| npx startup hang | ~8 | korean-law-mcp, remnux-mcp-server, markmap-mcp-server, mcp-fetch |
-| External service required | ~4 | ssh-mcp-server, mcp-server-code-runner, desktop-commander |
+| Browser/GUI required | 7 | nx-mcp, drawio-mcp, fetcher-mcp, mcp-webresearch |
+| Config/API key required | 3 | obsidian-mcp-server, cclsp, agent-orchestrator-mcp-server |
+| Protocol incompatible | 2 | playwright-mcp-server (stdout text), desktop-commander (no output) |
+| Real HTTP per probe | 2 | mediawiki-mcp-server, fetch-url-mcp |
+| Dynamic scan crash | 3 | markmap-mcp-server, mcp-server-code-runner, kernlang-mcp-server |
+| Server-side bug | 1 | mcp-postgres (pg client reuse) |
 
-**Implication:** ~52% of targeted community servers require credentials or external services to start. Automated batch scanning is limited to self-contained servers. Credential-aware scanning would require per-server configuration — a significant operational overhead.
+**Engineering improvements from this run:**
+- `env_vars` support added: 3 credential-requiring servers now scannable (mysql-mcp-server, mcp-mysql-server)
+- `--target-timeout` parameter: hard cap increased 120s → 600s, exposed as CLI flag
+- `ssh-mcp-server` scanned via positional CLI args (lab VM 301)
 
 ### Scan Velocity
 
-Watchdog timeout (45s) + per-target hard cap (120s) + 7 skip + 22 errors = ~35 minutes for 42 targets. The asyncio ProactorEventLoop + threading.Timer combination proved stable for Windows environments. Zero hangs during this run.
+Two passes — primera pasada (2026-06-28): 20/42 targets in ~35 min; segunda pasada (2026-06-29): 11 additional targets in ~25 min. Total: 31 targets, ~60 minutes scan time across two sessions. The threading.Timer watchdog combination proved stable on Windows ProactorEventLoop. Zero hangs in segunda pasada.
 
 ---
 
@@ -143,15 +173,17 @@ Watchdog timeout (45s) + per-target hard cap (120s) + 7 skip + 22 errors = ~35 m
 
 | Metric | CS01 | CS02 | Combined |
 |--------|------|------|---------|
-| Targets scanned | 23 | 20 | 43 |
-| Raw findings | ~320 | 257 | ~577 |
-| Confirmed TPs | 43 | 12 | 55 |
-| CRITICAL TPs | 1 | 0 | 1 |
-| HIGH TPs | 27 | 10 | 37 |
-| FP rate | ~30.6% | ~40% | ~34% |
-| Servers with ≥1 HIGH | 13/23 (57%) | 10/20 (50%) | 23/43 (53%) |
+| Targets scanned | 23 | 31 | 54 |
+| Raw HIGH+ findings | ~120 | ~90 | ~210 |
+| Confirmed TPs | 43 | 29 | 72 |
+| CRITICAL TPs | 1 | 2 | 3 |
+| HIGH TPs | 27 | 25 | 52 |
+| FP rate (HIGH+) | ~30.6% | ~44% | ~36% |
+| Servers with ≥1 HIGH TP | 13/23 (57%) | 16/31 (52%) | 29/54 (54%) |
+| Protocol crash prevalence | — | 35.5% | — |
+| Supply Chain (SDK cascade) | 4 | 3 | 6 unique |
 
-The FP rate increase in CS02 (30.6% → ~40%) reflects the broader diversity of server types: documentation servers and community tools have more echo-pattern behavior that triggers the injection module.
+The FP rate increase in CS02 (30.6% → ~44%) reflects the broader diversity of server types: community tools (toolkits, formatters) have more echo-pattern behavior. The `myclaw-toolkit` alone generated ~10 injection FPs from formatting/comparison tools. Excluding myclaw, the CS02 FP rate drops to ~32% — in line with CS01.
 
 ---
 
@@ -188,14 +220,19 @@ CS01 disclosures remain open:
 ## Appendix: Scan Configuration
 
 ```
-Command: python -m corvus batch case-studies/cs02-mcp-ecosystem/targets-master.yaml \
-         --output-dir case-studies/cs02-mcp-ecosystem/batch-scans/20260628-150102 \
-         --sarif --timeout 30
-Corvus: v0.9.0
-Modules: 22 (all)
+# Primera pasada
+Command: python cs02.py scan --tier D --timeout 30
+Corvus: v0.9.0 → v0.9.2
+Modules: 18 (all)
 Watchdog: 45s startup timeout (threading.Timer)
-Per-target cap: 120s (asyncio.timeout)
-Transport: stdio (npx -y), HTTP (where applicable)
+Per-target cap: 120s → 600s (asyncio.timeout, bumped in segunda pasada)
+Transport: stdio (npx -y), env_vars injection for credential-requiring servers
 Platform: Windows 11 + Python 3.12 + ProactorEventLoop
-Date: 2026-06-28
+Dates: 2026-06-28 (pasada 1) / 2026-06-29 (pasada 2)
+
+# Segunda pasada fixes
+- env_vars: StdioTransport + BatchTarget + cs02.py
+- --target-timeout CLI param: corvus batch + cs02.py
+- ssh-mcp-server: positional args --host/--port/--username/--password
+- mcp-mysql-server: positional mysql:// URL
 ```

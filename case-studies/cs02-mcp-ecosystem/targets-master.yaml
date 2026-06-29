@@ -33,11 +33,10 @@ targets:
   - npx
   - -y
   - '@wonderwhy-er/desktop-commander'
-  status: error
+  status: skip
   notes: MCP server for terminal operations and file editing. Terminal + file editing
-    (30+ tools) — huge attack surface 30,359/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    (30+ tools) — huge attack surface 30,359/wk. SKIP — crashes silently on startup
+    (no MCP handshake produced).
 - name: drawio-mcp
   tier: D
   transport: stdio
@@ -90,10 +89,9 @@ targets:
   - npx
   - -y
   - obsidian-mcp-server
-  status: error
+  status: skip
   notes: Obsidian vault read/write via REST API plugin. File system access 5,866/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    SKIP — requires OBSIDIAN_API_KEY (real Obsidian vault + REST API plugin).
 - name: cclsp
   tier: D
   transport: stdio
@@ -101,11 +99,10 @@ targets:
   - npx
   - -y
   - cclsp
-  status: error
+  status: skip
   notes: MCP server for accessing LSP functionality. Code intelligence attack surface
-    5,309/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    5,309/wk. SKIP — requires CCLSP_CONFIG_PATH pointing to a config file with LSP
+    server defs.
 - name: postgres-mcp-server
   tier: D
   transport: stdio
@@ -138,11 +135,12 @@ targets:
   - npx
   - -y
   - malicious-mcp-server
-  status: error
+  status: done
   notes: A deliberately malicious MCP server for E2E testing purposes. High attack
     surface by design 3,967/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 1C 4H 3M 8L 3I
+  curation: pending
 - name: musea-mcp-server
   tier: D
   transport: stdio
@@ -150,11 +148,12 @@ targets:
   - npx
   - -y
   - '@vizejs/musea-mcp-server'
-  status: error
+  status: done
   notes: MCP server for building Vue.js design systems. Component analysis, documentation,
     variant generation 3,889/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 2M 7L 1I
+  curation: pending
 - name: flightradar-mcp-server
   tier: D
   transport: stdio
@@ -222,11 +221,9 @@ targets:
   - npx
   - -y
   - '@professional-wiki/mediawiki-mcp-server'
-  status: error
+  status: skip
   notes: Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
-    2,844/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    2,844/wk. SKIP — real HTTP calls to Wikipedia per tool probe; consistently exceeds scan timeout.
 - name: mantine-mcp-server
   tier: D
   transport: stdio
@@ -246,10 +243,20 @@ targets:
   - npx
   - -y
   - '@fangjunjie/ssh-mcp-server'
-  status: error
-  notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  - --host
+  - 10.13.37.150
+  - --port
+  - '22'
+  - --username
+  - lab
+  - --password
+  - lab
+  status: done
+  notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk. Uses
+    lab VM 301 (10.13.37.150, lab/lab).
+  last_scanned: '2026-06-29'
+  findings_summary: 2H
+  curation: pending
 - name: mcp-webresearch
   tier: D
   transport: stdio
@@ -267,10 +274,11 @@ targets:
   - npx
   - -y
   - korean-law-mcp
-  status: error
+  status: done
   notes: Korean law database. Public API — schema + injection surface 2,039/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 1H 3M 6L
+  curation: pending
 - name: remnux-mcp-server
   tier: D
   transport: stdio
@@ -278,10 +286,12 @@ targets:
   - npx
   - -y
   - '@remnux/mcp-server'
-  status: error
+  status: done
   notes: REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
+    Starts with WARNING — sandbox disabled.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 1C 4H 7M
+  curation: pending
 - name: mcp-javadc
   tier: D
   transport: stdio
@@ -301,10 +311,11 @@ targets:
   - npx
   - -y
   - '@kazuph/mcp-fetch'
-  status: error
+  status: done
   notes: Fetch URL + save images. SSRF + path write 1,729/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 3M 9L
+  curation: pending
 - name: docx-mcp
   tier: D
   transport: stdio
@@ -336,10 +347,9 @@ targets:
   - npx
   - -y
   - mcp-postgres
-  status: error
+  status: skip
   notes: PostgreSQL MCP — query execution (test DB). SQL injection surface 1,396/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    SKIP — pg client reuse bug causes crash on startup regardless of connection string.
 - name: markmap-mcp-server
   tier: D
   transport: stdio
@@ -347,10 +357,9 @@ targets:
   - npx
   - -y
   - '@jinzcdev/markmap-mcp-server'
-  status: error
-  notes: Markmap mind-map generation from Markdown 1,319/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  status: skip
+  notes: Markmap mind-map generation from Markdown 1,319/wk. SKIP — crashes during
+    dynamic module scan consistently across 3 attempts.
 - name: mcp-server-code-runner
   tier: D
   transport: stdio
@@ -358,9 +367,10 @@ targets:
   - npx
   - -y
   - mcp-server-code-runner
-  status: error
-  notes: Code Runner MCP Server. Code execution attack surface 1,248/wk.
-  last_scanned: '2026-06-28'
+  status: skip
+  notes: Code Runner MCP Server. Code execution attack surface 1,248/wk. SKIP — crashes
+    during dynamic module scan consistently across 3 attempts.
+  last_scanned: '2026-06-29'
   findings_summary: ERROR (no report.json)
 - name: mcp-read-website-fast
   tier: D
@@ -369,10 +379,11 @@ targets:
   - npx
   - -y
   - '@just-every/mcp-read-website-fast'
-  status: error
+  status: done
   notes: Fast web content fetch. SSRF attack surface 1,233/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 2M
+  curation: pending
 - name: mcp-screenshot-website-fast
   tier: D
   transport: stdio
@@ -389,10 +400,17 @@ targets:
   - npx
   - -y
   - mysql-mcp-server
-  status: error
+  status: done
   notes: MySQL read-only queries (test DB). SQL surface 1,060/wk.
+  env_vars:
+    MYSQL_HOST: localhost
+    MYSQL_PORT: '3306'
+    MYSQL_USER: root
+    MYSQL_PASSWORD: root
+    MYSQL_DATABASE: test
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 3H
+  curation: pending
 - name: drawio-mcp-server
   tier: D
   transport: stdio
@@ -445,9 +463,10 @@ targets:
   - npx
   - -y
   - '@j0hanz/fetch-url-mcp'
-  status: error
-  notes: URL fetch → markdown conversion. SSRF attack surface 839/wk.
-  last_scanned: '2026-06-28'
+  status: skip
+  notes: URL fetch → markdown conversion. SSRF attack surface 839/wk. SKIP — real
+    HTTP fetch per tool probe; consistently exceeds scan timeout.
+  last_scanned: '2026-06-29'
   findings_summary: ERROR (no report.json)
 - name: myclaw-toolkit
   tier: D
@@ -456,10 +475,11 @@ targets:
   - npx
   - -y
   - myclaw-toolkit
-  status: error
+  status: done
   notes: 23-in-1 dev toolkit (search, crypto, QR, rates, etc.) 787/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 1C 13H 3M 24L 1I
+  curation: pending
 - name: kernlang-mcp-server
   tier: D
   transport: stdio
@@ -467,9 +487,10 @@ targets:
   - npx
   - -y
   - '@kernlang/mcp-server'
-  status: error
-  notes: KERN DSL compiler. Code exec + file write surface 762/wk.
-  last_scanned: '2026-06-28'
+  status: skip
+  notes: KERN DSL compiler. Code exec + file write surface 762/wk. SKIP — crashes
+    during dynamic module scan consistently across 3 attempts.
+  last_scanned: '2026-06-29'
   findings_summary: ERROR (no report.json)
 - name: mcp-server-docker
   tier: D
@@ -503,10 +524,13 @@ targets:
   - npx
   - -y
   - '@berthojoris/mcp-mysql-server'
-  status: error
-  notes: MySQL per-project permission model. SQL injection surface 636/wk.
+  - mysql://root:root@localhost:3306/test
+  status: done
+  notes: MySQL per-project permission model. SQL injection surface 636/wk. Requires
+    positional mysql:// URL arg.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 9H 15M 10L 3I
+  curation: pending
 - name: agent-orchestrator-mcp-server
   tier: D
   transport: stdio
@@ -514,11 +538,10 @@ targets:
   - npx
   - -y
   - agent-orchestrator-mcp-server
-  status: error
+  status: skip
   notes: Local implementation of agent-orchestrator MCP server. Tool injection + scope
-    surface 605/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    surface 605/wk. SKIP — requires real AGENT_ORCHESTRATOR_BASE_URL + API key; healthcheck
+    crashes before MCP handshake.
 - name: playwright-mcp-server
   tier: D
   transport: stdio
@@ -526,11 +549,10 @@ targets:
   - npx
   - -y
   - playwright-mcp-server
-  status: error
+  status: skip
   notes: MCP server for generating Playwright tests (distinct from @playwright/mcp).
-    Schema surface 593/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+    Schema surface 593/wk. SKIP — outputs plain-text line to stdout before MCP handshake;
+    breaks JSON-RPC transport.
 - name: desktop-touch-mcp
   tier: D
   transport: stdio
@@ -561,7 +583,8 @@ targets:
   - npx
   - -y
   - openapi-mcp-server
-  status: error
+  status: done
   notes: MCP server for interacting with openapisearch.com API 298/wk.
   last_scanned: '2026-06-28'
-  findings_summary: ERROR (no report.json)
+  findings_summary: 1H 2M
+  curation: pending
