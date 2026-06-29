@@ -189,10 +189,17 @@ The FP rate increase in CS02 (30.6% → ~44%) reflects the broader diversity of 
 
 ## Responsible Disclosure
 
-No new CRITICAL TPs requiring immediate disclosure in CS02. The `@modelcontextprotocol/sdk` advisory was previously disclosed (CS01). The `postgres-mcp-server` scope creep and `mcp-server-docker` shadow tool findings will be evaluated for disclosure in the next disclosure batch.
+### CS02 — New disclosures (2026-06-29)
 
-CS01 disclosures remain open:
-- GHSA-mf64-cgv4-ppcx (@playwright/mcp) — 90d timeline
+| GHSA | Target | Severity | Finding | Status |
+|------|--------|----------|---------|--------|
+| [GHSA-43j9-hmpq-cgv7](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-43j9-hmpq-cgv7) | remnux-mcp-server | CRITICAL | `run_tool.command` passed to OS without sanitization (CS02-F19) | Maintainer notified (lennyzeltser), CVE pending MITRE, 90d timeline |
+| [GHSA-qwwj-38wj-ffvw](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-qwwj-38wj-ffvw) | myclaw-toolkit | HIGH | SSRF via `rss_feed.url` and `read_page.url` — no URL validation (CS02-F24/F25) | Maintainer notified (Dusheh), CVE pending MITRE, 90d timeline |
+
+Both advisories filed via `CobaltoSec/advisories` (PVR disabled on target repos). Discovered with Corvus v0.9.2.
+
+### CS01 disclosures (open)
+- GHSA-mf64-cgv4-ppcx (@playwright/mcp) — 90d timeline, MSRC+CVE pending
 - GHSA-7w27-7xwv-x6x2 (mcp-server-sqlite) — closed
 - GHSA-7763-c5gf-v5fj (mcp-shell-server) — open
 - GHSA-pr6r-h66r-m47j (server-everything) — open
