@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V20] — 2026-06-29 — FP calibration v3
+
+- **`cmd_injection.py`** — `_ECHO_FIELD_NAMES` expandido con 17 términos de dominio (color, coin, domain, markdown, phone, org, vs, url, format, content, value, data, message, code, source, html, param). Nuevo `_TRANSFORMATION_TOOL_RE`: si el nombre del tool contiene verbos de transformación (format, convert, encode, render, etc.), cualquier reflejo del input se trata como echo display, no señal de inyección. `_is_input_echo()` recibe `tool_name` como parámetro. Fix CS02-FP03 class (10+ FPs en myclaw-toolkit).
+- **`token_exposure.py`** — `_is_type_annotation_match()` extendido: template literal types (`` `${string}` ``), array shorthand (`string[]`), TS modifier words (readonly, optional, abstract, static, etc.). Nueva función `_strip_code_blocks()`: elimina bloques de código markdown (``` ``` ``` y `` `...` ``) antes de escanear credenciales, evitando FPs en respuestas de documentación técnica. Fix CS02-FP01/FP02 residuales.
+- **`shadow_tool.py`** — Scope qualifier severity reducer: si `_check()` detecta un nombre EXACT_HIGH pero la descripción contiene un qualifier de alcance ("only", "within", "restricted to", etc.), downgrade HIGH → MEDIUM. DB-prefix description downgrade: `_check_description()` emite MEDIUM (no HIGH) para tools con prefijo de DB (`pg_`, `mysql_`, `mongo_`, etc.) que usan lenguaje de ejecución en su descripción. Fix CS02-FP04/FP05 class.
+- **`param_smuggling.py`** — `_response_diff()` refactorizado: (1) early exit cuando probe causa `isError=True` — el server rechazó el param desconocido (comportamiento CORRECTO, no backdoor); (2) skip cuando los nuevos JSON keys son solo indicadores de error (`error`, `errors`). Fix CS02-F13/F14 class FPs (lsp-mcp-server, jamf-docs-mcp-server).
+- **`tests/test_fp_calibration_v3.py`** — 21 nuevos tests cubriendo todas las calibraciones.
+- **`pyproject.toml`** — bump 0.9.2 → 0.9.3
+- **Tests** — 180 → 201
+
 ## [RT-CORVUS-V19] — 2026-06-29 — CS02 segunda pasada + responsible disclosure
 
 - **`corvus/transport/stdio.py`** — `env_vars` support: `StdioTransport.__init__` acepta `env: dict[str,str] | None`, merged sobre `os.environ` en `connect()`.

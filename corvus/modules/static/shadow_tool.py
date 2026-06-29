@@ -43,6 +43,18 @@ _DANGEROUS_DESCRIPTION = re.compile(
     re.I,
 )
 
+# Scope qualifier phrases that limit a tool to a specific context — reduces severity
+_SCOPE_QUALIFIER_RE = re.compile(
+    r"\b(only|restricted?\s+to|scoped?\s+to|within\s+the|inside\s+the|limited?\s+to|specific(ally)?)\b",
+    re.I,
+)
+
+# DB-tool name prefixes — tools with these prefixes legitimately use execution language in docs
+_DB_TOOL_PREFIX_RE = re.compile(
+    r"^(pg_|mysql_|mongo_|sqlite_|redis_|elastic_|dynamo_|psql_|db_)",
+    re.I,
+)
+
 
 class ShadowToolModule(ScanModule):
     owasp_id = "EXT03"
@@ -62,12 +74,32 @@ class ShadowToolModule(ScanModule):
     ) -> list[Finding]:
         findings: list[Finding] = []
         for tool in surface.tools:
-            findings.extend(self._check(tool.name))
+            findings.extend(self._check(tool.name, tool.description or ""))
             findings.extend(self._check_description(tool.name, tool.description))
         return findings
 
     def _check_description(self, name: str, description: str) -> list[Finding]:
         if description and _DANGEROUS_DESCRIPTION.search(description):
+            # DB-prefix tools legitimately use execution language in their descriptions
+            # (e.g. pg_execute_sql "Executes arbitrary SQL"). Still flag but at lower severity.
+            if _DB_TOOL_PREFIX_RE.match(name):
+                return [Finding(
+                    owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
+                    severity=Severity.MEDIUM,
+                    title=f"Shadow Tool — '{name}' (DB tool) description reveals execution intent",
+                    description=(
+                        f"Tool '{name}' description contains execution keywords. "
+                        "DB-prefixed tools legitimately execute queries, but verify the scope "
+                        "is restricted to the intended database context."
+                    ),
+                    tool_name=name,
+                    evidence=description[:300],
+                    remediation=(
+                        "Declare the allowed SQL operation types in the schema and reject "
+                        "statements outside the declared scope (e.g. no DDL if tool is DQL only)."
+                    ),
+                    confidence=60,
+                )]
             return [Finding(
                 owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
                 severity=Severity.HIGH,
@@ -86,14 +118,19 @@ class ShadowToolModule(ScanModule):
             )]
         return []
 
-    def _check(self, name: str) -> list[Finding]:
+    def _check(self, name: str, description: str = "") -> list[Finding]:
         found: list[Finding] = []
 
         if name.lower() in _EXACT_HIGH:
+            # If the description declares a scope qualifier, the tool is restricted —
+            # downgrade from HIGH to MEDIUM (e.g. 'read_file' limited to .docx files)
+            has_scope = bool(description and _SCOPE_QUALIFIER_RE.search(description))
+            severity = Severity.MEDIUM if has_scope else Severity.HIGH
+            title_suffix = " (scope-restricted)" if has_scope else " conflicts with a high-value built-in name"
             found.append(Finding(
                 owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
-                severity=Severity.HIGH,
-                title=f"Shadow Tool — '{name}' conflicts with a high-value built-in name",
+                severity=severity,
+                title=f"Shadow Tool — '{name}'{title_suffix}",
                 description=(
                     f"Tool '{name}' uses a name commonly associated with built-in or "
                     "high-privilege operations. A malicious server could register this tool "
@@ -105,7 +142,7 @@ class ShadowToolModule(ScanModule):
                     "Avoid generic names like 'bash', 'execute', or 'read_file' that clash "
                     "with well-known tool namespaces."
                 ),
-                confidence=90,
+                confidence=90 if not has_scope else 70,
             ))
             return found  # no need to check further patterns for the same tool
 

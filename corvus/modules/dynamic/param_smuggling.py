@@ -9,6 +9,9 @@ from ...core.session import ScanSession
 from ...payloads.engine import PayloadEngine
 from ...transport.base import MCPTransport
 
+# JSON keys that indicate an error/rejection response — not a backdoor signal
+_ERROR_INDICATOR_KEYS: frozenset[str] = frozenset({"error", "errors"})
+
 # Extra parameters to inject alongside valid args
 _SMUGGLE_PARAMS: list[dict[str, Any]] = [
     {"_debug": True},
@@ -92,6 +95,14 @@ class ParamSmugglingModule(ScanModule):
 
 def _response_diff(baseline: Any, probe: Any) -> str:
     """Return a human-readable description of the difference, or empty string if none."""
+    # Early exit: probe caused the server to reject with isError=True.
+    # This means the server has strict schema validation and correctly rejected
+    # the undeclared parameter — not a backdoor signal.
+    b_err = isinstance(baseline, dict) and baseline.get("isError")
+    p_err = isinstance(probe, dict) and probe.get("isError")
+    if not b_err and p_err:
+        return ""
+
     b_text = _extract_text(baseline)
     p_text = _extract_text(probe)
 
@@ -104,7 +115,8 @@ def _response_diff(baseline: Any, probe: Any) -> str:
         p_data = json.loads(p_text)
         if isinstance(b_data, dict) and isinstance(p_data, dict):
             new_keys = set(p_data) - set(b_data)
-            if new_keys:
+            # Skip if new keys are only standard error/rejection indicators — not a backdoor
+            if new_keys and not new_keys.issubset(_ERROR_INDICATOR_KEYS):
                 return f"New JSON keys in probe response: {sorted(new_keys)}"
     except (json.JSONDecodeError, ValueError):
         pass
@@ -114,9 +126,7 @@ def _response_diff(baseline: Any, probe: Any) -> str:
     if p_len > b_len * 1.5 and p_len - b_len > 50:
         return f"Probe response significantly larger: {b_len} → {p_len} chars"
 
-    # Different error vs. success
-    b_err = isinstance(baseline, dict) and baseline.get("isError")
-    p_err = isinstance(probe, dict) and probe.get("isError")
+    # isError changed in the True→False direction (probe unlocked something — suspicious)
     if b_err != p_err:
         return f"isError changed: baseline={b_err} probe={p_err}"
 

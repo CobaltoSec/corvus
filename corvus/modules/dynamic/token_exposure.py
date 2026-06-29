@@ -102,6 +102,7 @@ class TokenExposureModule(ScanModule):
             for text in texts_to_check:
                 if _is_html_catch_all(text):  # A6: skip SPA catch-all HTML responses
                     continue
+                text = _strip_code_blocks(text)
                 for pattern, label, severity, conf in _SIGNALS:
                     m = pattern.search(text)
                     if m:
@@ -138,6 +139,12 @@ _TS_PRIMITIVE_TYPES = frozenset({
     "void", "never", "any", "unknown", "object",
 })
 
+# TypeScript access / modifier keywords — bare values like TOKEN: readonly or SECRET: static
+_TS_MODIFIER_WORDS = frozenset({
+    "readonly", "optional", "abstract", "override", "protected", "public", "private",
+    "static", "declare", "const", "let", "var",
+})
+
 
 def _is_type_annotation_match(match_text: str) -> bool:
     """Return True if the regex match looks like a TypeScript/Vue.js type annotation.
@@ -150,11 +157,17 @@ def _is_type_annotation_match(match_text: str) -> bool:
     if len(parts) < 2:
         return False
     value = parts[1].strip('"\'').strip()
+    # Template literal type: starts with backtick (e.g. TOKEN: `${string}`)
+    if value.startswith('`'):
+        return True
     # TypeScript generic type: contains < or > (e.g. MaybeRefOrGetter<boolean>)
     if '<' in value or '>' in value:
         return True
     # Union or intersection type: contains | or & (e.g. string | null)
     if '|' in value or '&' in value:
+        return True
+    # Array type shorthand: ends with [] (e.g. TOKEN: string[])
+    if value.endswith('[]'):
         return True
     # PascalCase identifier with no digits or special chars — likely a type name
     if re.match(r'^[A-Z][a-zA-Z]{2,}$', value):
@@ -162,7 +175,26 @@ def _is_type_annotation_match(match_text: str) -> bool:
     # TypeScript primitive type keyword (e.g. TOKEN: string, SECRET: boolean)
     if value.lower() in _TS_PRIMITIVE_TYPES:
         return True
+    # TypeScript modifier/access keyword (e.g. TOKEN: readonly, SECRET: static)
+    if value.lower() in _TS_MODIFIER_WORDS:
+        return True
     return False
+
+
+_CODE_BLOCK_RE = re.compile(r"```.*?```", re.DOTALL)
+_INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+
+
+def _strip_code_blocks(text: str) -> str:
+    """Remove markdown fenced and inline code blocks to avoid FPs on documentation responses.
+
+    Type annotations and technical keywords inside code blocks are not credentials.
+    We preserve the surrounding prose context so real credentials embedded outside
+    code blocks are still detected.
+    """
+    text = _CODE_BLOCK_RE.sub(" ", text)
+    text = _INLINE_CODE_RE.sub(" ", text)
+    return text
 
 
 def _is_html_catch_all(text: str) -> bool:

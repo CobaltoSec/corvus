@@ -47,7 +47,18 @@ _ECHO_FIELD_NAMES = frozenset({
     "query", "search", "q", "term", "filter", "input", "keyword",
     "symbol", "name", "text", "prompt", "request", "pattern",
     "expression", "symbol_name", "class_name", "function_name",
+    # Domain-specific echo fields (CS02 calibration — myclaw-toolkit class FPs)
+    # These are commonly used as param names in tools that display their input.
+    # Note: only add terms that are safe as JSON response keys too (avoids suppressing real injections).
+    "color", "coin", "domain", "markdown", "phone", "org", "vs", "format", "param",
 })
+
+# Tools whose names suggest they transform input — output always contains the input
+_TRANSFORMATION_TOOL_RE = re.compile(
+    r"\b(format|convert|transform|encode|decode|render|parse|generate|compile|validate"
+    r"|to_html|to_json|to_markdown|to_csv|to_xml|prettify|minify|beautify)\b",
+    re.I,
+)
 
 
 class CmdInjectionModule(ScanModule):
@@ -178,7 +189,7 @@ class CmdInjectionModule(ScanModule):
                                 f"confirmed (field: {category})."
                             )
                         elif _reflected(payload, text):
-                            if _is_input_echo(param, payload, text):
+                            if _is_input_echo(param, payload, text, tool.name):
                                 severity = Severity.LOW
                                 confirmed = False
                                 confidence = 30
@@ -269,17 +280,16 @@ def _deny_in_context(text: str) -> bool:
     return any(kw in lower for kw in _SANITIZATION_SIGNALS)
 
 
-def _is_input_echo(param: str, payload: str, text: str) -> bool:
+def _is_input_echo(param: str, payload: str, text: str, tool_name: str = "") -> bool:
     """Return True if the payload appears as an echoed input value in the response.
 
-    Covers three cases:
+    Covers four cases:
     - JSON exact match: {"path": "../../etc/passwd", ...}
     - JSON echo field: {"query": "../../etc/passwd", "results": [...]}
     - Plain-text echo: param is a known search/query field and payload appears in response
       (e.g. "No results found for '../../etc/passwd'")
-
-    Search and lookup tools legitimately echo back their input; a reflected payload
-    there is not an injection signal.
+    - Transformation tool: tool name suggests it transforms input (json_formatter, markdown_to_html,
+      etc.) — output always contains the input, so reflection is not an injection signal.
     """
     try:
         data = json.loads(text)
@@ -294,6 +304,10 @@ def _is_input_echo(param: str, payload: str, text: str) -> bool:
     # Plain-text echo: if the param is a known search/query field, any verbatim
     # appearance of the payload in a plain-text response is likely display echo.
     if param.lower() in _ECHO_FIELD_NAMES and payload in text:
+        return True
+
+    # Transformation echo: tool name signals it transforms input into output.
+    if tool_name and _TRANSFORMATION_TOOL_RE.search(tool_name) and payload in text:
         return True
 
     return False
