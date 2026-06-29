@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V19] — 2026-06-29 — CS02 segunda pasada + responsible disclosure
+
+- **`corvus/transport/stdio.py`** — `env_vars` support: `StdioTransport.__init__` acepta `env: dict[str,str] | None`, merged sobre `os.environ` en `connect()`.
+- **`corvus/batch.py`** — `BatchTarget.env_vars`, `load_batch_targets` parsea `env_vars` de YAML, `_TARGET_SCAN_TIMEOUT` 120s → 600s, `run_batch()` acepta `target_timeout` param.
+- **`corvus/cli.py`** — `batch` command: `--target-timeout` CLI option.
+- **`case-studies/cs02-mcp-ecosystem/cs02.py`** — `--target-timeout` propagado al batch scan.
+- **`targets-master.yaml`** — 22 targets error investigados y resueltos: 6 skip definitivos, resto re-escaneados. Estado final: 31 done / 18 skip / 0 pending.
+- **`findings-curated.md`** — F15-F31 agregados (segunda pasada): 2 CRITICAL (malicious-mcp-server resource exposure, remnux-mcp-server cmd injection), 15 HIGH (SSRF, shadow tools, supply chain, output encoding).
+- **`report.md`** — Actualizado con números finales (31 scaneados, 29 TPs, combined dataset 54 servers / 72 TPs), sección Responsible Disclosure con 2 nuevos GHSAs.
+- **Responsible disclosure** — GHSA-43j9-hmpq-cgv7 (remnux-mcp-server CRITICAL, lennyzeltser notificado) + GHSA-qwwj-38wj-ffvw (myclaw-toolkit SSRF, Dusheh notificado). 90d timeline.
+
 ## [RT-CORVUS-V18] — 2026-06-28 — FP calibration v2 (plain-text echo + TS primitives)
 
 - **`cmd_injection.py`** — `_is_input_echo()` extendido a plain-text: si el param está en `_ECHO_FIELD_NAMES` (query, search, term, etc.) y el payload aparece en una respuesta plain-text → LOW en lugar de HIGH. Cubre search tools que no retornan JSON.
