@@ -200,7 +200,7 @@ Both advisories filed via `CobaltoSec/advisories` (PVR disabled on target repos)
 
 ### CS01 disclosures (open)
 - GHSA-mf64-cgv4-ppcx (@playwright/mcp) — 90d timeline, MSRC+CVE pending
-- GHSA-7w27-7xwv-x6x2 (mcp-server-sqlite) — closed
+- GHSA-7w27-7xwv-x6x2 (mcp-server-sqlite) — submitted, sin respuesta confirmada
 - GHSA-7763-c5gf-v5fj (mcp-shell-server) — open
 - GHSA-pr6r-h66r-m47j (server-everything) — open
 
