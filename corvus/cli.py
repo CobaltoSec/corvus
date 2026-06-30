@@ -30,9 +30,11 @@ from .modules.dynamic.output_encoding import OutputEncodingModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
+from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.supply_chain import SupplyChainModule
+from .modules.static.tool_chaining import ToolChainingModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .plugins import discover_plugins
 from .reporting.report import ReportGenerator
@@ -51,6 +53,8 @@ _ALL_MODULES = {
     "shadow-tool":     ShadowToolModule,
     "auth-audit":      AuthAuditModule,
     "log-audit":       LogAuditModule,
+    "resource-uri":    ResourceUriModule,
+    "tool-chaining":   ToolChainingModule,
     "cmd-injection":   CmdInjectionModule,
     "token-exposure":  TokenExposureModule,
     "schema-bypass":   SchemaBypassModule,
@@ -63,7 +67,7 @@ _ALL_MODULES = {
     "proto-fuzz":      ProtoFuzzModule,
     "output-encoding": OutputEncodingModule,
 }
-_STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit"}
+_STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
     "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
     "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz", "output-encoding",

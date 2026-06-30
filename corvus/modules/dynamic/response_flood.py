@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter
 from typing import Any
 
@@ -11,6 +12,12 @@ from ...transport.base import MCPTransport
 
 _SIZE_THRESHOLD = 8_192   # bytes — responses larger than this risk flooding LLM context
 _TRIGRAM_THRESHOLD = 15   # same 3-word sequence must appear this many times to flag
+
+# Administrative list tools — returning large config dumps is expected, not a threat
+_ADMIN_LIST_TOOL_RE = re.compile(
+    r"^get_(whitelist|blacklist|allowlist|blocklist|config|settings)$",
+    re.I,
+)
 
 
 class ResponseFloodModule(ScanModule):
@@ -35,6 +42,8 @@ class ResponseFloodModule(ScanModule):
         findings: list[Finding] = []
 
         for tool in surface.tools:
+            if _ADMIN_LIST_TOOL_RE.match(tool.name):
+                continue  # admin config dumps are expected to be large — not a threat
             schema = tool.input_schema
             properties: dict[str, Any] = schema.get("properties", {})
             required: list[str] = schema.get("required", [])

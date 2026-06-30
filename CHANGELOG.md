@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V21] — 2026-06-30 — FP calibration v4 + mejoras + 2 módulos nuevos
+
+### A1 — FP calibration v4 (5 fixes)
+- **`shadow_tool.py`** — C1: `_QUERY_VERB_TOOL_RE` — tools `read_query`/`write_query`/`execute_sql`/`run_query`/`execute_statement`/`run_dml`/etc. bajan a MEDIUM en descripción (no HIGH). Excluye `command` suffix para evitar suprimir `execute_command`.
+- **`rug_pull.py`** — C2: `_STATEFUL_TOOL_NAME` usa `sequential.?thinking` en vez de `sequential_thinking` — cubre `sequentialthinking` (sin separador) y `sequential-thinking` (guión).
+- **`response_flood.py`** — C3: `_ADMIN_LIST_TOOL_RE` — `get_whitelist/blacklist/allowlist/blocklist/config/settings` se skipean (admin config dumps no son flood). Agrega `import re`.
+- **`cmd_injection.py`** — D2: `_OS_ERROR_SIGNATURES` + `_os_error_traversal_confirmed()` — ENOENT/Permission denied/FileNotFoundError en respuesta a payload de traversal → HIGH confirmado (nivel inferior a CRITICAL para file content leak).
+- **`scope_audit.py`** — D5: `_ENV_DUMP_TOOL_RE` — `get-env`/`list_env`/`dump_environment`/`export_env_vars`/etc. → HIGH automático. Check antes de `_HIGH_NAME_SCOPE`.
+- **`tests/mock_server.py`** — renombrado `get_config` → `dump_telemetry` (colisionaba con C3 skip).
+- **`tests/test_modules_v3.py`** — test `test_response_flood_detects_oversized` actualizado a `dump_telemetry`.
+- **`tests/test_fp_calibration_v4.py`** — 34 nuevos tests (C1/C2/C3/D2/D5).
+
+### A2 — Mejoras módulos existentes
+- **`scope_audit.py`** — D1: `_check_write_traversal()` — si tool tiene param `filename`/`file_path`/`output_path`/`save_to`/`dest` AND descripción implica write intent (save/write/export/dump) → HIGH (confidence 65, manual verification). Cubre CS01-F33/F34 class (playwright-mcp `browser_snapshot.filename`).
+- **`ssrf.py`** — D4: `_URL_DESC` regex — si descripción del tool contiene `navigate/browse/fetch/request/scrape/crawl/http/download/visit`, TODOS los params string se tratan como candidatos URL. Cubre CS01-F14 (puppeteer `navigate`).
+
+### A3 — Módulos estáticos nuevos
+- **`corvus/modules/static/resource_uri.py`** — EXT05: escanea `resources/list` URIs por patterns sensibles: CRITICAL para `.ssh/`/`/etc/shadow`/`.env`/`.aws/credentials`/`private_key`/etc., HIGH para `file://` fuera de `/tmp`+`/var/app` y credential query params (`?token=`, `?api_key=`), MEDIUM para >20 recursos expuestos.
+- **`corvus/modules/static/tool_chaining.py`** — EXT06: detecta descripciones que referencian otros tools del mismo server con lenguaje imperativo (`must call X`, `always invoke Y`, `failure to invoke Z`) → MEDIUM; compliance language (`violates security policy`, `non-compliant`) eleva a HIGH.
+- **`corvus/core/models.py`** — `EXT05_RESOURCE_URI` + `EXT06_TOOL_CHAINING` en `OWASPCategory`.
+- **`corvus/cli.py`** — registro de `resource-uri` + `tool-chaining` en `_ALL_MODULES` y `_STATIC`.
+- **`tests/test_modules_v7.py`** — 35 nuevos tests (D1/D4/EXT05/EXT06).
+
+### Totales
+- **Módulos**: 18 → 20
+- **Tests**: 201 → 270 (+69)
+
 ## [RT-CORVUS-V20] — 2026-06-29 — FP calibration v3
 
 - **`cmd_injection.py`** — `_ECHO_FIELD_NAMES` expandido con 17 términos de dominio (color, coin, domain, markdown, phone, org, vs, url, format, content, value, data, message, code, source, html, param). Nuevo `_TRANSFORMATION_TOOL_RE`: si el nombre del tool contiene verbos de transformación (format, convert, encode, render, etc.), cualquier reflejo del input se trata como echo display, no señal de inyección. `_is_input_echo()` recibe `tool_name` como parámetro. Fix CS02-FP03 class (10+ FPs en myclaw-toolkit).

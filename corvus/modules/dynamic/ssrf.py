@@ -14,6 +14,13 @@ from ...transport.base import MCPTransport
 # Param names that commonly accept URLs or network destinations
 _URL_PARAM = re.compile(r"\b(url|host|endpoint|target|uri|src|href|link|address|location)\b", re.I)
 
+# D4: tool description signals URL handling — broadens param candidate set to ALL string params
+# No trailing \b — catches conjugations: fetches, navigates, scrapes, downloads, etc.
+_URL_DESC = re.compile(
+    r"\b(url|navigate|browse|fetch|request|scrape|crawl|webhook|http|download|visit)",
+    re.I,
+)
+
 # SSRF payloads to probe
 _SSRF_PAYLOADS = [
     "http://169.254.169.254/latest/meta-data/",
@@ -62,10 +69,14 @@ class SSRFModule(ScanModule):
             properties: dict[str, Any] = schema.get("properties", {})
             required: list[str] = schema.get("required", [])
 
+            # D4: if the tool description implies URL handling, treat all string params as
+            # URL candidates — catches tools like navigate(url) where param is named generically
+            desc_suggests_url = bool(tool.description and _URL_DESC.search(tool.description))
             url_params = [
                 (param, pschema)
                 for param, pschema in properties.items()
-                if pschema.get("type", "string") == "string" and _URL_PARAM.search(param)
+                if pschema.get("type", "string") == "string"
+                and (_URL_PARAM.search(param) or desc_suggests_url)
             ]
             if not url_params:
                 continue

@@ -37,6 +37,24 @@ _HIGH_DESC_SCOPE: list[re.Pattern[str]] = [
     re.compile(r"all\s+(files|users|data|resources)", re.I),
 ]
 
+# D5: tools that dump environment variables — always HIGH (env vars contain secrets)
+_ENV_DUMP_TOOL_RE = re.compile(
+    r"^(get|list|dump|show|print|export)[_-](env|environment|env_vars|environ)$",
+    re.I,
+)
+
+# D1: write-side path traversal — param names that accept file paths for writing
+_WRITE_PATH_PARAM_RE = re.compile(
+    r"\b(filename|file_name|file_path|output_path|output_file|save_to|save_path|dest|destination)\b",
+    re.I,
+)
+
+# D1: description keywords that confirm write intent (conjugations included)
+_WRITE_INTENT_RE = re.compile(
+    r"\b(saves?|writes?|creates?\s+file|exports?|output\s+to|writes?\s+to|dumps?\s+to|stores?\s+to)\b",
+    re.I,
+)
+
 # Read-only name prefix
 _READ_PREFIX = re.compile(r"^(read|get|fetch|list)_", re.I)
 
@@ -78,9 +96,32 @@ class ScopeAuditModule(ScanModule):
             schema_result = self._check_schema(tool.name, tool.input_schema)
             if schema_result:
                 findings.append(schema_result)
+            traversal_result = self._check_write_traversal(tool.name, tool.description, tool.input_schema)
+            if traversal_result:
+                findings.append(traversal_result)
         return findings
 
     def _check(self, name: str, description: str) -> Finding | None:
+        # HIGH: environment variable dump — env vars commonly contain API keys and secrets
+        if _ENV_DUMP_TOOL_RE.match(name):
+            return Finding(
+                owasp_category=OWASPCategory.MCP02_SCOPE_CREEP,
+                severity=Severity.HIGH,
+                title=f"Scope Creep — '{name}' exposes environment variable dump",
+                description=(
+                    f"Tool '{name}' name matches a pattern associated with environment variable "
+                    "enumeration. Environment variables commonly contain API keys, credentials, "
+                    "and configuration secrets that should never be exposed through an MCP tool."
+                ),
+                tool_name=name,
+                evidence=description[:300] or None,
+                remediation=(
+                    "Remove this tool from the MCP surface entirely, or restrict it to returning "
+                    "only non-sensitive variables using an explicit allowlist."
+                ),
+                confidence=85,
+            )
+
         # HIGH: name contains privileged keyword
         m = _HIGH_NAME_SCOPE.search(name)
         if m:
@@ -218,3 +259,37 @@ class ScopeAuditModule(ScanModule):
             )
 
         return None
+
+    def _check_write_traversal(
+        self, name: str, description: str, input_schema: dict[str, Any]
+    ) -> Finding | None:
+        """D1: flag tools that accept file path params AND describe write operations.
+
+        Allows detecting write-side path traversal risks statically — before dynamic testing.
+        """
+        if not description or not _WRITE_INTENT_RE.search(description):
+            return None
+
+        properties = input_schema.get("properties", {}) if input_schema else {}
+        write_path_fields = [f for f in properties if _WRITE_PATH_PARAM_RE.search(f)]
+        if not write_path_fields:
+            return None
+
+        return Finding(
+            owasp_category=OWASPCategory.MCP02_SCOPE_CREEP,
+            severity=Severity.HIGH,
+            title=f"Scope Creep — '{name}' accepts write-path param (path traversal risk)",
+            description=(
+                f"Tool '{name}' accepts a file path parameter ({', '.join(write_path_fields)}) "
+                "and its description indicates write operations. Without path sanitization, "
+                "callers may supply traversal sequences to write files outside the intended directory."
+            ),
+            tool_name=name,
+            evidence=f"path param(s): {', '.join(write_path_fields)} | description: {description[:200]}",
+            remediation=(
+                "Validate and canonicalize file path inputs. Restrict writes to an explicit "
+                "base directory using path.resolve() or os.path.abspath() checks. "
+                "Manual verification recommended."
+            ),
+            confidence=65,
+        )

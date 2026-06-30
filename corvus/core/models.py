@@ -41,6 +41,8 @@ class OWASPCategory(str, Enum):
     EXT02_SCHEMA_AUDIT      = "EXT02"  # Schema Audit
     EXT03_SHADOW_TOOL       = "EXT03"  # Shadow Tool Detection
     EXT04_SSRF              = "EXT04"  # Server-Side Request Forgery
+    EXT05_RESOURCE_URI      = "EXT05"  # Resource URI Exposure
+    EXT06_TOOL_CHAINING     = "EXT06"  # Cross-tool Instruction Chaining
 
 
 class ToolSpec(BaseModel):

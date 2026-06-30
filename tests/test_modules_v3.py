@@ -76,8 +76,8 @@ async def test_response_flood_detects_oversized():
         session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
         findings = await ResponseFloodModule().run(surface, t, session)
 
-    config_findings = [f for f in findings if f.tool_name == "get_config"]
-    assert config_findings, "Expected response-flood finding for get_config"
+    config_findings = [f for f in findings if f.tool_name == "dump_telemetry"]
+    assert config_findings, "Expected response-flood finding for dump_telemetry"
     assert any(f.severity == Severity.HIGH for f in config_findings)
     assert any(f.owasp_category == OWASPCategory.MCP10_CONTEXT_INJECTION for f in config_findings)
 

@@ -34,6 +34,15 @@ _SQL_ERROR_SIGNATURES = [
 # server is explicitly sanitizing/escaping, so the reflection is not exploitable
 _SANITIZATION_SIGNALS = ("sanitized", "filtered", "escaped", "blocked")
 
+# D2: OS-level error messages triggered by traversal payloads — path was used by the OS
+_OS_ERROR_SIGNATURES = [
+    "ENOENT:",
+    "No such file or directory",
+    "Permission denied:",
+    "IsADirectoryError:",
+    "FileNotFoundError:",
+]
+
 
 # B3a: payloads for integer and array params
 _INTEGER_PAYLOADS: list[Any] = [0, "0 OR 1=1", "1; DROP TABLE users--", "1 UNION SELECT 1--"]
@@ -180,6 +189,15 @@ class CmdInjectionModule(ScanModule):
                                 f"File content signatures detected in response — file was "
                                 f"successfully read via path traversal (field: {category})."
                             )
+                        elif _os_error_traversal_confirmed(payload, text):  # D2: OS used the path
+                            severity = Severity.HIGH
+                            confirmed = True
+                            confidence = 85
+                            desc = (
+                                f"OS error response to traversal payload — the path was passed "
+                                f"to the filesystem (field: {category}). File content not leaked, "
+                                f"but path traversal is confirmed."
+                            )
                         elif _sql_error_confirmed(text):  # M1: error-based SQLi confirmation
                             severity = Severity.CRITICAL
                             confirmed = True
@@ -267,6 +285,17 @@ def _traversal_confirmed(payload: str, text: str) -> bool:
     if not _is_traversal_payload(payload):
         return False
     return any(sig in text for sig in _TRAVERSAL_SIGNATURES)
+
+
+def _os_error_traversal_confirmed(payload: str, text: str) -> bool:
+    """Return True if a traversal payload triggered an OS filesystem error (D2).
+
+    An OS error means the path reached the filesystem layer — traversal confirmed even
+    though file content was not leaked.
+    """
+    if not _is_traversal_payload(payload):
+        return False
+    return any(sig in text for sig in _OS_ERROR_SIGNATURES)
 
 
 def _sql_error_confirmed(text: str) -> bool:

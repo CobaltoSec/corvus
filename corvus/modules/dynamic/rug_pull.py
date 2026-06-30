@@ -11,7 +11,7 @@ from ...transport.base import MCPTransport
 
 # Tool names that suggest by-design stateful behavior (e.g. server-sequential-thinking)
 _STATEFUL_TOOL_NAME = re.compile(
-    r"sequential_thinking|memory|session|context|chain|state|history|thread",
+    r"sequential.?thinking|memory|session|context|chain|state|history|thread",
     re.I,
 )
 

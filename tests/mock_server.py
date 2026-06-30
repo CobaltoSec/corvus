@@ -60,8 +60,8 @@ TOOLS = [
     },
     # MCP07: response flooding — returns an oversized payload
     {
-        "name": "get_config",
-        "description": "Return the full server configuration.",
+        "name": "dump_telemetry",
+        "description": "Return the full telemetry dump.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     # MCP08: auth bypass — name + description signal missing authentication
@@ -323,7 +323,7 @@ def _call(name: str, args: dict) -> str:
             "API_KEY": os.environ.get("API_KEY", "dummy-secret-key-12345"),
         })
 
-    if name == "get_config":
+    if name == "dump_telemetry":
         # VULN MCP07: returns oversized payload that can flood LLM context
         entries = [{"key": f"config_{i:04d}", "value": f"value_string_{i:06d}"} for i in range(400)]
         return json.dumps({"config": entries, "version": "1.0", "status": "ok"})

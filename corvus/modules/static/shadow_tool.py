@@ -55,6 +55,13 @@ _DB_TOOL_PREFIX_RE = re.compile(
     re.I,
 )
 
+# Query-verb tools — legitimately named after DB operations (read_query, execute_sql, etc.)
+# Excludes 'command' suffix — execute_command sounds like shell, not SQL.
+_QUERY_VERB_TOOL_RE = re.compile(
+    r"^(read|write|run|execute)_(query|sql|statement|ddl|dml|dql)$",
+    re.I,
+)
+
 
 class ShadowToolModule(ScanModule):
     owasp_id = "EXT03"
@@ -80,9 +87,9 @@ class ShadowToolModule(ScanModule):
 
     def _check_description(self, name: str, description: str) -> list[Finding]:
         if description and _DANGEROUS_DESCRIPTION.search(description):
-            # DB-prefix tools legitimately use execution language in their descriptions
-            # (e.g. pg_execute_sql "Executes arbitrary SQL"). Still flag but at lower severity.
-            if _DB_TOOL_PREFIX_RE.match(name):
+            # DB-prefix or query-verb tools legitimately use execution language in their descriptions
+            # (e.g. pg_execute_sql "Executes arbitrary SQL", read_query "Runs a SELECT query").
+            if _DB_TOOL_PREFIX_RE.match(name) or _QUERY_VERB_TOOL_RE.match(name):
                 return [Finding(
                     owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
                     severity=Severity.MEDIUM,
