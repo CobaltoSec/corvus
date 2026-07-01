@@ -1,5 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-V26] — 2026-07-01 — A3+A4+A5: sampling/elicitation probes + oauth_bypass + score + diff CLI
+
+- **M-NEW-01 `sampling-probe`** (dynamic, EXT08, MCP10) — detecta uso malicioso de `sampling/createMessage`: prompt injection (CRITICAL), context exfiltration via `includeContext=allServers` (HIGH), unsolicited sampling (MEDIUM). Re-inicializa declarando `"sampling": {}` en capabilities y usa direct stdin/stdout bypass (igual que `batch-dos`) para capturar mensajes server→client descartados por `send_request`. stdio-only. 28 tests.
+- **M-NEW-04 `elicitation-probe`** (dynamic, EXT09, MCP10) — detecta phishing via `elicitation/create`: credential phishing en message (password/token/2FA → CRITICAL), sensitive schema fields (apiKey/password → HIGH), unsolicited elicitation (MEDIUM). 21 tests.
+- **M-NEW-02 `oauth-bypass`** (dynamic, MCP07) — detecta auth bypass HTTP: missing auth headers (CRITICAL), invalid Bearer (CRITICAL), URL query credentials (HIGH). HTTP-only. 25 tests.
+- **F-04 `corvus score`** — `corvus/scoring.py`: Risk Score 0–100 (`CRITICAL=40/HIGH=15/MEDIUM=5/LOW=1/INFO=0`, weighted by confidence). `risk_tier()` (CLEAR/LOW/MEDIUM/HIGH/CRITICAL). CLI: `corvus score report.json [--json]`. Exportado en `__init__.py`. 22 tests.
+- **F-02 `corvus diff`** — `corvus/diff.py`: compara dos SARIF 2.1.0 por `ruleId::message[:120]` key. CLI: `corvus diff old.sarif new.sarif [--json]`. Muestra new/fixed/unchanged. Exportado en `__init__.py`. 22 tests.
+- **A3 GitHub Code Scanning** — `.github/workflows/code-scanning.yml`: reusable workflow (`workflow_call` + `workflow_dispatch`) para escanear MCP servers en CI y subir SARIF a GitHub Security tab via `upload-sarif@v3`. Inputs: transport/cmd/url/modules/fail_on/corvus_version. Secret `mcp_header` para servers autenticados.
+- **OWASPCategory** — EXT08 (`EXT08_SAMPLING_INJECTION`) + EXT09 (`EXT09_ELICITATION_PHISHING`) agregados al enum.
+- **Tests** — 516/516 pass (27 módulos: 11 static + 16 dynamic). +119 tests vs V26 A1+A2.
+
 ## [RT-CORVUS-V26] — 2026-07-01 — A1+A2: batch parallelism + 2 nuevos módulos + mejoras
 
 - **BATCH-FIX (3 fixes)** — `batch.py` refactorizado: `asyncio.gather` + `asyncio.Semaphore(N=5)` para scans paralelos (~5× más rápido sobre 54 servers); 4 módulos faltantes sincronizados (`supply-chain-python`, `resource-uri`, `tool-chaining`, `response-injection`); parámetro `skip_existing=True` para resume/skip de targets con `report.json` existente.
