@@ -30,6 +30,11 @@ from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.dynamic.output_encoding import OutputEncodingModule
 from .modules.dynamic.elicitation_probe import ElicitationProbeModule
 from .modules.dynamic.oauth_bypass import OAuthBypassModule
+from .modules.dynamic.completion_probe import CompletionProbeModule
+from .modules.dynamic.logging_probe import LoggingProbeModule
+from .modules.dynamic.prompts_injection import PromptsInjectionModule
+from .modules.dynamic.cursor_probe import CursorProbeModule
+from .modules.dynamic.cancellation_probe import CancellationProbeModule
 from .modules.dynamic.response_injection import ResponseInjectionModule
 from .modules.dynamic.sampling_probe import SamplingProbeModule
 from .modules.static.auth_audit import AuthAuditModule
@@ -80,6 +85,11 @@ _ALL_MODULES = {
     "oauth-bypass":         OAuthBypassModule,
     "sampling-probe":       SamplingProbeModule,
     "elicitation-probe":    ElicitationProbeModule,
+    "completion-probe":     CompletionProbeModule,
+    "logging-probe":        LoggingProbeModule,
+    "prompts-injection":    PromptsInjectionModule,
+    "cursor-probe":         CursorProbeModule,
+    "cancellation-probe":   CancellationProbeModule,
 }
 _STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "osv-supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
@@ -87,6 +97,7 @@ _DYNAMIC = {
     "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",
     "output-encoding", "response-injection", "oauth-bypass",
     "sampling-probe", "elicitation-probe",
+    "completion-probe", "logging-probe", "prompts-injection", "cursor-probe", "cancellation-probe",
 }
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]

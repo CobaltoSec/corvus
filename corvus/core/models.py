@@ -45,6 +45,11 @@ class OWASPCategory(str, Enum):
     EXT06_TOOL_CHAINING     = "EXT06"  # Cross-tool Instruction Chaining
     EXT08_SAMPLING_INJECTION  = "EXT08"  # Sampling/createMessage injection
     EXT09_ELICITATION_PHISHING = "EXT09"  # Elicitation/create phishing
+    EXT10_COMPLETION_PROBE      = "EXT10"  # completion/complete injection & enumeration
+    EXT11_LOG_LEVEL_ABUSE       = "EXT11"  # logging/setLevel abuse
+    EXT12_PROMPT_INJECTION      = "EXT12"  # prompts/get template injection
+    EXT13_CURSOR_MANIPULATION   = "EXT13"  # Pagination cursor IDOR/overflow
+    EXT14_CANCELLATION_RACE     = "EXT14"  # notifications/cancelled race condition
 
 
 class ToolSpec(BaseModel):
