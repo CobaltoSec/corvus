@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] — 2026-07-01
+
+- **Windows noise fix** — supresión de `socket.send() raised exception` y `_ProactorBasePipeTransport.__del__` ValueError en batch scan Windows (asyncio exception handler + sys.unraisablehook en `batch.py`/`cli.py`). `stdio.py` cierra stdin antes de `terminate()`. Sin cambios de API ni módulos.
+
 ## [RT-CORVUS-V23] — 2026-07-01 — E2E scan v1.0.0 + Windows noise fix
 
 - **PyPI v1.0.0** publicado + GitHub release v1.0.0 con release notes

@@ -154,10 +154,11 @@ targets:
   - mcp-server-fetch
   status: done
   notes: 'HTTP fetch oficial (Python/uvx, no npm). Vector: SSRF, response flood. Corregido
-    de npx → uvx. Clean en v0.9.0 — SSRF fetch bloqueado por whitelist interna.'
-  last_scanned: '2026-06-30'
+    de npx → uvx. v0.9.0: SSRF bloqueado por whitelist. v1.0.0: SSRF timing bypass
+    detectado (F68) — private-ip lib vulnerable (F15) permite evadir la whitelist.'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 2M
-  curation: TP
+  curation: done
 - name: mcp-server-aws-kb-retrieval
   tier: B
   transport: stdio
@@ -222,14 +223,13 @@ targets:
   - -y
   - '@playwright/mcp'
   status: done
-  last_scanned: '2026-06-30'
+  last_scanned: '2026-07-01'
   findings_summary: 8H 3M 7L 4I
-  curation: partial
-  notes: 'Microsoft Playwright 1.61.0-alpha. Batch scan en 20260624-235324. F33/F34:
-    path traversal via filename params (archivo %2e%2e%2fetc%2fpasswd creado en CWD).
-    F14 (SSRF 169.254.169.254) confirmado manual. CORVUS-005 (browser_evaluate null
-    reflection) probable FP. CORVUS-006 (gopher:// via filter) ERR_ABORTED — SSRF
-    bloqueado por Chrome, no por el server.'
+  curation: done
+  notes: 'Microsoft Playwright 1.61.0-alpha. F33/F34: path traversal filename params.
+    F14: SSRF manual. v1.0.0 delta: F63 (unsafe exec), F64 (evaluate.function), F65
+    (network_request singular), F66 (SSRF auto), F67 (proto-crash). Schema bypass
+    ×7 FP (permissive browser automation schema).'
 - name: npm-search-mcp-server
   tier: B
   transport: stdio
@@ -360,10 +360,11 @@ targets:
   - uvx
   - mcp-server-time
   status: done
-  notes: Clean. Superficie minimal. Referencia positiva de server bien scoped.
-  last_scanned: '2026-06-30'
+  notes: 'Superficie minimal. v0.9.0: CLEAN. v1.0.0: 2M init_audit (protocol version
+    downgrade F71 + null request ID F72) — patrón sistémico.'
+  last_scanned: '2026-07-01'
   findings_summary: 2M
-  curation: TP
+  curation: done
 - name: mcp-scan
   tier: C
   transport: stdio

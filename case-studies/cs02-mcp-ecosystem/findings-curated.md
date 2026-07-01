@@ -89,6 +89,47 @@ Clasificados por causa probable:
 
 ---
 
+## RT-CORVUS-V23 — Delta v1.0.0 (re-scan 2026-07-01)
+
+Re-scan con v1.0.0 (22 módulos). Dos targets con nuevos findings curados: remnux-mcp-server y docx-mcp.
+Nota: summary.md del batch marcó remnux como ERROR por noise de Windows (ProactorEventLoop), pero report.json fue capturado (1C 6H 13M). No es regresión.
+
+### remnux-mcp-server — nuevos findings
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS02-F32 | remnux-mcp-server | MCP02 Scope Creep | HIGH | `extract_archive` inputSchema requests credential field | ✅ TP | Conf=80. Tool de extracción de archivos declara campo de credencial en inputSchema MCP. Un AI agent puede ser dirigido a extraer archives con credenciales expuestas. |
+| CS02-F33 | remnux-mcp-server | MCP02 Scope Creep | HIGH | `download_file` accepts write-path param (path traversal risk) | ✅ TP | Conf=65. Tool de descarga acepta parámetro de ruta de escritura sin restricción de sandbox. Vector: path traversal + overwrite de archivos arbitrarios. |
+| CS02-F34 | remnux-mcp-server | MCP04 Supply Chain | MEDIUM | `uuid` has moderate vulnerability (no CVE assigned) | ✅ TP-conditional | Conf=65. Advisory sin CVE en la dep `uuid`. Moderate — no hay exploit público conocido. Misma clase que CS01-F09 pero a nivel MEDIUM por ausencia de CVE. |
+| CS02-F35 | remnux-mcp-server | MCP05 Cmd Injection | HIGH | Injection reflected — `run_tool.input_file` | ✅ TP | Conf=85. Parámetro `input_file` de `run_tool` refleja el payload en output — superficie adicional al .command ya documentado en F19 (CRITICAL). Dos params del mismo tool son attack surfaces independientes. |
+
+### FPs descartados — remnux Token Exposure (×12)
+
+Token Exposure "home directory path in X" en 6 tools (×2 por tool = 12 findings duplicados). Causa: el módulo `token_exposure` detecta la misma referencia al home directory en la descripción del tool Y en el schema del param, produciendo 2 findings idénticos por tool. **Bug de deduplicación en Corvus** — marcar como FP-dup, investigar en backlog.
+
+Affected tools: `get_file_info`, `analyze_file`, `suggest_tools`, `check_behavior_prerequisites`, `verify_string_usage`, `compare_files`.
+
+---
+
+### docx-mcp — nuevos findings
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS02-F48 | docx-mcp | MCP02 Scope Creep | HIGH | `save` accepts write-path param (`save_to_local_path`) — path traversal risk | ✅ TP | Conf=65. Tool de guardado acepta ruta arbitraria de destino. Vector: escribir a cualquier path del sistema via AI agent. |
+| CS02-F49 | docx-mcp | MCP02 Scope Creep | HIGH | `export` accepts write-path param — path traversal risk | ✅ TP | Conf=65. Tool de exportación con param de output path sin sandbox. Mismo vector F48. |
+| CS02-F50 | docx-mcp | MCP02 Scope Creep | HIGH | `convert_to_odt` accepts write-path param — path traversal risk | ✅ TP | Conf=65. Conversión ODT con output path arbitrario. Tres tools de docx-mcp con write-path exposure confirman patrón sistémico. |
+| CS02-F51 | docx-mcp | EXT03 Shadow Tool | HIGH | `read_file` conflicts with high-value built-in name | ✅ TP | Conf=90. Mismo patrón CS01-F01/F02/F03. Un AI agent entrenado en code ve `read_file` como operación del sistema — el server docx podría ser confiado implícitamente para acceder a archivos fuera de .docx. |
+
+### FPs descartados — docx-mcp bulk
+
+De 90 findings en scan v1.0.0 (5H 39M 41L 5I):
+- **22M Injection reflected (`*.file_path`)**: docx tools retornan el file_path en la respuesta por diseño (echo de qué archivo fue procesado). Conf=50 (borderline). FP para un editor de documentos local. **Excepción**: F05 (batch_edit plan_file_path, ya curado) que acepta un archivo externo de plan — ese es TP real.
+- **41L Schema bypass**: schema permissivo en editor de documentos local con 20+ tools. Patrones (accept missing required, wrong type, undeclared extra fields) son reales violaciones de schema pero de bajo riesgo en contexto de procesamiento de archivos locales.
+- **5I no-required-fields**: params opcionales por diseño del editor.
+- **2M Init audit** (protocol downgrade + null request ID): patrón sistémico, misma clase que CS01-F69/F70.
+
+---
+
 ## Notas de análisis
 
 ### CS02-F01/F02 — run_command en mcp-server-docker

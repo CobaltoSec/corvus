@@ -252,12 +252,15 @@ targets:
   - lab
   - --password
   - lab
-  status: error
-  notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk. Uses
-    lab VM 301 (10.13.37.150, lab/lab).
+  status: skip-env
+  notes: 'SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk. Uses
+    lab VM 301 (10.13.37.150, lab/lab). ERROR ROOT CAUSE: server requires SSH connection
+    to 10.13.37.150 at startup — npx fails if VM 301 is not running. v0.9.x scan
+    (2026-06-29) completó con VM running: 2H (execute-command shadow + proto-crash).
+    v1.0.0 scan (2026-07-01) ERROR — VM was off. Retry with: labs/lab.sh up 301.'
   last_scanned: '2026-07-01'
-  findings_summary: ERROR (no report.json)
-  curation: pending
+  findings_summary: 2H (from v0.9.x scan — see CS02-F18 + CS02-F08)
+  curation: done
 - name: mcp-webresearch
   tier: D
   transport: stdio
@@ -275,11 +278,15 @@ targets:
   - npx
   - -y
   - korean-law-mcp
-  status: error
-  notes: Korean law database. Public API — schema + injection surface 2,039/wk.
+  status: skip-env
+  notes: 'Korean law database. Public API — schema + injection surface 2,039/wk.
+    ERROR ROOT CAUSE: external API dependency (Korean national law database). Both
+    v0.9.x scan (2026-06-29) and v1.0.0 scan (2026-07-01) failed — API timeout or
+    unavailable. No prior successful scan. SKIP permanente: external API dependency
+    makes reproducible scanning unreliable.'
   last_scanned: '2026-07-01'
-  findings_summary: ERROR (no report.json)
-  curation: pending
+  findings_summary: NO DATA (API unavailable in all scans)
+  curation: skip
 - name: remnux-mcp-server
   tier: D
   transport: stdio
@@ -288,11 +295,13 @@ targets:
   - -y
   - '@remnux/mcp-server'
   status: done
-  notes: REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
-    Starts with WARNING — sandbox disabled.
+  notes: 'REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
+    Starts with WARNING — sandbox disabled. NOTE: batch summary.md marcó como ERROR
+    (Windows ProactorEventLoop noise) pero report.json fue capturado (76KB). No es
+    regresión — es falso negativo del summary.'
   last_scanned: '2026-07-01'
   findings_summary: 1C 6H 13M
-  curation: pending
+  curation: done
 - name: mcp-javadc
   tier: D
   transport: stdio
@@ -325,10 +334,12 @@ targets:
   - -y
   - '@usejunior/docx-mcp'
   status: done
-  notes: DOCX read/write operations. File processing + path ops 1,478/wk.
+  notes: 'DOCX read/write operations. File processing + path ops 1,478/wk. 4 TP HIGH
+    (scope-creep write-path ×3 + shadow read_file) + batch FP: 22M injection echo
+    by design, 41L schema bypass (permissive editor schema), 5I no-required-fields.'
   last_scanned: '2026-07-01'
   findings_summary: 5H 39M 41L 5I
-  curation: pending
+  curation: done
 - name: spartan-mcp
   tier: D
   transport: stdio

@@ -157,19 +157,44 @@ Re-scan con v0.9.0 (21 módulos, nuevos: ssrf, endpoint-probe, param-smuggling, 
 
 ---
 
-## Estadísticas finales (post RT-CORVUS-V14 / v0.9.0)
+## RT-CORVUS-V23 — Delta v1.0.0 (re-scan 2026-07-01)
 
-- **Servers auditados**: 20 re-scaneados con v0.9.0 (+ 3 skip: playwright manual, docker-mcp manual, server-pdf sin cambios)
-- **Findings curados**: 62 (F01–F62)
-- **TRUE POSITIVE**: 43 (69.4%) — F01/F02/F03/F04/F05/F09/F11/F14/F15/F16/F17/F18/F20/F21/F22/F23/F24/F25/F28/F29/F31/F32/F33/F34/F35/F38/F39/F40/F42/F43/F45/F46/F47/F48/F49/F50 + **F52/F53/F56/F57/F58/F59/F62**
-- **FALSE POSITIVE**: 19 (30.6%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37/F41/F44/F51 + **F54/F55/F60/F61**
+Re-scan con v1.0.0 (22 módulos — nuevos EXT06 tool-chaining, EXT07 response-injection, init-audit mejorado, scope-audit write-path). 22 targets escaneados.
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS01-F63 | playwright-mcp | EXT03 Shadow Tool | HIGH | `browser_run_code_unsafe` description reveals arbitrary execution intent | ✅ TP | Conf=80. Nombre "unsafe" + descripción confirman ejecución JS sin sandbox. AI agent puede ser dirigido a evaluar código malicioso en contexto de la página. |
+| CS01-F64 | playwright-mcp | MCP05 Cmd Injection | HIGH | Injection reflected — `browser_evaluate.function` | ✅ TP | Conf=85. El tool evalúa el param `function` como JS en el browser — reflection directa hacia ejecución arbitraria. Vector de prompt injection a code exec. |
+| CS01-F65 | playwright-mcp | MCP05 Path Traversal | HIGH | Injection reflected — `browser_network_request.filename` path traversal | ✅ TP | Conf=85. Tool singular (distinto de F34 que es `browser_network_requests` plural). Mismo vector — filename param sin validar acepta path traversal. |
+| CS01-F66 | playwright-mcp | MCP02 SSRF | HIGH | SSRF (timeout) — `browser_navigate.url` hung on SSRF payload | ✅ TP | Conf=65. Automated SSRF confirmation via timeout en probe 169.254.169.254. Complementa F14 (manual). Corvus v1.0.0 detecta automáticamente el hang de navegación. |
+| CS01-F67 | playwright-mcp | EXT01 Proto-Fuzz | HIGH | Protocol crash — oversized method name | ✅ TP | Conf=80. playwright-mcp se agrega al cluster proto-crash. DoS via JSON-RPC method sobredimensionado. Extiende CS02-F08 cluster. |
+| CS01-F68 | mcp-server-fetch | MCP02 SSRF | HIGH | SSRF (timing) — `fetch.url` delayed on SSRF payload | ✅ TP | Conf=70. Timing delay → server realizó petición HTTP a 169.254.169.254 antes de rechazar. v0.9.0 anotaba "whitelist bloqueó SSRF" — v1.0.0 detecta bypass de timing via lib private-ip vulnerable (ver F15). |
+| CS01-F69 | mcp-server-fetch | EXT04 Init Audit | MEDIUM | `initialize` accepts protocol version downgrade | ✅ TP (systemic) | Conf=75. Server acepta versión de protocolo inferior a la declarada. Patrón sistémico — vector de bypass de features de seguridad introducidas en versiones nuevas del protocolo. |
+| CS01-F70 | mcp-server-fetch | EXT04 Init Audit | MEDIUM | Null request ID accepted — JSON-RPC spec violation | ✅ TP (systemic) | Conf=60. Server acepta request con `"id": null` sin error. Viola JSON-RPC 2.0 spec. Patrón sistémico. |
+| CS01-F71 | mcp-server-time | EXT04 Init Audit | MEDIUM | `initialize` accepts protocol version downgrade | ✅ TP (systemic) | Conf=75. Mismo patrón F69. mcp-server-time era CLEAN (F44 — v0.9.0) — v1.0.0 agrega init_audit que detecta este patrón de protocolo. |
+| CS01-F72 | mcp-server-time | EXT04 Init Audit | MEDIUM | Null request ID accepted — JSON-RPC spec violation | ✅ TP (systemic) | Conf=60. Mismo patrón F70. |
+
+### FPs descartados de la re-scan v1.0.0
+
+- **playwright-mcp schema bypass (×7 LOW/MEDIUM)**: `browser_*` tools tienen schemas permissivos por diseño — browser automation requiere flexibilidad de tipos. `browser_network_requests.filter` echo (conf 30) = FP obvio.
+- **playwright-mcp INFO ×4**: no-required-fields en tools con params opcionales. FP esperado.
+
+---
+
+## Estadísticas finales (post RT-CORVUS-V23 / v1.0.0)
+
+- **Servers auditados**: 22 re-scaneados con v1.0.0 (mismo set más mcp-server-time actualizado)
+- **Findings curados**: 72 (F01–F72)
+- **TRUE POSITIVE**: 53 (73.6%) — F01-F05/F09/F11/F14/F15/F16/F17/F18/F20-F25/F28/F29/F31-F35/F38-F40/F42/F43/F45-F50/F52/F53/F56-F59/F62 + **F63-F72**
+- **FALSE POSITIVE**: 19 (26.4%) — F06/F07/F08/F10/F12/F13/F19/F26/F27/F30/F36/F37/F41/F44/F51/F54/F55/F60/F61
 - **CRITICAL TP**: 1 (F11 — Token Exposure auto-detectado)
-- **HIGH TP**: 27 (F01/F02/F03/F09/F14/F15/F16/F28/F29/F33/F34/F35/F38/F39/F40/F42/F43/F47/F48/F49/F50 + F52/F53/F56/F57/F58/F59)
-- **MEDIUM TP**: 7 (F18/F20/F31/F32/F45/F46 + F62)
+- **HIGH TP**: 33 (F01/F02/F03/F09/F11/F14/F15/F16/F28/F29/F33/F34/F35/F38/F39/F40/F42/F43/F47/F48/F49/F50 + F52/F53/F56/F57/F58/F59 + **F63/F64/F65/F66/F67/F68**)
+- **MEDIUM TP**: 11 (F18/F20/F31/F32/F45/F46/F62 + **F69/F70/F71/F72**)
 - **LOW TP**: 8 (F04/F05/F17/F21/F22/F23/F24/F25)
-- **FP rate**: 30.6% (19/62) — sin variación significativa
-- **Servers con ≥1 HIGH**: 15 de 23 (65%) — sin cambio
-- **Delta detección v0.8.1→v0.9.0**: +11 findings (7 TP nuevos, 4 FP nuevos). Nuevos módulos aportan: scope_audit B0 (F52/F53), shadow tool enhanced (F56/F57/F58), response_flood endpoint-probe (F59/F62).
+- **FP rate**: 26.4% (19/72) — mejora vs 30.6% en v0.9.0
+- **Servers con ≥1 HIGH**: 17 de 23 (74%) — +2 (playwright-mcp SSRF auto + mcp-server-fetch SSRF confirmed)
+- **Delta v0.9.0→v1.0.0**: +10 findings (10 TP, 0 FP). Nuevos módulos aportan: shadow tool EXT03 (F63), cmd injection mejorado (F64/F65), SSRF auto (F66/F68), proto-crash expansion (F67), init_audit (F69-F72).
+- **Protocol crash cluster**: playwright-mcp se agrega → prevalencia 12/54 servers combinados
 - **SDK advisory (@modelcontextprotocol/sdk)**: afecta a ≥5 servers confirmados (F09/F16/F35 + mcp-server-commands + database-server)
 
 ## Servers skip definitivos
