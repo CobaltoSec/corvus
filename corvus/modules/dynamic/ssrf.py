@@ -23,8 +23,12 @@ _URL_DESC = re.compile(
 
 # SSRF payloads to probe
 _SSRF_PAYLOADS = [
-    "http://169.254.169.254/latest/meta-data/",
-    "http://169.254.169.254/",
+    "http://169.254.169.254/latest/meta-data/",        # AWS IMDS
+    "http://169.254.169.254/",                          # AWS/Azure IMDS base
+    "http://169.254.169.254/metadata/instance?api-version=2021-02-01",  # Azure IMDS
+    "http://metadata.google.internal/computeMetadata/v1/",              # GCP IMDS
+    "http://100.100.100.200/latest/meta-data/",         # Alibaba Cloud IMDS
+    "http://2130706433/",                               # 127.0.0.1 as decimal
     "http://127.0.0.1/",
     "http://0.0.0.0/",
     "http://[::1]/",
@@ -33,9 +37,15 @@ _SSRF_PAYLOADS = [
 
 # Content in the response that confirms the server made the request
 _METADATA_SIGNATURES = [
+    # AWS
     "ami-id", "instance-id", "instance-type", "meta-data",
     "availability-zone", "iam/security-credentials",
-    "computeMetadata", "metadata.google.internal",
+    # GCP
+    "computeMetadata", "metadata.google.internal", "serviceAccounts", "gce-",
+    # Azure
+    "subscriptionId", "resourceGroupName", "azEnvironment",
+    # Generic
+    "network-interfaces",
 ]
 
 # Threshold: elapsed > baseline * this factor → likely hanging on a network request

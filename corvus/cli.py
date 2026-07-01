@@ -16,6 +16,7 @@ from .config import CorvusConfig, load_config
 from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
+from .modules.dynamic.batch_dos import BatchDosModule
 from .modules.dynamic.token_exposure import TokenExposureModule
 from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
@@ -34,6 +35,7 @@ from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
+from .modules.static.osv_supply_chain import OsvSupplyChainModule
 from .modules.static.supply_chain import SupplyChainModule
 from .modules.static.supply_chain_python import SupplyChainPythonModule
 from .modules.static.tool_chaining import ToolChainingModule
@@ -51,6 +53,7 @@ _ALL_MODULES = {
     "scope-audit":     ScopeAuditModule,
     "supply-chain":        SupplyChainModule,
     "supply-chain-python": SupplyChainPythonModule,
+    "osv-supply-chain":    OsvSupplyChainModule,
     "tool-poisoning":  ToolPoisoningModule,
     "schema-audit":    SchemaAuditModule,
     "shadow-tool":     ShadowToolModule,
@@ -58,6 +61,7 @@ _ALL_MODULES = {
     "log-audit":       LogAuditModule,
     "resource-uri":    ResourceUriModule,
     "tool-chaining":   ToolChainingModule,
+    "batch-dos":       BatchDosModule,
     "cmd-injection":   CmdInjectionModule,
     "token-exposure":  TokenExposureModule,
     "schema-bypass":   SchemaBypassModule,
@@ -71,9 +75,9 @@ _ALL_MODULES = {
     "output-encoding":      OutputEncodingModule,
     "response-injection":   ResponseInjectionModule,
 }
-_STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
+_STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "osv-supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
-    "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
+    "batch-dos", "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
     "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",
     "output-encoding", "response-injection",
 }

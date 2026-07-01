@@ -87,6 +87,51 @@ class ProtoFuzzModule(ScanModule):
                 remediation="Reject requests with null id values; treat them as notifications.",
             ))
 
+        # Probe 4: Deeply nested params — resource exhaustion via recursive parsing
+        nested_payload: dict = {}
+        node = nested_payload
+        for _ in range(50):
+            node["x"] = {}
+            node = node["x"]
+        result4, err4 = await _probe_method(transport, "tools/call", params={"name": "echo", "arguments": nested_payload})
+        if result4 is None and err4 is None:
+            findings.append(Finding(
+                owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
+                severity=Severity.MEDIUM,
+                title="Protocol crash — deeply nested params caused server disconnect",
+                description=(
+                    "Sending a tools/call request with 50-level nested params caused the server "
+                    "to disconnect or crash. Deep nesting can cause stack overflows or "
+                    "excessive memory use in recursive JSON parsers."
+                ),
+                payload="tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+                confidence=70,
+                remediation=(
+                    "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). "
+                    "Return -32700 (Parse error) for inputs exceeding the depth limit."
+                ),
+            ))
+
+        # Probe 5: Type confusion — params as string instead of object
+        result5, err5 = await _probe_method(transport, "tools/call", params="not-an-object")
+        if result5 is None and err5 is None:
+            findings.append(Finding(
+                owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
+                severity=Severity.LOW,
+                title="Protocol crash — string params caused server disconnect",
+                description=(
+                    "Sending a tools/call request where params is a string (not an object) "
+                    "caused the server to crash or disconnect. "
+                    "The JSON-RPC spec requires params to be an array or object."
+                ),
+                payload='{"method":"tools/call","params":"not-an-object"}',
+                confidence=65,
+                remediation=(
+                    "Validate params type (must be object or array) before processing. "
+                    "Return -32600 (Invalid Request) for wrong types."
+                ),
+            ))
+
         return findings
 
 
@@ -94,13 +139,11 @@ async def _probe_method(
     transport: MCPTransport,
     method: str,
     force_null_id: bool = False,
+    params: Any = None,
 ) -> tuple[Any, int | None]:
     """Call transport.send_request; return (result, error_code) or (None, None) on transport failure."""
     try:
-        # Note: send_request manages the JSON-RPC ID internally.
-        # For null ID probing, we rely on the transport's underlying mechanism — if the
-        # transport doesn't support null IDs, this call behaves normally (no null-ID test).
-        result = await transport.send_request(method)
+        result = await transport.send_request(method, params)
         return result, None
     except JSONRPCError as e:
         return None, e.code

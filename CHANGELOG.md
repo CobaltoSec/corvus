@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-V26] — 2026-07-01 — A1+A2: batch parallelism + 2 nuevos módulos + mejoras
+
+- **BATCH-FIX (3 fixes)** — `batch.py` refactorizado: `asyncio.gather` + `asyncio.Semaphore(N=5)` para scans paralelos (~5× más rápido sobre 54 servers); 4 módulos faltantes sincronizados (`supply-chain-python`, `resource-uri`, `tool-chaining`, `response-injection`); parámetro `skip_existing=True` para resume/skip de targets con `report.json` existente.
+- **M-NEW-05 `osv-supply-chain`** (static, MCP04) — query a OSV.dev API (free, sin auth) para vulnerabilidades conocidas. Cubre stdio npm y Python (uvx/uv), y HTTP transport vía `server_name` del initialize. Sin dependencias locales. 16 tests.
+- **M-NEW-03 `batch-dos`** (dynamic, EXT01) — envía JSON-RPC batch arrays (no estándar en MCP) directamente al transport para detectar crash/DoS y batch acceptance no intencional. Probe small (5 ×) y large (50 ×). HIGH=crash, MEDIUM=batch accepted. 23 tests.
+- **Mejoras módulos** — `init_audit`: versiones futuras (`9999-99-99`, `2030-01-01`) + missing field + type confusion. `ssrf`: Azure IMDS, GCP metadata.google.internal, Alibaba 100.100.100.200, decimal IP 2130706433; signatures Azure/GCP. `proto_fuzz`: nested params 50 niveles + type confusion string params.
+- **Tests** — 397/398 pass (1 flaky pre-existente: timing Windows bajo carga).
+
 ## [RT-CORVUS-V25] — 2026-07-01 — A1→B1: FP calibration v5 + dataset definitivo
 
 - **A1 — token_exposure dedup** — `seen_signals: set[str]` por tool impide emitir 2 findings idénticos cuando el mismo signal aparece en múltiples response texts (benign + error-provoking + oversized). Bug documentado en CS02 remnux-mcp-server (×12 FP-dups por tool).

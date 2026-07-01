@@ -10,7 +10,8 @@ from ...transport.base import MCPTransport
 
 _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 
-_DOWNGRADE_VERSIONS = ["1.0", "2024-01-01", "", "0.1"]
+# Probe versions: past, empty, and far-future to detect servers that accept any value.
+_PROBE_VERSIONS = ["9999-99-99", "2030-01-01", "1.0", "2024-01-01", "", "0.1"]
 
 
 class InitAuditModule(ScanModule):
@@ -48,29 +49,71 @@ class InitAuditModule(ScanModule):
                     remediation="Strip all control characters from serverInfo name and version fields.",
                 ))
 
-        # Dynamic: protocol version downgrade probe
-        downgrade_accepted: list[str] = []
-        for version in _DOWNGRADE_VERSIONS:
+        # Dynamic: protocol version probe — past, empty, and far-future values
+        versions_accepted: list[str] = []
+        for version in _PROBE_VERSIONS:
             accepted = await _probe_initialize(transport, version)
             if accepted:
-                downgrade_accepted.append(version or '""')
+                versions_accepted.append(version or '""')
 
-        if downgrade_accepted:
+        if versions_accepted:
+            has_future = any(v.startswith("9999") or v.startswith("2030") for v in versions_accepted)
+            severity = Severity.MEDIUM
+            title = "initialize accepts protocol version downgrade"
+            desc_extra = (
+                " The server also accepted far-future versions, indicating no version validation at all."
+                if has_future else ""
+            )
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
+                severity=severity,
+                title=title,
+                description=(
+                    f"The server accepted initialize with arbitrary protocol versions: "
+                    f"{versions_accepted}.{desc_extra} "
+                    "Servers should reject versions outside their supported range "
+                    "to prevent feature-downgrade attacks."
+                ),
+                evidence=f"Accepted versions: {versions_accepted}",
+                confidence=75,
+                remediation=(
+                    "Validate protocolVersion against a supported range. "
+                    "Return a JSON-RPC error for versions outside that range."
+                ),
+            ))
+
+        # Missing protocolVersion field — server should return error, not crash
+        missing_field = await _probe_missing_field(transport)
+        if missing_field == "crash":
             findings.append(Finding(
                 owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
                 severity=Severity.MEDIUM,
-                title="initialize accepts protocol version downgrade",
+                title="initialize crash — missing protocolVersion causes unhandled error",
                 description=(
-                    f"The server accepted initialize requests with downgraded protocol versions: "
-                    f"{downgrade_accepted}. Servers should reject versions older than the minimum "
-                    "supported to prevent feature-downgrade attacks."
+                    "Sending initialize without the required protocolVersion field "
+                    "caused the server to crash or return an unexpected result. "
+                    "Servers must validate required fields and return -32602 (Invalid params)."
                 ),
-                evidence=f"Accepted versions: {downgrade_accepted}",
-                confidence=75,
-                remediation=(
-                    "Validate the requested protocolVersion against a minimum supported version. "
-                    "Return a JSON-RPC error if the client requests an unsupported version."
+                evidence="initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+                confidence=70,
+                remediation="Add required-field validation to the initialize handler.",
+            ))
+
+        # Type confusion: protocolVersion as integer instead of string
+        type_confused = await _probe_type_confusion(transport)
+        if type_confused:
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
+                severity=Severity.LOW,
+                title="initialize accepts type-confused protocolVersion (integer instead of string)",
+                description=(
+                    "The server accepted an initialize request where protocolVersion was an "
+                    "integer (42) instead of a string. Strict type checking prevents "
+                    "parser confusion and unexpected coercion behavior."
                 ),
+                evidence="protocolVersion: 42 (integer) → server returned serverInfo",
+                confidence=65,
+                remediation="Validate that protocolVersion is a string before processing.",
             ))
 
         return findings
@@ -84,8 +127,34 @@ async def _probe_initialize(transport: MCPTransport, version: str) -> bool:
             "capabilities": {},
             "clientInfo": {"name": "corvus-probe", "version": "0.0.1"},
         })
-        # A compliant server should return an error for unsupported versions;
-        # a non-error response (with a result dict containing serverInfo) means it accepted.
+        return isinstance(result, dict) and "serverInfo" in result
+    except Exception:
+        return False
+
+
+async def _probe_missing_field(transport: MCPTransport) -> str:
+    """Send initialize without protocolVersion. Returns 'crash', 'error', or 'ok'."""
+    try:
+        result: Any = await transport.send_request("initialize", {
+            "capabilities": {},
+            "clientInfo": {"name": "corvus-probe", "version": "0.0.1"},
+        })
+        # If server returned a valid serverInfo without the required field, report as crash
+        if isinstance(result, dict) and "serverInfo" in result:
+            return "crash"
+        return "ok"
+    except Exception:
+        return "error"  # Expected: server should return JSON-RPC error — not a finding
+
+
+async def _probe_type_confusion(transport: MCPTransport) -> bool:
+    """Send initialize with protocolVersion as integer. Return True if server accepts it."""
+    try:
+        result: Any = await transport.send_request("initialize", {
+            "protocolVersion": 42,  # integer instead of string
+            "capabilities": {},
+            "clientInfo": {"name": "corvus-probe", "version": "0.0.1"},
+        })
         return isinstance(result, dict) and "serverInfo" in result
     except Exception:
         return False

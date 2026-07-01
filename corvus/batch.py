@@ -38,6 +38,7 @@ import yaml
 from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
+from .modules.dynamic.batch_dos import BatchDosModule
 from .modules.dynamic.token_exposure import TokenExposureModule
 from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
@@ -49,25 +50,34 @@ from .modules.dynamic.param_smuggling import ParamSmugglingModule
 from .modules.dynamic.init_audit import InitAuditModule
 from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.dynamic.output_encoding import OutputEncodingModule
+from .modules.dynamic.response_injection import ResponseInjectionModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
+from .modules.static.osv_supply_chain import OsvSupplyChainModule
+from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.supply_chain import SupplyChainModule
+from .modules.static.supply_chain_python import SupplyChainPythonModule
+from .modules.static.tool_chaining import ToolChainingModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .reporting.report import ReportGenerator
 from .transport.http import HttpTransport
 from .transport.stdio import StdioTransport
 
 _ALL_MODULES = [
-    ScopeAuditModule, SupplyChainModule,
+    ScopeAuditModule, SupplyChainModule, SupplyChainPythonModule, OsvSupplyChainModule,
     ToolPoisoningModule, SchemaAuditModule, ShadowToolModule,
-    AuthAuditModule, LogAuditModule, CmdInjectionModule,
-    TokenExposureModule, SchemaBypassModule, ResponseFloodModule, RugPullModule,
-    SSRFModule, EndpointProbeModule, ParamSmugglingModule,
-    InitAuditModule, ProtoFuzzModule, OutputEncodingModule,
+    AuthAuditModule, LogAuditModule, ResourceUriModule, ToolChainingModule,
+    BatchDosModule, CmdInjectionModule, TokenExposureModule, SchemaBypassModule,
+    ResponseFloodModule, RugPullModule, SSRFModule, EndpointProbeModule,
+    ParamSmugglingModule, InitAuditModule, ProtoFuzzModule,
+    OutputEncodingModule, ResponseInjectionModule,
 ]
+
+# Max number of targets scanned concurrently.
+_BATCH_CONCURRENCY = 5
 
 
 class BatchTarget:
@@ -105,6 +115,9 @@ class BatchResult:
             fc = t["finding_count"]
             if "error" in fc:
                 lines.append(f"| {t['name']} | ERROR | — | — | — | — | — |")
+                continue
+            if "skipped" in fc:
+                lines.append(f"| {t['name']} | SKIP | — | — | — | — | — |")
                 continue
             total = sum(fc.values())
             lines.append(
@@ -166,30 +179,31 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
 _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-request timeouts
 
 
-async def run_batch(
-    targets: list[BatchTarget],
+async def _scan_one(
+    target: BatchTarget,
     output_dir: Path,
     *,
-    timeout: int = 30,
-    target_timeout: int = _TARGET_SCAN_TIMEOUT,
-    min_confidence: int | None = None,
-    sarif: bool = False,
-) -> BatchResult:
-    if sys.platform == "win32":
-        sys.unraisablehook = _filtered_unraisablehook
-        asyncio.get_running_loop().set_exception_handler(_filtered_exception_handler)
+    timeout: int,
+    target_timeout: int,
+    min_confidence: int | None,
+    sarif: bool,
+    sem: asyncio.Semaphore,
+    skip_existing: bool,
+) -> tuple[str, str, dict]:
+    """Scan one target under the concurrency semaphore. Returns (name, transport, result_dict)."""
+    target_dir = output_dir / target.name
 
-    batch_result = BatchResult()
+    if skip_existing and (target_dir / "report.json").exists():
+        return target.name, target.transport, {"skipped": True}
 
-    for target in targets:
-        target_dir = output_dir / target.name
-        target_dir.mkdir(parents=True, exist_ok=True)
+    target_dir.mkdir(parents=True, exist_ok=True)
 
-        if target.transport == "stdio":
-            xport = StdioTransport(target.cmd or [], timeout=timeout, env=target.env_vars)
-        else:
-            xport = HttpTransport(target.url or "", timeout=timeout)
+    if target.transport == "stdio":
+        xport = StdioTransport(target.cmd or [], timeout=timeout, env=target.env_vars)
+    else:
+        xport = HttpTransport(target.url or "", timeout=timeout)
 
+    async with sem:
         try:
             async with asyncio.timeout(target_timeout):
                 async with xport:
@@ -215,8 +229,44 @@ async def run_batch(
                     if sarif:
                         gen.write_sarif(scan_result)
 
-                batch_result.add(target.name, target.transport, scan_result.finding_count)
+                    return target.name, target.transport, scan_result.finding_count
         except Exception as e:
-            batch_result.add(target.name, target.transport, {"error": str(e)})
+            return target.name, target.transport, {"error": str(e)}
+
+
+async def run_batch(
+    targets: list[BatchTarget],
+    output_dir: Path,
+    *,
+    timeout: int = 30,
+    target_timeout: int = _TARGET_SCAN_TIMEOUT,
+    min_confidence: int | None = None,
+    sarif: bool = False,
+    skip_existing: bool = False,
+) -> BatchResult:
+    if sys.platform == "win32":
+        sys.unraisablehook = _filtered_unraisablehook
+        asyncio.get_running_loop().set_exception_handler(_filtered_exception_handler)
+
+    sem = asyncio.Semaphore(_BATCH_CONCURRENCY)
+
+    coros = [
+        _scan_one(
+            target, output_dir,
+            timeout=timeout,
+            target_timeout=target_timeout,
+            min_confidence=min_confidence,
+            sarif=sarif,
+            sem=sem,
+            skip_existing=skip_existing,
+        )
+        for target in targets
+    ]
+
+    results = await asyncio.gather(*coros)
+
+    batch_result = BatchResult()
+    for name, transport, finding_count in results:
+        batch_result.add(name, transport, finding_count)
 
     return batch_result
