@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-V24] — 2026-07-01 — D1+D2+D3: v1.0.1 + findings curados + regresiones
+
+- **v1.0.1 publicado** — PyPI + GitHub release. Único cambio: Windows noise fix del bloque V23
+- **CS01 findings curados (F63-F72)** — playwright-mcp: shadow tool `browser_run_code_unsafe`, injection `browser_evaluate.function` + `browser_network_request.filename`, SSRF auto-detectado via timeout, proto-crash. mcp-server-fetch: SSRF timing bypass confirmado (private-ip bypass). mcp-server-fetch + mcp-server-time: init_audit sistémico (protocol version downgrade + null request ID). Stats CS01: 72 findings, 53 TP (73.6%), 19 FP (26.4%), FP rate mejoró 30.6%→26.4%
+- **CS02 findings curados (F32-F51)** — remnux-mcp: 4 nuevos TP (scope-creep extract_archive, scope-creep download_file, supply-chain uuid, injection run_tool.input_file); token-exposure ×12 marcado como FP-dup (bug Corvus). docx-mcp: 4 TP (scope-creep write-path ×3, shadow tool `read_file`) + bulk FP note (injection echo by design, schema bypass permissivo)
+- **Regresiones investigadas** — `ssh-mcp-server`: skip-env, requiere VM 301 running (hallazgos previos v0.9.x preservados). `korean-law-mcp`: skip-env permanente, external API unavailable en todos los scans. `remnux-mcp-server`: ERROR en summary.md era falso-negativo del Windows noise — report.json capturado correctamente
+
 ## [1.0.1] — 2026-07-01
 
 - **Windows noise fix** — supresión de `socket.send() raised exception` y `_ProactorBasePipeTransport.__del__` ValueError en batch scan Windows (asyncio exception handler + sys.unraisablehook en `batch.py`/`cli.py`). `stdio.py` cierra stdin antes de `terminate()`. Sin cambios de API ni módulos.
