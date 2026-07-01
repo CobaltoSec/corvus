@@ -1,0 +1,158 @@
+name: Corvus MCP Security Scan
+
+# Reusable workflow — call from your own repo to scan an MCP server and
+# upload findings to GitHub Code Scanning (Security tab).
+#
+# Usage example (in your repo's workflow):
+#
+#   jobs:
+#     mcp-security:
+#       uses: CobaltoSec/corvus/.github/workflows/code-scanning.yml@main
+#       with:
+#         transport: stdio
+#         cmd: "npx -y @modelcontextprotocol/server-everything"
+#         modules: all
+#         fail_on: high
+#
+# Or to scan an HTTP server:
+#
+#   jobs:
+#     mcp-security:
+#       uses: CobaltoSec/corvus/.github/workflows/code-scanning.yml@main
+#       with:
+#         transport: http
+#         url: "http://localhost:3000/mcp"
+#         modules: all
+
+on:
+  workflow_call:
+    inputs:
+      transport:
+        description: "Transport type: stdio or http"
+        required: true
+        type: string
+        default: stdio
+      cmd:
+        description: "Command to launch MCP server (stdio only)"
+        required: false
+        type: string
+        default: ""
+      url:
+        description: "URL of MCP server (http only)"
+        required: false
+        type: string
+        default: ""
+      modules:
+        description: "Modules to run: all, static, dynamic, or comma-separated list"
+        required: false
+        type: string
+        default: all
+      fail_on:
+        description: "Fail the job if findings at this severity or above (critical|high|medium|low)"
+        required: false
+        type: string
+        default: high
+      corvus_version:
+        description: "Corvus version to install (default: latest)"
+        required: false
+        type: string
+        default: ""
+      python_version:
+        description: "Python version to use"
+        required: false
+        type: string
+        default: "3.11"
+    secrets:
+      mcp_header:
+        description: "Optional HTTP header for authenticated MCP servers (format: 'Key: Value')"
+        required: false
+
+  # Also runnable manually on the corvus repo itself
+  workflow_dispatch:
+    inputs:
+      transport:
+        description: "Transport type"
+        required: true
+        default: stdio
+        type: choice
+        options: [stdio, http]
+      cmd:
+        description: "MCP server command (stdio)"
+        required: false
+        default: "npx -y @modelcontextprotocol/server-everything"
+      url:
+        description: "MCP server URL (http)"
+        required: false
+        default: ""
+      modules:
+        description: "Modules"
+        required: false
+        default: all
+      fail_on:
+        description: "Fail on severity"
+        required: false
+        default: high
+
+jobs:
+  corvus-scan:
+    name: MCP Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version || '3.11' }}
+
+      - name: Install Corvus
+        run: |
+          if [ -n "${{ inputs.corvus_version }}" ]; then
+            pip install "cobaltosec-corvus==${{ inputs.corvus_version }}"
+          else
+            pip install cobaltosec-corvus
+          fi
+
+      - name: Run Corvus scan (stdio)
+        if: ${{ inputs.transport == 'stdio' || inputs.transport == '' }}
+        run: |
+          corvus scan \
+            --transport stdio \
+            --cmd "${{ inputs.cmd }}" \
+            --module "${{ inputs.modules || 'all' }}" \
+            --output-dir corvus-output \
+            --sarif
+        continue-on-error: true
+
+      - name: Run Corvus scan (http)
+        if: ${{ inputs.transport == 'http' }}
+        run: |
+          corvus scan \
+            --transport http \
+            --url "${{ inputs.url }}" \
+            --module "${{ inputs.modules || 'all' }}" \
+            --output-dir corvus-output \
+            --sarif \
+            ${{ secrets.mcp_header && format('--header "{0}"', secrets.mcp_header) || '' }}
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: corvus-output/report.sarif
+          category: corvus-mcp-security
+
+      - name: Fail on severity threshold
+        if: ${{ inputs.fail_on != '' }}
+        run: |
+          corvus scan \
+            --transport ${{ inputs.transport || 'stdio' }} \
+            ${{ inputs.cmd && format('--cmd "{0}"', inputs.cmd) || '' }} \
+            ${{ inputs.url && format('--url "{0}"', inputs.url) || '' }} \
+            --module "${{ inputs.modules || 'all' }}" \
+            --output-dir corvus-output-check \
+            --fail-on "${{ inputs.fail_on }}"

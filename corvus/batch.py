@@ -39,6 +39,9 @@ from .core.models import Severity
 from .core.session import ScanSession
 from .discovery.enumerator import MCPEnumerator
 from .modules.dynamic.batch_dos import BatchDosModule
+from .modules.dynamic.elicitation_probe import ElicitationProbeModule
+from .modules.dynamic.oauth_bypass import OAuthBypassModule
+from .modules.dynamic.sampling_probe import SamplingProbeModule
 from .modules.dynamic.token_exposure import TokenExposureModule
 from .modules.dynamic.cmd_injection import CmdInjectionModule
 from .modules.dynamic.response_flood import ResponseFloodModule
@@ -73,7 +76,8 @@ _ALL_MODULES = [
     BatchDosModule, CmdInjectionModule, TokenExposureModule, SchemaBypassModule,
     ResponseFloodModule, RugPullModule, SSRFModule, EndpointProbeModule,
     ParamSmugglingModule, InitAuditModule, ProtoFuzzModule,
-    OutputEncodingModule, ResponseInjectionModule,
+    OutputEncodingModule, ResponseInjectionModule, OAuthBypassModule,
+    SamplingProbeModule, ElicitationProbeModule,
 ]
 
 # Max number of targets scanned concurrently.

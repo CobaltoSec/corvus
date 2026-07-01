@@ -43,6 +43,8 @@ class OWASPCategory(str, Enum):
     EXT04_SSRF              = "EXT04"  # Server-Side Request Forgery
     EXT05_RESOURCE_URI      = "EXT05"  # Resource URI Exposure
     EXT06_TOOL_CHAINING     = "EXT06"  # Cross-tool Instruction Chaining
+    EXT08_SAMPLING_INJECTION  = "EXT08"  # Sampling/createMessage injection
+    EXT09_ELICITATION_PHISHING = "EXT09"  # Elicitation/create phishing
 
 
 class ToolSpec(BaseModel):

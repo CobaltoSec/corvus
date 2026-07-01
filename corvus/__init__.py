@@ -18,7 +18,9 @@ from .core.models import (
     Severity,
     ToolSpec,
 )
+from .diff import DiffResult, diff_sarifs
 from .modules.base import ScanModule
+from .scoring import compute_risk_score, risk_tier, score_result
 
 __all__ = [
     "__version__",
@@ -30,6 +32,11 @@ __all__ = [
     "ResourceSpec",
     "ScanModule",
     "ScanResult",
+    "DiffResult",
+    "diff_sarifs",
+    "compute_risk_score",
+    "risk_tier",
+    "score_result",
     "Severity",
     "ToolSpec",
 ]

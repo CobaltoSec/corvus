@@ -28,7 +28,10 @@ from .modules.dynamic.param_smuggling import ParamSmugglingModule
 from .modules.dynamic.init_audit import InitAuditModule
 from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.dynamic.output_encoding import OutputEncodingModule
+from .modules.dynamic.elicitation_probe import ElicitationProbeModule
+from .modules.dynamic.oauth_bypass import OAuthBypassModule
 from .modules.dynamic.response_injection import ResponseInjectionModule
+from .modules.dynamic.sampling_probe import SamplingProbeModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
@@ -74,12 +77,16 @@ _ALL_MODULES = {
     "proto-fuzz":      ProtoFuzzModule,
     "output-encoding":      OutputEncodingModule,
     "response-injection":   ResponseInjectionModule,
+    "oauth-bypass":         OAuthBypassModule,
+    "sampling-probe":       SamplingProbeModule,
+    "elicitation-probe":    ElicitationProbeModule,
 }
 _STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "osv-supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
     "batch-dos", "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
     "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",
-    "output-encoding", "response-injection",
+    "output-encoding", "response-injection", "oauth-bypass",
+    "sampling-probe", "elicitation-probe",
 }
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
@@ -431,6 +438,101 @@ def list_modules(
         table.add_row(
             name, m.owasp_id, "static" if m.is_static else "dynamic", source, m.description
         )
+    console.print(table)
+
+
+@app.command()
+def diff(
+    old: Annotated[Path, typer.Argument(help="Baseline SARIF report (older scan)")],
+    new: Annotated[Path, typer.Argument(help="Comparison SARIF report (newer scan)")],
+    json_output: Annotated[bool, typer.Option("--json", help="Output diff as JSON")] = False,
+) -> None:
+    """Compare two SARIF reports — show new and fixed findings."""
+    import json as _json
+    from .diff import diff_sarifs, _severity_from_level
+
+    for p, label in [(old, "old"), (new, "new")]:
+        if not p.exists():
+            console.print(f"[red]File not found ({label}): {p}[/red]")
+            raise typer.Exit(1)
+
+    result = diff_sarifs(old, new)
+
+    if json_output:
+        console.print(_json.dumps(
+            {"new": result.new, "fixed": result.fixed, "unchanged_count": result.unchanged_count},
+            indent=2,
+        ))
+        return
+
+    console.print(f"\n[bold]SARIF Diff[/bold]  {old.name} → {new.name}")
+    console.print(
+        f"  [green]+{len(result.new)} new[/green]  "
+        f"[red]-{len(result.fixed)} fixed[/red]  "
+        f"{result.unchanged_count} unchanged\n"
+    )
+
+    for label, findings, color in [("NEW", result.new, "green"), ("FIXED", result.fixed, "red")]:
+        if findings:
+            console.print(f"[bold {color}]{label} findings:[/bold {color}]")
+            for r in findings:
+                sev = _severity_from_level(r.get("level"))
+                msg = r.get("message", {}).get("text", "")[:80]
+                c = _SEV_COLOR.get(sev.lower(), "white")
+                console.print(f"  [{c}][{sev}][/{c}] {r.get('ruleId', '')} — {msg}")
+            console.print()
+
+    if not result.new and not result.fixed:
+        console.print("[green]No changes — reports are identical.[/green]")
+
+
+@app.command()
+def score(
+    report: Annotated[Path, typer.Argument(help="Path to report.json from a corvus scan")],
+    json_output: Annotated[bool, typer.Option("--json", help="Output score as JSON")] = False,
+) -> None:
+    """Compute Risk Score (0–100) from scan findings."""
+    import json as _json
+    from .core.models import ScanResult
+    from .scoring import compute_risk_score, risk_tier
+
+    if not report.exists():
+        console.print(f"[red]File not found: {report}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        data = _json.loads(report.read_text(encoding="utf-8"))
+        result = ScanResult.model_validate(data)
+    except Exception as exc:
+        console.print(f"[red]Failed to parse report: {exc}[/red]")
+        raise typer.Exit(1)
+
+    sc = compute_risk_score(result.findings)
+    tier = risk_tier(sc)
+    counts = result.finding_count
+
+    if json_output:
+        out = {
+            "score": sc,
+            "tier": tier,
+            "target": result.target,
+            "findings": counts,
+        }
+        console.print(_json.dumps(out, indent=2))
+        return
+
+    tier_color = {"CRITICAL": "bold red", "HIGH": "red", "MEDIUM": "yellow", "LOW": "blue", "CLEAR": "green"}
+    color = tier_color.get(tier, "white")
+    console.print(f"\n[bold]Risk Score[/bold]  [{color}]{sc}/100 — {tier}[/{color}]")
+    console.print(f"Target      : {result.target}")
+    console.print()
+
+    table = Table(title="Finding Breakdown", show_header=True)
+    table.add_column("Severity")
+    table.add_column("Count", justify="right")
+    for sev, count in counts.items():
+        c = _SEV_COLOR.get(sev, "white")
+        table.add_row(f"[{c}]{sev.upper()}[/{c}]", str(count))
     console.print(table)
 
 
