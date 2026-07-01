@@ -27,6 +27,7 @@ from .modules.dynamic.param_smuggling import ParamSmugglingModule
 from .modules.dynamic.init_audit import InitAuditModule
 from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.dynamic.output_encoding import OutputEncodingModule
+from .modules.dynamic.response_injection import ResponseInjectionModule
 from .modules.static.auth_audit import AuthAuditModule
 from .modules.static.log_audit import LogAuditModule
 from .modules.static.schema_audit import SchemaAuditModule
@@ -34,6 +35,7 @@ from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
 from .modules.static.supply_chain import SupplyChainModule
+from .modules.static.supply_chain_python import SupplyChainPythonModule
 from .modules.static.tool_chaining import ToolChainingModule
 from .modules.static.tool_poisoning import ToolPoisoningModule
 from .plugins import discover_plugins
@@ -47,7 +49,8 @@ console = Console()
 # Built-in modules in canonical OWASP order. Plugins are merged at runtime.
 _ALL_MODULES = {
     "scope-audit":     ScopeAuditModule,
-    "supply-chain":    SupplyChainModule,
+    "supply-chain":        SupplyChainModule,
+    "supply-chain-python": SupplyChainPythonModule,
     "tool-poisoning":  ToolPoisoningModule,
     "schema-audit":    SchemaAuditModule,
     "shadow-tool":     ShadowToolModule,
@@ -65,12 +68,14 @@ _ALL_MODULES = {
     "param-smuggling": ParamSmugglingModule,
     "init-audit":      InitAuditModule,
     "proto-fuzz":      ProtoFuzzModule,
-    "output-encoding": OutputEncodingModule,
+    "output-encoding":      OutputEncodingModule,
+    "response-injection":   ResponseInjectionModule,
 }
-_STATIC  = {"scope-audit", "supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
+_STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
     "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
-    "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz", "output-encoding",
+    "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",
+    "output-encoding", "response-injection",
 }
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]

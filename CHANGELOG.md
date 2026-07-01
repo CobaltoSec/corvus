@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-V22] — 2026-06-30 — Python supply chain + response injection + API v1.0
+
+### B2 — MCP04 Python Supply Chain
+- **`supply_chain_python.py`** — nuevo módulo `supply-chain-python` (static, MCP04). Extrae package de `uvx`/`uvx --from`/`uv run --with`/`uv tool run` y corre `pip-audit -r requirements.txt --format json`. HIGH con CVE (confidence 90), MEDIUM sin CVE (confidence 65). Guard silencioso si `pip-audit` no está instalado.
+- **`tests/test_supply_chain_python.py`** — 24 tests: extracción de package (uvx/uv variantes, extras strippeados), parse pip-audit JSON, integración con mocks. Fix: split en `[_-]` para word boundaries con underscores.
+- **`cli.py`** — registro `supply-chain-python` en `_ALL_MODULES` + `_STATIC`.
+
+### B1 — EXT07: Prompt Injection via Response (MCP10)
+- **`response_injection.py`** — nuevo módulo `response-injection` (dynamic, MCP10). Llama cada tool con args benignos y escanea la respuesta por LLM-directive language. Tier 1 (HIGH, todos los tools): ignore-previous-instructions, disregard, forget, override-system-prompt. Tier 2 (MEDIUM, solo non-web): you-are-now, as-a-new-ai, true-purpose, do-not-follow. Delimiters fake `[SYSTEM]`/`[INST]`/`<|im_start|>` → CRITICAL. Web tool detection por split de nombre en `[_-]` + frozenset + desc regex. Un finding por tool (highest sev), todos los labels en evidence. Cap 16KB.
+- **`tests/test_response_injection.py`** — 34 tests: `_is_web_tool`, `_scan_text` por tier y tipo de tool, integración con mocks (detection, CRITICAL, lower-sev-web, clean, exception, empty).
+- **`cli.py`** — registro `response-injection` en `_ALL_MODULES` + `_DYNAMIC`.
+
+### B3 — API pública v1.0
+- **`corvus/__init__.py`** — `__all__` con 10 símbolos públicos (`Finding`, `Severity`, `OWASPCategory`, `ScanModule`, `ScanResult`, `MCPSurface`, `ToolSpec`, `ResourceSpec`, `PromptSpec`, `RawExchange`). Version dinámica via `importlib.metadata` (fix: antes hardcodeada como "0.9.0").
+- **`corvus/py.typed`** — marker PEP 561 vacío. Type checkers (mypy/pyright) reconocen el paquete como typed.
+- **`pyproject.toml`** — classifier Alpha→Production/Stable, + Python 3.12, + `Typing :: Typed`. Package-data `"corvus" = ["py.typed"]`.
+- **`tests/test_public_api.py`** — 23 E2E tests de contrato: importabilidad de `__all__`, py.typed presente, Severity/OWASPCategory valores, Finding construcción y JSON roundtrip, ScanResult.finding_count, ScanModule subclassing y ejecución, abstract no instanciable.
+
+### Totales
+- Tests: 270 → 351 (+81). 22 módulos. Suite completo: 351/351 pass.
+
 ## [RT-CORVUS-V21] — 2026-06-30 — FP calibration v4 + mejoras + 2 módulos nuevos
 
 ### A1 — FP calibration v4 (5 fixes)
