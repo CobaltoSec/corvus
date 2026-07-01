@@ -7,6 +7,32 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# ── Windows pipe noise suppression ───────────────────────────────────────────
+# When StdioTransport kills a subprocess via taskkill /F /T, asyncio's
+# ProactorEventLoop emits two types of stderr noise on Windows:
+#   1. "socket.send() raised exception" — loop.call_exception_handler() fires
+#      when asyncio tries to write to a pipe whose OS handle is already closed.
+#   2. "Exception ignored in _ProactorBasePipeTransport.__del__" — Python's
+#      unraisablehook fires when transport GC runs with open pipe handles.
+# Neither indicates a real bug; both are expected cleanup artifacts.
+
+_orig_unraisablehook = sys.unraisablehook
+
+
+def _filtered_unraisablehook(unraisable: sys.UnraisableHookArgs) -> None:
+    obj_type = type(unraisable.object).__name__ if unraisable.object is not None else ""
+    exc_str = str(unraisable.exc_value) if unraisable.exc_value is not None else ""
+    if "ProactorBasePipeTransport" in obj_type or "I/O operation on closed pipe" in exc_str:
+        return
+    _orig_unraisablehook(unraisable)
+
+
+def _filtered_exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    msg = context.get("message", "")
+    if "socket.send() raised exception" in msg:
+        return
+    loop.default_exception_handler(context)
+
 import yaml
 
 from .core.models import Severity
@@ -149,6 +175,10 @@ async def run_batch(
     min_confidence: int | None = None,
     sarif: bool = False,
 ) -> BatchResult:
+    if sys.platform == "win32":
+        sys.unraisablehook = _filtered_unraisablehook
+        asyncio.get_running_loop().set_exception_handler(_filtered_exception_handler)
+
     batch_result = BatchResult()
 
     for target in targets:

@@ -138,11 +138,20 @@ class StdioTransport(MCPTransport):
             self._watchdog_timer = None
         if self._process is None:
             return
+        # Close stdin first so the server receives EOF and can exit cleanly.
+        # This also prevents "socket.send() raised exception" from asyncio when
+        # the pipe is written to after the process is dead.
+        if self._process.stdin and not self._process.stdin.is_closing():
+            self._process.stdin.close()
         try:
             self._process.terminate()
             await asyncio.wait_for(self._process.wait(), timeout=5.0)
         except (asyncio.TimeoutError, ProcessLookupError):
-            self._process.kill()
+            self._kill_process_tree()
+            try:
+                await asyncio.wait_for(self._process.wait(), timeout=2.0)
+            except asyncio.TimeoutError:
+                pass
 
     async def send_request(self, method: str, params: dict[str, Any] | None = None) -> Any:
         self._req_id += 1

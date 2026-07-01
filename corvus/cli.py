@@ -141,6 +141,11 @@ async def _scan(
     cli_plugin_dirs: list[str] | None,
     min_confidence: int | None = None,
 ) -> None:
+    if sys.platform == "win32":
+        from .batch import _filtered_unraisablehook, _filtered_exception_handler
+        sys.unraisablehook = _filtered_unraisablehook
+        asyncio.get_running_loop().set_exception_handler(_filtered_exception_handler)
+
     # --- Load config (all fields have defaults) ---
     cfg: CorvusConfig
     if config_file:
