@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-V23] — 2026-07-01 — E2E scan v1.0.0 + Windows noise fix
+
+- **PyPI v1.0.0** publicado + GitHub release v1.0.0 con release notes
+- **Windows noise fix** — `batch.py` + `cli.py`: custom asyncio exception handler silencia `socket.send() raised exception`; `sys.unraisablehook` filtra `_ProactorBasePipeTransport.__del__` ValueError. `stdio.py`: cierra `stdin` antes de `terminate()` para reducir broken-pipe events en origen
+- **C1 E2E** — re-scan 53 servers (CS01: 22, CS02: 31) con v1.0.0; nuevos findings capturados de EXT06/EXT07 en `mcp-server-fetch`, `playwright-mcp` (+3H), `remnux-mcp-server` (+2H +6M), `docx-mcp` (+2H)
+- **targets-master.yaml** CS01 + CS02 actualizados con resultados del scan v1.0.0
+
 ## [1.0.0] — 2026-06-30
 
 22 módulos (10 static + 12 dynamic), 351 tests, API pública estabilizada (`py.typed`, `__all__`).

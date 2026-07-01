@@ -13,7 +13,7 @@ targets:
   status: done
   notes: MCP server for SAPUI5/OpenUI5 development. SAP UI5 dev tools — large schema
     surface 117,814/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 1M
   curation: pending
 - name: nx-mcp
@@ -56,7 +56,7 @@ targets:
   status: done
   notes: MCP Server for the National Park Service (NPS) API. Public API — schema quality
     surface 13,831/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 2H 1I
   curation: pending
 - name: fetcher-mcp
@@ -79,8 +79,8 @@ targets:
   status: done
   notes: MCP server bridging Claude Code to Language Server Protocol servers. LSP
     bridge — protocol attack surface 11,770/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 7H 25M 6L 1I
+  last_scanned: '2026-07-01'
+  findings_summary: 5H 25M 7L 1I
   curation: pending
 - name: obsidian-mcp-server
   tier: D
@@ -113,8 +113,8 @@ targets:
   status: done
   notes: PostgreSQL database management capabilities for AI assistants. SQL injection
     surface (test DB) 4,933/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 5H 2I
+  last_scanned: '2026-07-01'
+  findings_summary: 2H 3M 2I
   curation: pending
 - name: duckduckgo-mcp-server
   tier: D
@@ -125,7 +125,7 @@ targets:
   - '@ericthered926/duckduckgo-mcp-server'
   status: done
   notes: DuckDuckGo search integration. Web interaction surface 4,055/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 4M
   curation: pending
 - name: malicious-mcp-server
@@ -138,7 +138,7 @@ targets:
   status: done
   notes: A deliberately malicious MCP server for E2E testing purposes. High attack
     surface by design 3,967/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1C 4H 3M 8L 3I
   curation: pending
 - name: musea-mcp-server
@@ -151,7 +151,7 @@ targets:
   status: done
   notes: MCP server for building Vue.js design systems. Component analysis, documentation,
     variant generation 3,889/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 2M 7L 1I
   curation: pending
 - name: flightradar-mcp-server
@@ -163,7 +163,7 @@ targets:
   - flightradar-mcp-server
   status: done
   notes: Flight tracking via Flightradar24 public API. Public API surface 3,625/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 2M
   curation: pending
 - name: element-mcp
@@ -175,7 +175,7 @@ targets:
   - '@siemens/element-mcp'
   status: done
   notes: Siemens Element design system MCP server. Schema quality 3,605/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 5M 4L
   curation: pending
 - name: pubmed-mcp-server
@@ -187,8 +187,8 @@ targets:
   - '@cyanheads/pubmed-mcp-server'
   status: done
   notes: PubMed biomedical literature search. Public API — large schema surface 3,385/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 5H 1L 1I
+  last_scanned: '2026-07-01'
+  findings_summary: 4H 2L 1I
   curation: pending
 - name: shadcn-ui-mcp-server
   tier: D
@@ -199,7 +199,7 @@ targets:
   - '@jpisnice/shadcn-ui-mcp-server'
   status: done
   notes: shadcn/ui component docs and generation. Schema quality 3,046/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 1M 1I
   curation: pending
 - name: mcp-server-hotnews
@@ -211,7 +211,7 @@ targets:
   - '@wopal/mcp-server-hotnews'
   status: done
   notes: Chinese trending topics aggregator. Public API scraping 2,944/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 2M
   curation: pending
 - name: mediawiki-mcp-server
@@ -223,7 +223,8 @@ targets:
   - '@professional-wiki/mediawiki-mcp-server'
   status: skip
   notes: Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
-    2,844/wk. SKIP — real HTTP calls to Wikipedia per tool probe; consistently exceeds scan timeout.
+    2,844/wk. SKIP — real HTTP calls to Wikipedia per tool probe; consistently exceeds
+    scan timeout.
 - name: mantine-mcp-server
   tier: D
   transport: stdio
@@ -233,8 +234,8 @@ targets:
   - '@mantine/mcp-server'
   status: done
   notes: MCP server for Mantine documentation. Schema quality 2,390/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 3H 3M 4L
+  last_scanned: '2026-07-01'
+  findings_summary: 2H 3M 5L
   curation: pending
 - name: ssh-mcp-server
   tier: D
@@ -251,11 +252,11 @@ targets:
   - lab
   - --password
   - lab
-  status: done
+  status: error
   notes: SSH-based MCP Server. Auth bypass + lateral movement surface 2,373/wk. Uses
     lab VM 301 (10.13.37.150, lab/lab).
-  last_scanned: '2026-06-29'
-  findings_summary: 2H
+  last_scanned: '2026-07-01'
+  findings_summary: ERROR (no report.json)
   curation: pending
 - name: mcp-webresearch
   tier: D
@@ -274,10 +275,10 @@ targets:
   - npx
   - -y
   - korean-law-mcp
-  status: done
+  status: error
   notes: Korean law database. Public API — schema + injection surface 2,039/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 1H 3M 6L
+  last_scanned: '2026-07-01'
+  findings_summary: ERROR (no report.json)
   curation: pending
 - name: remnux-mcp-server
   tier: D
@@ -289,8 +290,8 @@ targets:
   status: done
   notes: REMnux malware analysis toolkit. Shell + file ops attack surface 1,813/wk.
     Starts with WARNING — sandbox disabled.
-  last_scanned: '2026-06-28'
-  findings_summary: 1C 4H 7M
+  last_scanned: '2026-07-01'
+  findings_summary: 1C 6H 13M
   curation: pending
 - name: mcp-javadc
   tier: D
@@ -301,8 +302,8 @@ targets:
   - '@idachev/mcp-javadc'
   status: done
   notes: Java decompiler. Binary analysis / file processing surface 1,767/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 2H 7M 5L
+  last_scanned: '2026-07-01'
+  findings_summary: 2H 7M 6L
   curation: pending
 - name: mcp-fetch
   tier: D
@@ -313,7 +314,7 @@ targets:
   - '@kazuph/mcp-fetch'
   status: done
   notes: Fetch URL + save images. SSRF + path write 1,729/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 3M 9L
   curation: pending
 - name: docx-mcp
@@ -325,8 +326,8 @@ targets:
   - '@usejunior/docx-mcp'
   status: done
   notes: DOCX read/write operations. File processing + path ops 1,478/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 3H 39M 40L 5I
+  last_scanned: '2026-07-01'
+  findings_summary: 5H 39M 41L 5I
   curation: pending
 - name: spartan-mcp
   tier: D
@@ -337,8 +338,8 @@ targets:
   - '@spartan-ng/mcp'
   status: done
   notes: Spartan Angular UI component docs. Schema quality 1,455/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 3H 3I
+  last_scanned: '2026-07-01'
+  findings_summary: 2H 1L 3I
   curation: pending
 - name: mcp-postgres
   tier: D
@@ -381,7 +382,7 @@ targets:
   - '@just-every/mcp-read-website-fast'
   status: done
   notes: Fast web content fetch. SSRF attack surface 1,233/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 2M
   curation: pending
 - name: mcp-screenshot-website-fast
@@ -408,8 +409,8 @@ targets:
     MYSQL_USER: root
     MYSQL_PASSWORD: root
     MYSQL_DATABASE: test
-  last_scanned: '2026-06-28'
-  findings_summary: 3H
+  last_scanned: '2026-07-01'
+  findings_summary: 2H 1M
   curation: pending
 - name: drawio-mcp-server
   tier: D
@@ -429,8 +430,8 @@ targets:
   - '@regle/mcp-server'
   status: done
   notes: MCP Server for Regle 908/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 2C 1H 4M 15L
+  last_scanned: '2026-07-01'
+  findings_summary: 1C 1H 4M 15L
   curation: pending
 - name: jamf-docs-mcp-server
   tier: D
@@ -441,8 +442,8 @@ targets:
   - '@get-technology-inc/jamf-docs-mcp-server'
   status: done
   notes: Jamf MDM documentation server 905/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 5H 13M 2L
+  last_scanned: '2026-07-01'
+  findings_summary: 1H 13M 4L
   curation: pending
 - name: european-parliament-mcp-server
   tier: D
@@ -453,7 +454,7 @@ targets:
   - european-parliament-mcp-server
   status: done
   notes: EU Parliament open data. Public API surface 889/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 1M 1L 6I
   curation: pending
 - name: fetch-url-mcp
@@ -477,8 +478,8 @@ targets:
   - myclaw-toolkit
   status: done
   notes: 23-in-1 dev toolkit (search, crypto, QR, rates, etc.) 787/wk.
-  last_scanned: '2026-06-28'
-  findings_summary: 1C 13H 3M 24L 1I
+  last_scanned: '2026-07-01'
+  findings_summary: 1C 5H 3M 31L 1I
   curation: pending
 - name: kernlang-mcp-server
   tier: D
@@ -502,7 +503,7 @@ targets:
   status: done
   notes: MCP server for executing commands in Docker containers. Container escape
     surface 677/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 3H 3M 2L
   curation: pending
 - name: upg-mcp-server
@@ -514,7 +515,7 @@ targets:
   - '@unified-product-graph/mcp-server'
   status: done
   notes: Local MCP server for .upg files. Path traversal surface 652/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1M
   curation: pending
 - name: mcp-mysql-server
@@ -528,8 +529,8 @@ targets:
   status: done
   notes: MySQL per-project permission model. SQL injection surface 636/wk. Requires
     positional mysql:// URL arg.
-  last_scanned: '2026-06-28'
-  findings_summary: 9H 15M 10L 3I
+  last_scanned: '2026-07-01'
+  findings_summary: 8H 16M 10L 3I
   curation: pending
 - name: agent-orchestrator-mcp-server
   tier: D
@@ -573,7 +574,7 @@ targets:
   status: done
   notes: CodeLoop verification, self-repair, and recommendation layer for AI coding
     agents 390/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1M
   curation: pending
 - name: openapi-mcp-server
@@ -585,6 +586,6 @@ targets:
   - openapi-mcp-server
   status: done
   notes: MCP server for interacting with openapisearch.com API 298/wk.
-  last_scanned: '2026-06-28'
+  last_scanned: '2026-07-01'
   findings_summary: 1H 2M
   curation: pending

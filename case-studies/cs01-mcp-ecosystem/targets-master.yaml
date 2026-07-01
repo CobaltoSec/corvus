@@ -12,8 +12,8 @@ targets:
   - '@modelcontextprotocol/server-filesystem'
   - /tmp
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 5H
+  last_scanned: '2026-06-30'
+  findings_summary: 3H 4M
   curation: TP
   notes: Shadow tool pattern — read_file/write_file/edit_file shadows well-known built-ins
 - name: server-memory
@@ -24,8 +24,8 @@ targets:
   - -y
   - '@modelcontextprotocol/server-memory'
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 9L
+  last_scanned: '2026-06-30'
+  findings_summary: 2M 9L
   curation: TP
   notes: Schema bypass — 9 tools sin additionalProperties:false, type coercion silencioso
 - name: server-sequential-thinking
@@ -36,8 +36,8 @@ targets:
   - -y
   - '@modelcontextprotocol/server-sequential-thinking'
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 1M
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 1M
   curation: FP
   notes: Server stateful by design — rug-pull FP, tool-poisoning FP (desc larga es
     el protocolo)
@@ -49,8 +49,8 @@ targets:
   - -y
   - '@modelcontextprotocol/server-everything'
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 1C 2H 6L 2I
+  last_scanned: '2026-06-30'
+  findings_summary: 1C 4H 4M 6L 2I
   curation: partial
   notes: 'Re-scaneado post transport-fix (v0.8.1). 13 tools capturadas. CRITICAL:
     get-env Token Exposure auto-detectado (F11 upgrade). HIGH: response flooding get-env
@@ -64,8 +64,8 @@ targets:
   - -y
   - '@modelcontextprotocol/server-github'
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 1H
+  last_scanned: '2026-06-30'
+  findings_summary: 2H 3M 2L
   curation: TP
   notes: F09 TP — @modelcontextprotocol/sdk advisory (GHSA, sin CVE). F10 cascade
     FP filtrado
@@ -73,9 +73,9 @@ targets:
   tier: A
   transport: http
   url: http://localhost:3001/mcp
-  status: done
-  last_scanned: '2026-06-25'
-  findings_summary: clean
+  status: error
+  last_scanned: '2026-06-30'
+  findings_summary: ERROR (no report.json)
   curation: FP
   notes: 'SSE fix en Corvus v0.8.1 — Accept: application/json, text/event-stream.
     PDF Server 2.0.0. 4 tools. 1 INFO: display_pdf sin required fields. Warning manual:
@@ -90,8 +90,8 @@ targets:
   - --repository
   - C:/Temp/testrepo
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 5L
+  last_scanned: '2026-06-30'
+  findings_summary: 2M 5L
   curation: FP
   notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection, supply
     chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no seguridad).
@@ -105,8 +105,8 @@ targets:
   - '@modelcontextprotocol/server-postgres'
   - postgresql://corvus:corvus123@localhost:5434/testdb
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 1H
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 2M
   curation: TP
   notes: 'Docker postgres:15 en :5434 para test. 1 HIGH: @modelcontextprotocol/sdk
     advisory (mismo F09/F16). 1 INFO: query sin required fields. Cleanup: docker rm
@@ -120,8 +120,8 @@ targets:
   - --db-path
   - C:\Temp\test.db
   status: done
-  last_scanned: '2026-06-25'
-  findings_summary: 4H 9L
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 5M 10L
   curation: partial
   notes: 'npm package no existe (@modelcontextprotocol/server-sqlite 404). Correcto:
     uvx mcp-server-sqlite. F29: describe_table SQLi TP. F30: write_query injection
@@ -155,8 +155,8 @@ targets:
   status: done
   notes: 'HTTP fetch oficial (Python/uvx, no npm). Vector: SSRF, response flood. Corregido
     de npx → uvx. Clean en v0.9.0 — SSRF fetch bloqueado por whitelist interna.'
-  last_scanned: '2026-06-25'
-  findings_summary: clean
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 2M
   curation: TP
 - name: mcp-server-aws-kb-retrieval
   tier: B
@@ -211,8 +211,8 @@ targets:
   status: done
   notes: 'Fetch web con readability/Markdown/JSON/YouTube. F15: private-ip dep vulnerable
     (SSRF guardia comprometida). 1H TP curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 1H
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 2M
   curation: TP
 - name: playwright-mcp
   tier: B
@@ -222,8 +222,8 @@ targets:
   - -y
   - '@playwright/mcp'
   status: done
-  last_scanned: '2026-06-24'
-  findings_summary: 5H 1M 4L 4I
+  last_scanned: '2026-06-30'
+  findings_summary: 8H 3M 7L 4I
   curation: partial
   notes: 'Microsoft Playwright 1.61.0-alpha. Batch scan en 20260624-235324. F33/F34:
     path traversal via filename params (archivo %2e%2e%2fetc%2fpasswd creado en CWD).
@@ -239,8 +239,8 @@ targets:
   - npm-search-mcp-server
   status: done
   notes: 'F16: @modelcontextprotocol/sdk advisory TP. 1L schema bypass LOW. Curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 1H 1L
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 2M 1L
   curation: TP
 - name: n8n-mcp
   tier: B
@@ -252,8 +252,8 @@ targets:
   status: done
   notes: 'F18: tools_documentation.topic reflection TP (prompt injection). F59: search_nodes
     response flooding TP (v0.9.0). 6L schema bypass + 1M schema. 2H curados.'
-  last_scanned: '2026-06-25'
-  findings_summary: 2H 1M 6L
+  last_scanned: '2026-06-30'
+  findings_summary: 2H 3M 6L
   curation: TP
 - name: shell-command-mcp
   tier: B
@@ -265,8 +265,8 @@ targets:
   status: done
   notes: 'F28: shadow tool execute_command description TP. F56: shadow tool conflicts
     variant TP (v0.9.0). 2H curados.'
-  last_scanned: '2026-06-25'
-  findings_summary: 2H
+  last_scanned: '2026-06-30'
+  findings_summary: 2H 2M
   curation: TP
 - name: mcp-cli-exec
   tier: B
@@ -323,8 +323,8 @@ targets:
   - mcp-server-commands
   status: done
   notes: 'F35: @modelcontextprotocol/sdk advisory TP. 1I INFO. Curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 1H 1I
+  last_scanned: '2026-06-30'
+  findings_summary: 1H 2M 1I
   curation: TP
 - name: super-shell-mcp
   tier: C
@@ -336,8 +336,8 @@ targets:
   status: done
   notes: 'F39: shadow tool description TP. F40: injection reflected remove_from_whitelist
     TP. F57: shadow tool conflicts TP (v0.9.0). 3H curados.'
-  last_scanned: '2026-06-25'
-  findings_summary: 3H 1M 1L
+  last_scanned: '2026-06-30'
+  findings_summary: 3H 2M 1L
   curation: TP
 - name: mcp-shell-server
   tier: C
@@ -347,10 +347,11 @@ targets:
   - -y
   - '@mako10k/mcp-shell-server'
   status: done
-  notes: 'F42: shell_set_default_workdir injection TP. F43: command_history_query injection
-    TP. F58: shell_execute shadow tool TP (v0.9.0). GHSA-7763-c5gf-v5fj disclosed.'
-  last_scanned: '2026-06-25'
-  findings_summary: 3H 1M 4L 2I
+  notes: 'F42: shell_set_default_workdir injection TP. F43: command_history_query
+    injection TP. F58: shell_execute shadow tool TP (v0.9.0). GHSA-7763-c5gf-v5fj
+    disclosed.'
+  last_scanned: '2026-06-30'
+  findings_summary: 2H 1M 2I
   curation: TP
 - name: mcp-server-time
   tier: C
@@ -359,9 +360,9 @@ targets:
   - uvx
   - mcp-server-time
   status: done
-  notes: 'Clean. Superficie minimal. Referencia positiva de server bien scoped.'
-  last_scanned: '2026-06-25'
-  findings_summary: clean
+  notes: Clean. Superficie minimal. Referencia positiva de server bien scoped.
+  last_scanned: '2026-06-30'
+  findings_summary: 2M
   curation: TP
 - name: mcp-scan
   tier: C
@@ -383,8 +384,8 @@ targets:
   status: done
   notes: 'F45: homescan_device.ip injection TP. F46: schema bypass (required ignorado)
     TP. 6L schema quality. Curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 2M 6L
+  last_scanned: '2026-06-30'
+  findings_summary: 4M 6L
   curation: TP
 - name: docker-mcp-server
   tier: C
@@ -406,8 +407,8 @@ targets:
   notes: 'F47/F48: supply chain TP (executeautomation + tar). F49: list_insights flooding
     TP. F60/F61: shadow tool DB FP (by design). F62: list_insights repetitive MEDIUM
     TP. 4H TP + 2H FP + 1M TP. Curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 6H 1M 4L
+  last_scanned: '2026-06-30'
+  findings_summary: 4H 5M 4L
   curation: partial
 - name: mcp-server-mysql
   tier: C
@@ -419,6 +420,6 @@ targets:
   status: done
   notes: 'F50: undici supply chain TP. F51: sdk cascade FP. Docker mysql:8 en :3306
     para test. Curado.'
-  last_scanned: '2026-06-25'
-  findings_summary: 2H 2M
+  last_scanned: '2026-06-30'
+  findings_summary: 3H 2M
   curation: partial
