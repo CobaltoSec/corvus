@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] — 2026-06-30
+
+22 módulos (10 static + 12 dynamic), 351 tests, API pública estabilizada (`py.typed`, `__all__`).
+Dataset CS01+CS02: 54 servers auditados, 72 TPs, 3 CRITICAL. 6 GHSAs submitidas.
 
 ## [RT-CORVUS-V22] — 2026-06-30 — Python supply chain + response injection + API v1.0
 
