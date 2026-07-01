@@ -23,6 +23,8 @@ class ScanConfig(BaseModel):
     fail_on: str | None = None
     headers: dict[str, str] = Field(default_factory=dict)
     plugin_dirs: list[str] = Field(default_factory=list)
+    delay: float = 0.0
+    env: dict[str, str] = Field(default_factory=dict)
 
 
 class CorvusConfig(BaseModel):

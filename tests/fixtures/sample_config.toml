@@ -9,3 +9,6 @@ sarif = true
 [scan.headers]
 X-Custom-Header = "test-value"
 X-Api-Version = "2"
+
+[scan.env]
+TEST_VAR = "hello"

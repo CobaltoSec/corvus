@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corvus — {{ result.target }}</title>
+<style>
+:root {
+  --bg: #0f1117; --bg-card: #1a1d27; --bg-code: #12141c;
+  --text: #e2e8f0; --muted: #94a3b8; --border: #2d3748;
+  --accent: #60a5fa;
+  --critical: #ef4444; --high: #f97316; --medium: #eab308;
+  --low: #3b82f6; --info: #6b7280; --ok: #10b981;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif;
+       line-height: 1.5; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+a { color: var(--accent); }
+h1 { color: var(--accent); font-size: 1.5rem; margin-bottom: .25rem; }
+h2 { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+     color: var(--muted); margin: 2rem 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+.meta { color: var(--muted); font-size: .85rem; margin-bottom: 2rem; }
+.meta span { margin-right: 1.5rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+.card h3 { font-size: .85rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
+           letter-spacing: .05em; margin-bottom: .6rem; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; padding: .45rem .75rem; color: var(--muted); font-weight: 600;
+     border-bottom: 1px solid var(--border); }
+td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); }
+.badge { display: inline-block; padding: .15rem .45rem; border-radius: 4px;
+         font-size: .72rem; font-weight: 700; letter-spacing: .06em; }
+.badge-critical { background: rgba(239,68,68,.15); color: var(--critical); }
+.badge-high     { background: rgba(249,115,22,.15); color: var(--high); }
+.badge-medium   { background: rgba(234,179,8,.15);  color: var(--medium); }
+.badge-low      { background: rgba(59,130,246,.15); color: var(--low); }
+.badge-info     { background: rgba(107,114,128,.15);color: var(--info); }
+.score-box { display: inline-flex; align-items: center; gap: .6rem;
+             padding: .5rem 1rem; border-radius: 6px; font-weight: 700; margin-bottom: 1rem; }
+.score-CRITICAL { background: rgba(239,68,68,.12); color: var(--critical); border: 1px solid rgba(239,68,68,.3); }
+.score-HIGH     { background: rgba(249,115,22,.12); color: var(--high);     border: 1px solid rgba(249,115,22,.3); }
+.score-MEDIUM   { background: rgba(234,179,8,.12);  color: var(--medium);   border: 1px solid rgba(234,179,8,.3); }
+.score-LOW      { background: rgba(59,130,246,.12); color: var(--low);      border: 1px solid rgba(59,130,246,.3); }
+.score-CLEAR    { background: rgba(16,185,129,.12); color: var(--ok);       border: 1px solid rgba(16,185,129,.3); }
+.finding { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+           padding: 1.25rem; margin-bottom: 1rem; }
+.finding-hd { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin-bottom: .6rem; }
+.finding-id { color: var(--muted); font-size: .78rem; font-family: monospace; }
+.finding-title { font-size: .95rem; font-weight: 600; }
+.finding-meta { font-size: .8rem; color: var(--muted); margin-bottom: .7rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+.finding-meta code { background: var(--bg-code); padding: .1rem .3rem; border-radius: 3px; font-size: .78rem; }
+.desc { font-size: .875rem; margin-bottom: .75rem; }
+.label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+         color: var(--muted); margin-bottom: .3rem; margin-top: .6rem; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 4px;
+      padding: .7rem; font-size: .78rem; overflow-x: auto; white-space: pre-wrap;
+      word-break: break-all; margin-bottom: .5rem; }
+.remediation { background: rgba(16,185,129,.06); border-left: 3px solid var(--ok);
+               padding: .65rem .9rem; border-radius: 0 4px 4px 0; font-size: .85rem; }
+.confirmed-tag { color: var(--critical); font-size: .78rem; font-weight: 700; }
+.no-findings { text-align: center; padding: 2.5rem; color: var(--muted); }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);
+         font-size: .78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<h1>Corvus Security Report</h1>
+<div class="meta">
+  <span>Target: <strong>{{ result.target }}</strong></span>
+  <span>Transport: {{ result.transport }}</span>
+  <span>{{ now }}</span>
+  <span>{{ "%.1f" | format(result.duration_seconds) }}s</span>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h3>Server</h3>
+    <table>
+      <tr><td>Name</td><td>{{ result.surface.server_name or "—" }}</td></tr>
+      <tr><td>Version</td><td>{{ result.surface.server_version or "—" }}</td></tr>
+      <tr><td>Protocol</td><td>{{ result.surface.protocol_version or "—" }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Attack Surface</h3>
+    <table>
+      <tr><td>Tools</td><td><strong>{{ result.surface.tools | length }}</strong></td></tr>
+      <tr><td>Resources</td><td><strong>{{ result.surface.resources | length }}</strong></td></tr>
+      <tr><td>Prompts</td><td><strong>{{ result.surface.prompts | length }}</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>Risk Assessment</h2>
+<div class="score-box score-{{ risk_tier }}">
+  Risk Score: {{ risk_score }}/100 &mdash; {{ risk_tier }}
+</div>
+<table>
+  <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+  <tbody>
+  {% for sev, count in result.finding_count.items() %}
+  <tr>
+    <td><span class="badge badge-{{ sev }}">{{ sev | upper }}</span></td>
+    <td>{{ count }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Findings ({{ result.findings | length }})</h2>
+{% if not result.findings %}
+<div class="no-findings">No findings detected.</div>
+{% else %}
+{% for f in result.findings %}
+<div class="finding">
+  <div class="finding-hd">
+    <span class="badge badge-{{ f.severity.value }}">{{ f.severity.value | upper }}</span>
+    <span class="finding-title">{{ f.title }}</span>
+    <span class="finding-id">{{ f.id }}</span>
+    {% if f.exploitation_confirmed %}<span class="confirmed-tag">&#9888; Confirmed</span>{% endif %}
+  </div>
+  <div class="finding-meta">
+    <span>{{ f.owasp_category.value }}</span>
+    {% if f.tool_name %}<span>Tool: <code>{{ f.tool_name }}</code></span>{% endif %}
+    {% if f.parameter %}<span>Param: <code>{{ f.parameter }}</code></span>{% endif %}
+    <span>Confidence: {{ f.confidence }}%</span>
+  </div>
+  <p class="desc">{{ f.description }}</p>
+  {% if f.payload %}
+  <div class="label">Payload</div>
+  <pre>{{ f.payload }}</pre>
+  {% endif %}
+  {% if f.evidence %}
+  <div class="label">Evidence</div>
+  <pre>{{ f.evidence }}</pre>
+  {% endif %}
+  <div class="label">Remediation</div>
+  <div class="remediation">{{ f.remediation }}</div>
+</div>
+{% endfor %}
+{% endif %}
+
+<footer>
+  Generated by <a href="https://github.com/CobaltoSec/corvus">Corvus {{ corvus_version }}</a>
+  &mdash; Modules: {{ result.modules_run | join(", ") }}
+</footer>
+</body>
+</html>

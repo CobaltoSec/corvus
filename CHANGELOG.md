@@ -1,5 +1,19 @@
 # Changelog
 
+## [RT-CORVUS-V29] — 2026-07-01 — CLI + Reporting: init/report/score/delay/env/HTML
+
+- **`corvus init`** — genera `corvus.toml` skeleton con todos los campos comentados (transport/cmd/url/modules/timeout/sarif/fail_on/min_confidence/delay/env/headers/plugin_dirs). Falla si el archivo ya existe.
+- **`corvus report REPORT.json [--format md|sarif|html|all]`** — regenera reportes desde un `report.json` existente sin re-escanear. Soporta output-dir alternativo con `--output-dir`.
+- **HTML report** — nuevo template `report.html.j2` (dark theme, inline CSS): Risk Score con badge colorizado, severity badges por finding, confidence %, payload/evidence en `<pre>`, remediation destacada, footer con versión y módulos. Sin dependencias externas.
+- **`--score` en `corvus scan`** — imprime `Risk Score: N/100 — TIER` al final del scan (colorizado: rojo/amarillo/azul/verde por tier). No modifica exit code — es display-only.
+- **`--delay N`** — sleep `N` segundos entre módulos para rate limiting / WAF bypass. Configurable también en `corvus.toml` como `delay = 1.5`.
+- **`--env KEY=VAL`** — pasa variables de entorno al subprocess MCP stdio (repeatable). Configurable también en `corvus.toml` como `[scan.env]`.
+- **Confidence en output de scan** — cada finding en el scan muestra `(N%)` junto a la severidad durante el escaneo en tiempo real.
+- **Confidence en `report.md`** — columna `Confidence` agregada a la tabla de cada finding.
+- **`ScanConfig`** — nuevos campos `delay: float = 0.0` y `env: dict[str,str]` en `corvus.toml`.
+- **`ReportGenerator`** — `write_md()` extraído como método independiente; `write_html()` nuevo; `write()` delega a ambos.
+- **Tests** — 25 tests nuevos en `tests/test_cli_v29.py`. Suite: **654/654 pass**.
+
 ## [RT-CORVUS-V27+V28] — 2026-07-01 — MCP spec coverage completa + profundidad + supply chain npm
 
 ### RT-CORVUS-V27 — 5 nuevos módulos (EXT10-EXT14)

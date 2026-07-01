@@ -8,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from .. import __version__ as _VERSION
 from ..core.models import Severity, ScanResult
+from ..scoring import compute_risk_score, risk_tier
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -26,6 +27,7 @@ class ReportGenerator:
         self.env = Environment(loader=FileSystemLoader(str(_TEMPLATE_DIR)), autoescape=False)
 
     def write(self, result: ScanResult) -> Path:
+        """Write report.json + exchanges.jsonl + report.md. Returns MD path."""
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         json_path = self.output_dir / "report.json"
@@ -37,6 +39,11 @@ class ReportGenerator:
                 for ex in result.exchanges:
                     f.write(ex.model_dump_json() + "\n")
 
+        return self.write_md(result)
+
+    def write_md(self, result: ScanResult) -> Path:
+        """Render and write report.md. Returns path."""
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         md_path = self.output_dir / "report.md"
         tpl = self.env.get_template("report.md.j2")
         md_path.write_text(
@@ -44,6 +51,24 @@ class ReportGenerator:
             encoding="utf-8",
         )
         return md_path
+
+    def write_html(self, result: ScanResult) -> Path:
+        """Render and write report.html. Returns path."""
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        html_path = self.output_dir / "report.html"
+        tpl = self.env.get_template("report.html.j2")
+        sc = compute_risk_score(result.findings)
+        html_path.write_text(
+            tpl.render(
+                result=result,
+                now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                risk_score=sc,
+                risk_tier=risk_tier(sc),
+                corvus_version=_VERSION,
+            ),
+            encoding="utf-8",
+        )
+        return html_path
 
     def write_sarif(self, result: ScanResult) -> Path:
         self.output_dir.mkdir(parents=True, exist_ok=True)
