@@ -1,5 +1,24 @@
 # Changelog
 
+## [RT-CORVUS-V27+V28] — 2026-07-01 — MCP spec coverage completa + profundidad + supply chain npm
+
+### RT-CORVUS-V27 — 5 nuevos módulos (EXT10-EXT14)
+- **`completion-probe`** (dynamic, EXT10) — injection en `completion/complete` argument.value + ref enumeration. HIGH=payload reflejado, MEDIUM=sin validación, INFO=endpoint funcional. stdio + HTTP. 13 tests.
+- **`logging-probe`** (dynamic, EXT11) — `logging/setLevel DEBUG` sin auth → HIGH (expone tokens/paths en logs); nivel inválido aceptado → MEDIUM. stdio + HTTP. 12 tests.
+- **`prompts-injection`** (dynamic, EXT12) — patrones estáticos en descriptions de prompts (override/persona/confidentiality) + `prompts/get` template injection en arguments (payload reflejado → HIGH) + stack trace en error → MEDIUM. 18 tests.
+- **`cursor-probe`** (dynamic, EXT13) — cursor manipulation en `tools/list`: traversal `../../etc/passwd`, overflow 4096 chars, IDOR cursor=0/-1, null cursor. HIGH=crash, MEDIUM=aceptado sin validar. 15 tests.
+- **`cancellation-probe`** (dynamic, EXT14) — `notifications/cancelled` race condition: cancel-nonexistent hang/crash (HIGH), flood 10× (HIGH), request/cancel race (HIGH/INFO). stdio-only. 14 tests.
+- **OWASPCategory** — EXT10-EXT14 agregados al enum. **Tests: 588/588 pass.** 32 módulos (11 static + 21 dynamic).
+
+### RT-CORVUS-V28 — profundidad módulos + supply chain
+- **`rug_pull` v2** — agrega diff de `resources/list` y `prompts/list`: appeared (CRITICAL), disappeared (HIGH), description changed (CRITICAL). Antes solo chequeaba tools.
+- **`proto_fuzz` v2** — Probes 6-8: missing `jsonrpc` field (LOW), `id` como array (MEDIUM), `_meta.progressToken` reflection (MEDIUM). Helpers `_send_raw_http` + `_send_raw_stdio` para requests malformados.
+- **`response_flood` v2** — timing `time.monotonic()` por tool call (>10s → MEDIUM); detección base64 covert payload via `_check_encoded_payload` (→ MEDIUM).
+- **`token_exposure` v2** — `_check_http_headers`: inspecciona headers HTTP response (`Server`, `X-Powered-By`, `X-Debug-Token`, `Set-Cookie` credentials). INFO→HIGH. HTTP-only.
+- **`github-advisory`** (static, MCP04) — GitHub Security Advisory REST API por dep de `package.json`; mapea CVSS a severidad CRITICAL/HIGH/MEDIUM/LOW/INFO.
+- **`npm-behavior`** (static, MCP04) — npm registry: `postinstall`/`preinstall` con curl/wget/bash/eval → HIGH; postinstall genérico → MEDIUM. Limita a 30 packages.
+- **Tests: 629/629 pass.** 34 módulos (13 static + 21 dynamic).
+
 ## [RT-CORVUS-V26] — 2026-07-01 — A3+A4+A5: sampling/elicitation probes + oauth_bypass + score + diff CLI
 
 - **M-NEW-01 `sampling-probe`** (dynamic, EXT08, MCP10) — detecta uso malicioso de `sampling/createMessage`: prompt injection (CRITICAL), context exfiltration via `includeContext=allServers` (HIGH), unsolicited sampling (MEDIUM). Re-inicializa declarando `"sampling": {}` en capabilities y usa direct stdin/stdout bypass (igual que `batch-dos`) para capturar mensajes server→client descartados por `send_request`. stdio-only. 28 tests.
