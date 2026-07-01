@@ -52,6 +52,7 @@ class TokenExposureModule(ScanModule):
     ) -> list[Finding]:
         findings: list[Finding] = []
         for tool in surface.tools:
+            seen_signals: set[str] = set()  # dedup: one finding per (tool, signal label)
             schema = tool.input_schema
             properties: dict[str, Any] = schema.get("properties", {})
             required: list[str] = schema.get("required", [])
@@ -108,6 +109,9 @@ class TokenExposureModule(ScanModule):
                     if m:
                         if label == "credential in response" and _is_type_annotation_match(m.group(0)):
                             continue  # TypeScript type annotation, not a real credential
+                        if label in seen_signals:
+                            break  # already reported this signal for this tool (A1: dedup across response texts)
+                        seen_signals.add(label)
                         findings.append(Finding(
                             owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
                             severity=severity,

@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-V25] — 2026-07-01 — A1→B1: FP calibration v5 + dataset definitivo
+
+- **A1 — token_exposure dedup** — `seen_signals: set[str]` por tool impide emitir 2 findings idénticos cuando el mismo signal aparece en múltiples response texts (benign + error-provoking + oversized). Bug documentado en CS02 remnux-mcp-server (×12 FP-dups por tool).
+- **A2 — FP calibration v5** — `cmd_injection.py`: blanket para path params (`category == "path" and not confirmed` → skip). Elimina clase completa de FPs en doc editors (docx-mcp, file converters). `_TRAVERSAL_MARKERS` extendido con `%2e%2e`, `..%2f`, `..%5c` para cubrir URL-encoded traversal payloads que no matcheaban el check de `_is_traversal_payload`. Regresión guard: traversal confirmado (file content / OS error) sigue emitiéndose en path params.
+- **A3 — init_audit stats** — `case-studies/init_audit_stats.py`: script de agregación sobre CS01+CS02. Resultado: **37/52 servers (71.2%) aceptan protocol version downgrade** — input directo para CFP. Cero casos de control chars en serverInfo.
+- **B1 — Dataset definitivo** — `case-studies/dataset_b1.md`: overview CS01+CS02 (55 servers, ~90 TPs, ~26.8% FP rate), breakdown por OWASP MCP Top 10, prevalencia por tipo (proto crash 27%, shadow tool 44%, supply chain 27%, injection 29%, SSRF 9%), FP rate evolution v0.8.0→v1.0.1+v5, SDK advisory cascade (8+ servers confirmados), ángulos B2 CFP listos.
+- **Tests** — `tests/test_fp_calibration_v5.py`: 8 tests nuevos (3 A1, 5 A2). Suite: **359/359 pass**.
+
 ## [RT-CORVUS-V24] — 2026-07-01 — D1+D2+D3: v1.0.1 + findings curados + regresiones
 
 - **v1.0.1 publicado** — PyPI + GitHub release. Único cambio: Windows noise fix del bloque V23

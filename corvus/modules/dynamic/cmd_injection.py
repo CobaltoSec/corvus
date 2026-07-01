@@ -10,7 +10,11 @@ from ...core.session import ScanSession
 from ...payloads.engine import PayloadEngine
 from ...transport.base import MCPTransport
 
-_TRAVERSAL_MARKERS = ("../", "..\\", "/etc/", "/proc/", "win.ini", "C:\\Windows")
+_TRAVERSAL_MARKERS = (
+    "../", "..\\", "/etc/", "/proc/", "win.ini", "C:\\Windows",
+    # URL-encoded traversal variants
+    "%2e%2e", "..%2f", "..%5c",
+)
 
 _TRAVERSAL_SIGNATURES = [
     "root:x:0:0", "daemon:x:", "nobody:x:",  # /etc/passwd
@@ -241,6 +245,12 @@ class CmdInjectionModule(ScanModule):
                                 )
                         else:
                             continue  # no signal — skip this payload
+
+                        # A2: path params that reflect payloads without actual exploitation
+                        # are FPs on doc editors and DB servers (e.g. docx-mcp echoes filenames).
+                        # Only emit when traversal or OS error is confirmed (exploitation_confirmed).
+                        if category == "path" and not confirmed:
+                            continue
 
                         findings.append(Finding(
                             owasp_category=OWASPCategory.MCP05_CMD_INJECTION,

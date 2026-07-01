@@ -89,3 +89,5 @@ async def _probe_initialize(transport: MCPTransport, version: str) -> bool:
         return isinstance(result, dict) and "serverInfo" in result
     except Exception:
         return False
+
+
