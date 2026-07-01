@@ -3,11 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
+import httpx
+
 from ..base import ScanModule
 from ...core.models import Finding, MCPSurface, OWASPCategory, Severity
 from ...core.session import ScanSession
 from ...payloads.engine import PayloadEngine
 from ...transport.base import MCPTransport
+from ...transport.http import HttpTransport
 
 # Each entry: (compiled pattern, label, severity, confidence)
 _SIGNALS: list[tuple[re.Pattern[str], str, Severity, int]] = [
@@ -127,6 +130,9 @@ class TokenExposureModule(ScanModule):
                         ))
                         break  # one finding per signal per response text
 
+        if isinstance(transport, HttpTransport):
+            findings.extend(await _check_http_headers(transport))
+
         return findings
 
 
@@ -199,6 +205,72 @@ def _strip_code_blocks(text: str) -> str:
     text = _CODE_BLOCK_RE.sub(" ", text)
     text = _INLINE_CODE_RE.sub(" ", text)
     return text
+
+
+_SENSITIVE_HEADER_SIGNALS: list[tuple[str, str, Severity]] = [
+    ("x-powered-by", "framework version disclosure", Severity.INFO),
+    ("server", "server version disclosure", Severity.INFO),
+    ("x-debug", "debug header exposed", Severity.MEDIUM),
+    ("x-debug-token", "debug token in header", Severity.HIGH),
+    ("x-internal", "internal header exposed", Severity.LOW),
+    ("x-backend", "backend info disclosure", Severity.LOW),
+]
+
+_COOKIE_SECRET_RE = re.compile(
+    r"(token|secret|key|auth|session)[^;]*=\s*[A-Za-z0-9+/]{20,}", re.I
+)
+
+
+async def _check_http_headers(transport: HttpTransport) -> list[Finding]:
+    findings: list[Finding] = []
+    try:
+        body = {"jsonrpc": "2.0", "id": 9700, "method": "tools/list", "params": {}}
+        async with httpx.AsyncClient(timeout=10.0, headers=transport._extra_headers) as client:
+            resp = await client.post(transport.url, json=body)
+
+        for header_name, label, severity in _SENSITIVE_HEADER_SIGNALS:
+            val = resp.headers.get(header_name, "")
+            if val:
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
+                    severity=severity,
+                    title=f"Token Exposure — {label} in HTTP response headers",
+                    description=(
+                        f"HTTP response header '{header_name}: {val[:100]}' discloses internal information."
+                    ),
+                    evidence=f"{header_name}: {val[:200]}",
+                    confidence=75,
+                    remediation=f"Remove the '{header_name}' response header in production.",
+                ))
+
+        www_auth = resp.headers.get("www-authenticate", "")
+        if www_auth and re.search(r"(realm|charset)=", www_auth, re.I):
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
+                severity=Severity.INFO,
+                title="Token Exposure — WWW-Authenticate header exposes auth realm",
+                description=(
+                    f"WWW-Authenticate header reveals authentication configuration: {www_auth[:200]}"
+                ),
+                evidence=www_auth[:300],
+                confidence=70,
+                remediation="Minimize information in WWW-Authenticate headers.",
+            ))
+
+        for cookie in resp.headers.getlist("set-cookie"):
+            if _COOKIE_SECRET_RE.search(cookie):
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
+                    severity=Severity.HIGH,
+                    title="Token Exposure — credential-like value in Set-Cookie header",
+                    description="HTTP response Set-Cookie header contains a credential-like value.",
+                    evidence=cookie[:300],
+                    confidence=75,
+                    remediation="Audit cookies for sensitive credential exposure.",
+                ))
+    except Exception:
+        pass
+    return findings
 
 
 def _is_html_catch_all(text: str) -> bool:

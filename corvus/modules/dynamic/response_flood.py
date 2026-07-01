@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import base64
 import re
+import time
 from collections import Counter
 from typing import Any
 
@@ -12,6 +14,8 @@ from ...transport.base import MCPTransport
 
 _SIZE_THRESHOLD = 8_192   # bytes — responses larger than this risk flooding LLM context
 _TRIGRAM_THRESHOLD = 15   # same 3-word sequence must appear this many times to flag
+
+_B64_RE = re.compile(r"[A-Za-z0-9+/]{100,}={0,2}")
 
 # Administrative list tools — returning large config dumps is expected, not a threat
 _ADMIN_LIST_TOOL_RE = re.compile(
@@ -53,10 +57,29 @@ class ResponseFloodModule(ScanModule):
                 if p in required
             }
             try:
+                _t0 = time.monotonic()
                 result = await transport.send_request(
                     "tools/call", {"name": tool.name, "arguments": args}
                 )
+                elapsed = time.monotonic() - _t0
                 text = _extract_text(result)
+
+                if elapsed > 10.0:
+                    findings.append(Finding(
+                        owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
+                        severity=Severity.MEDIUM,
+                        title=f"Slow tool response — '{tool.name}' took {elapsed:.1f}s",
+                        description=(
+                            f"Tool '{tool.name}' took {elapsed:.1f} seconds to respond. "
+                            "Slow responses can be used for resource exhaustion in agent pipelines "
+                            "or indicate unbounded computation triggered by benign inputs."
+                        ),
+                        tool_name=tool.name,
+                        evidence=f"Response time: {elapsed:.2f}s",
+                        confidence=70,
+                        remediation="Enforce server-side timeouts on all tool executions. Cap at 30s max.",
+                    ))
+
                 if not text:
                     continue
 
@@ -101,6 +124,26 @@ class ResponseFloodModule(ScanModule):
                         ),
                     ))
 
+                decoded = _check_encoded_payload(text)
+                if decoded is not None:
+                    findings.append(Finding(
+                        owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
+                        severity=Severity.MEDIUM,
+                        title=f"Response contains large base64-encoded text content — potential covert payload",
+                        description=(
+                            f"Tool '{tool.name}' response contains a base64-encoded string that "
+                            "decodes to readable ASCII text. This technique can be used to smuggle "
+                            "hidden instructions past naive content filters."
+                        ),
+                        tool_name=tool.name,
+                        evidence=f"Decoded preview: {decoded[:200]}",
+                        confidence=65,
+                        remediation=(
+                            "Audit tool responses for encoded payloads. "
+                            "If base64 output is expected, document and scope it explicitly."
+                        ),
+                    ))
+
             except Exception:
                 pass
 
@@ -112,6 +155,18 @@ def _extract_text(result: Any) -> str:
         return ""
     content = result.get("content", []) if isinstance(result, dict) else []
     return " ".join(c.get("text", "") for c in content if isinstance(c, dict))
+
+
+def _check_encoded_payload(text: str) -> str | None:
+    """Return decoded content if a large base64 string decodes to readable ASCII."""
+    for m in _B64_RE.finditer(text):
+        try:
+            decoded = base64.b64decode(m.group(0) + "==").decode("ascii")
+            if len(decoded) > len(m.group(0)) * 0.7 and decoded.isprintable():
+                return decoded[:200]
+        except Exception:
+            continue
+    return None
 
 
 def _is_repetitive(text: str) -> bool:

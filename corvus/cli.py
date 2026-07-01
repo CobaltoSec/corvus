@@ -43,6 +43,8 @@ from .modules.static.schema_audit import SchemaAuditModule
 from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.scope_audit import ScopeAuditModule
 from .modules.static.shadow_tool import ShadowToolModule
+from .modules.static.github_advisory import GitHubAdvisoryModule
+from .modules.static.npm_behavior import NpmBehaviorModule
 from .modules.static.osv_supply_chain import OsvSupplyChainModule
 from .modules.static.supply_chain import SupplyChainModule
 from .modules.static.supply_chain_python import SupplyChainPythonModule
@@ -62,6 +64,8 @@ _ALL_MODULES = {
     "supply-chain":        SupplyChainModule,
     "supply-chain-python": SupplyChainPythonModule,
     "osv-supply-chain":    OsvSupplyChainModule,
+    "github-advisory":     GitHubAdvisoryModule,
+    "npm-behavior":        NpmBehaviorModule,
     "tool-poisoning":  ToolPoisoningModule,
     "schema-audit":    SchemaAuditModule,
     "shadow-tool":     ShadowToolModule,
@@ -91,7 +95,7 @@ _ALL_MODULES = {
     "cursor-probe":         CursorProbeModule,
     "cancellation-probe":   CancellationProbeModule,
 }
-_STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "osv-supply-chain", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
+_STATIC  = {"scope-audit", "supply-chain", "supply-chain-python", "osv-supply-chain", "github-advisory", "npm-behavior", "tool-poisoning", "schema-audit", "shadow-tool", "auth-audit", "log-audit", "resource-uri", "tool-chaining"}
 _DYNAMIC = {
     "batch-dos", "cmd-injection", "token-exposure", "schema-bypass", "response-flood", "rug-pull",
     "ssrf", "endpoint-probe", "param-smuggling", "init-audit", "proto-fuzz",

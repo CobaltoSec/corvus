@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+import json
 from typing import Any
+
+import httpx
 
 from ..base import ScanModule
 from ...core.models import Finding, MCPSurface, OWASPCategory, Severity
 from ...core.session import ScanSession
 from ...transport.base import JSONRPCError, MCPTransport
+from ...transport.http import HttpTransport
 
 _STANDARD_ERROR_CODE = -32601  # Method not found
 
@@ -132,7 +137,106 @@ class ProtoFuzzModule(ScanModule):
                 ),
             ))
 
+        # Probe 6: Missing jsonrpc field — server should reject as invalid request
+        is_http = isinstance(transport, HttpTransport)
+        body6 = {"id": 9600, "method": "tools/list", "params": {}}
+        resp6 = (
+            await _send_raw_http(transport.url, body6)
+            if is_http
+            else await _send_raw_stdio(transport, body6)
+        )
+        if resp6 is not None and "result" in resp6 and "error" not in resp6:
+            findings.append(Finding(
+                owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
+                severity=Severity.LOW,
+                title="Server accepts requests without jsonrpc field",
+                description=(
+                    "The server returned a successful result to a request missing the required "
+                    "'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'."
+                ),
+                payload='{"id": 9600, "method": "tools/list", "params": {}}',
+                confidence=70,
+                remediation=(
+                    "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. "
+                    "Return -32600 (Invalid Request) for non-conformant messages."
+                ),
+            ))
+
+        # Probe 7: Array request ID — spec requires ID to be string, number, or null
+        body7 = {"jsonrpc": "2.0", "id": [1, 2, 3], "method": "tools/list", "params": {}}
+        resp7 = (
+            await _send_raw_http(transport.url, body7)
+            if is_http
+            else await _send_raw_stdio(transport, body7)
+        )
+        if resp7 is not None and "result" in resp7 and "error" not in resp7:
+            findings.append(Finding(
+                owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
+                severity=Severity.MEDIUM,
+                title="Server accepts array request ID — JSON-RPC spec violation",
+                description=(
+                    "The server returned a successful result to a request with an array as the "
+                    "request ID. JSON-RPC 2.0 requires the id to be a string, number, or null."
+                ),
+                payload='{"jsonrpc": "2.0", "id": [1, 2, 3], "method": "tools/list"}',
+                confidence=65,
+                remediation=(
+                    "Validate that the request 'id' is a string, number, or null. "
+                    "Return -32600 (Invalid Request) for array or object IDs."
+                ),
+            ))
+
+        # Probe 8: _meta progressToken injection — check if reflected in response
+        try:
+            result8 = await transport.send_request(
+                "tools/list", {"_meta": {"progressToken": "CORVUS_INJECT_{{7*7}}"}}
+            )
+            if result8 is not None and "CORVUS_INJECT_" in str(result8):
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
+                    severity=Severity.MEDIUM,
+                    title="_meta progressToken reflected in response",
+                    description=(
+                        "The server reflected the _meta.progressToken value back in its response. "
+                        "This can be abused to inject template expressions or tracking tokens "
+                        "that are later processed by the client."
+                    ),
+                    payload='{"_meta": {"progressToken": "CORVUS_INJECT_{{7*7}}"}}',
+                    evidence=str(result8)[:300],
+                    confidence=70,
+                    remediation=(
+                        "Do not reflect _meta fields from requests into responses. "
+                        "Treat _meta as opaque metadata and discard it after use."
+                    ),
+                ))
+        except Exception:
+            pass
+
         return findings
+
+
+async def _send_raw_http(url: str, body: dict, timeout: float = 5.0) -> dict | None:
+    """POST raw JSON-RPC body to HTTP transport; return parsed response or None."""
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            r = await client.post(url, json=body, headers={"Content-Type": "application/json"})
+            return r.json()
+    except Exception:
+        return None
+
+
+async def _send_raw_stdio(transport: MCPTransport, body: dict, timeout: float = 5.0) -> dict | None:
+    """Write raw JSON to stdio transport stdin; return first parsed response or None."""
+    if not (hasattr(transport, "_process") and transport._process is not None):
+        return None
+    payload = (json.dumps(body) + "\n").encode()
+    try:
+        transport._process.stdin.write(payload)
+        await transport._process.stdin.drain()
+        line = await asyncio.wait_for(transport._process.stdout.readline(), timeout=timeout)
+        return json.loads(line.decode(errors="replace")) if line else None
+    except Exception:
+        return None
 
 
 async def _probe_method(

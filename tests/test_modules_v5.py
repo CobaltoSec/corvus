@@ -122,8 +122,11 @@ async def test_info_disclosure_skips_html_response():
     finally:
         server.stop()
 
-    assert not findings, (
-        f"Expected no findings for HTML catch-all responses, got: {[(f.title, f.tool_name) for f in findings]}"
+    # Only tool-response findings matter here — header-inspection findings (tool_name=None) are expected
+    tool_response_findings = [f for f in findings if f.tool_name is not None]
+    assert not tool_response_findings, (
+        f"Expected no tool-response findings for HTML catch-all responses, "
+        f"got: {[(f.title, f.tool_name) for f in tool_response_findings]}"
     )
 
 

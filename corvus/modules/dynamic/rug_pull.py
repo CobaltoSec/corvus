@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from ..base import ScanModule
-from ...core.models import Finding, MCPSurface, OWASPCategory, Severity, ToolSpec
+from ...core.models import Finding, MCPSurface, OWASPCategory, PromptSpec, ResourceSpec, Severity, ToolSpec
 from ...core.session import ScanSession
 from ...transport.base import MCPTransport
 
@@ -122,6 +122,114 @@ class RugPullModule(ScanModule):
                     remediation="Pin schemas at session start; treat schema drift as untrusted.",
                 ))
 
+        # Resources diff
+        new_resources = await _list_resources(transport)
+        orig_res_map = {r.uri: r for r in surface.resources}
+        new_res_map = {r.uri: r for r in new_resources}
+
+        for uri in sorted(set(new_res_map) - set(orig_res_map)):
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                severity=Severity.CRITICAL,
+                title=f"Rug Pull — resource '{uri}' appeared mid-session",
+                description=(
+                    f"Resource '{uri}' was not present during initial enumeration but appeared "
+                    "after the session began. The server may be exposing additional attack surface "
+                    "after establishing initial trust."
+                ),
+                confidence=85,
+                remediation=(
+                    "Never trust a server whose resource surface changes during an active session. "
+                    "Re-enumerate before any privileged operations."
+                ),
+            ))
+
+        for uri in sorted(set(orig_res_map) - set(new_res_map)):
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                severity=Severity.HIGH,
+                title=f"Rug Pull — resource '{uri}' disappeared mid-session",
+                description=(
+                    f"Resource '{uri}' was present at session start but is no longer listed. "
+                    "The server may be hiding evidence of malicious resource access."
+                ),
+                confidence=85,
+                remediation="Treat disappearing resources as a red flag and audit all prior interactions.",
+            ))
+
+        for uri in sorted(set(orig_res_map) & set(new_res_map)):
+            if orig_res_map[uri].description != new_res_map[uri].description:
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                    severity=Severity.CRITICAL,
+                    title=f"Rug Pull — description of resource '{uri}' changed mid-session",
+                    description=(
+                        f"Resource '{uri}' description was mutated after the session started. "
+                        "Attackers use this to inject hidden instructions after the LLM has "
+                        "already decided to trust the resource."
+                    ),
+                    evidence=f"Before: {orig_res_map[uri].description[:200]!r}\nAfter:  {new_res_map[uri].description[:200]!r}",
+                    confidence=85,
+                    remediation=(
+                        "Pin resource descriptions at session start and reject any mid-session mutation. "
+                        "Re-initialize from scratch if a change is detected."
+                    ),
+                ))
+
+        # Prompts diff
+        new_prompts = await _list_prompts(transport)
+        orig_pr_map = {p.name: p for p in surface.prompts}
+        new_pr_map = {p.name: p for p in new_prompts}
+
+        for name in sorted(set(new_pr_map) - set(orig_pr_map)):
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                severity=Severity.CRITICAL,
+                title=f"Rug Pull — prompt '{name}' appeared mid-session",
+                description=(
+                    f"Prompt '{name}' was not present during initial enumeration but appeared "
+                    "after the session began. The server may be injecting new prompt templates "
+                    "after establishing initial trust."
+                ),
+                confidence=85,
+                remediation=(
+                    "Never trust a server whose prompt surface changes during an active session. "
+                    "Re-enumerate before any privileged operations."
+                ),
+            ))
+
+        for name in sorted(set(orig_pr_map) - set(new_pr_map)):
+            findings.append(Finding(
+                owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                severity=Severity.HIGH,
+                title=f"Rug Pull — prompt '{name}' disappeared mid-session",
+                description=(
+                    f"Prompt '{name}' was present at session start but is no longer listed. "
+                    "The server may be hiding evidence of malicious prompt template usage."
+                ),
+                confidence=85,
+                remediation="Treat disappearing prompts as a red flag and audit all prior interactions.",
+            ))
+
+        for name in sorted(set(orig_pr_map) & set(new_pr_map)):
+            if orig_pr_map[name].description != new_pr_map[name].description:
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                    severity=Severity.CRITICAL,
+                    title=f"Rug Pull — description of prompt '{name}' changed mid-session",
+                    description=(
+                        f"Prompt '{name}' description was mutated after the session started. "
+                        "Attackers use this to inject hidden instructions after the LLM has "
+                        "already decided to trust the prompt template."
+                    ),
+                    evidence=f"Before: {orig_pr_map[name].description[:200]!r}\nAfter:  {new_pr_map[name].description[:200]!r}",
+                    confidence=85,
+                    remediation=(
+                        "Pin prompt descriptions at session start and reject any mid-session mutation. "
+                        "Re-initialize from scratch if a change is detected."
+                    ),
+                ))
+
         return findings
 
 
@@ -135,6 +243,28 @@ async def _list_tools(transport: MCPTransport) -> list[ToolSpec]:
                 input_schema=t.get("inputSchema", {}),
             )
             for t in result.get("tools", [])
+        ]
+    except Exception:
+        return []
+
+
+async def _list_resources(transport: MCPTransport) -> list[ResourceSpec]:
+    try:
+        result: Any = await transport.send_request("resources/list") or {}
+        return [
+            ResourceSpec(uri=r["uri"], name=r.get("name", ""), description=r.get("description", ""))
+            for r in result.get("resources", [])
+        ]
+    except Exception:
+        return []
+
+
+async def _list_prompts(transport: MCPTransport) -> list[PromptSpec]:
+    try:
+        result: Any = await transport.send_request("prompts/list") or {}
+        return [
+            PromptSpec(name=p["name"], description=p.get("description", ""))
+            for p in result.get("prompts", [])
         ]
     except Exception:
         return []
