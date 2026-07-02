@@ -1,5 +1,21 @@
 # Changelog
 
+## [RT-CORVUS-V29-E2E] — 2026-07-02 — Suite E2E contra servidores MCP reales
+
+- **`tests/e2e/`** — nueva carpeta de tests de integración end-to-end. Marcados `@pytest.mark.e2e`; excluidos del run por defecto (`addopts = "-m 'not e2e'"`).
+- **`conftest.py`** — registra el marker `e2e`; define rutas absolutas a kestrel-mcp / llamascope-mcp / uvx; skip helpers por server ausente.
+- **`test_e2e_batch.py`** — 8 tests usando `run_batch()` directamente contra servers reales:
+  - kestrel-mcp + llamascope-mcp batch (report.json válido por target)
+  - summary.md con columna Score (N/100)
+  - combined.sarif con un run por target
+  - kestrel tools enumeration (≥1 tool)
+  - llamascope tools enumeration (≥1 tool)
+  - `mcp-server-sqlite` via uvx (SQL tools detectados)
+  - `@modelcontextprotocol/server-everything` via npx (≥5 tools)
+  - `skip_existing=True` (report.json no reescrito en segunda run)
+- **`pyproject.toml`** — marker `e2e` declarado; `addopts = "-m 'not e2e'"` protege CI.
+- **Tests** — 667/667 unit pass + **8/8 E2E pass** (kestrel ✅ llamascope ✅ sqlite ✅ everything ✅).
+
 ## [RT-CORVUS-V30] — 2026-07-02 — Risk Score en batch + CVSS v3.1 + combined SARIF
 
 - **Risk Score en batch summary** — `BatchResult.summary_md()` agrega columna `Score (N/100)` usando `compute_risk_score()` por target. `_scan_one()` computa el score y lo propaga a `BatchResult.add(risk_score=...)`.
