@@ -26,101 +26,86 @@
 Token GitHub (PAT clásico) con scopes: **`repo`** + **`notifications`** + **`write:discussion`**  
 (`security_events` queda incluido como sub-scope de `repo`)
 
-```powershell
-$env:GITHUB_TOKEN = "ghp_..."
-gh api user --include 2>&1 | Select-String "X-Oauth-Scopes"
+```bash
+gh api user --include 2>&1 | grep X-Oauth-Scopes
 # Esperado: notifications, repo, write:discussion
 ```
 
-### Límites de la API (no solucionables con más scopes)
+### Límites de la API
 
 | Acción | Posible via API |
 |--------|----------------|
 | Crear / actualizar / publicar GHSA | ✅ |
 | Listar advisories + estado | ✅ |
-| Invitar collaborator via PATCH collaborating_users | ✅ (funciona cross-repo) |
-| Invitar collaborator via PUT /collaborators | ❌ 404 siempre — endpoint incorrecto |
-| Comentar en un advisory | ❌ No existe endpoint |
-| Detectar respuestas de maintainers via notificaciones | ❌ Advisory comments no generan notificaciones API |
+| Invitar collaborator via `PATCH collaborating_users` | ✅ funciona cross-repo |
+| Invitar collaborator via `PUT /collaborators` | ❌ 404 siempre — endpoint incorrecto |
+| Comentar en un advisory | ❌ No existe endpoint REST |
+| Detectar respuestas de maintainers via API | ❌ Advisory comments no generan notificaciones |
 
-**Seguimiento de respuestas:** manual. Revisar el advisory web UI o esperar email de GitHub. No hay forma de automatizarlo.
+**Seguimiento de respuestas:** manual. Revisar advisory en GitHub web o esperar email. No automatizable.
 
 ---
 
-## Proceso: GHSA nuevo
-
-### 1. Crear el advisory (draft)
-
-```powershell
-$body = @{
-  summary       = "..."        # < 80 chars, descriptivo
-  description   = "..."        # markdown: Finding / PoC / Fix / Notes
-  severity      = "critical|high|medium|low"
-  cwe_ids       = @("CWE-400") # ver tabla abajo
-  vulnerabilities = @(
-    @{
-      package = @{ ecosystem = "npm|pypi|other"; name = "package-name" }
-      vulnerable_version_range = "<= x.y.z"
-      patched_versions         = $null   # null hasta que haya fix
-      vulnerable_functions     = @()
-    }
-  )
-} | ConvertTo-Json -Depth 5
-
-$tmp = [System.IO.Path]::GetTempFileName()
-$body | Out-File $tmp -Encoding utf8
-gh api repos/CobaltoSec/advisories/security-advisories -X POST -H "Content-Type: application/json" --input $tmp
-Remove-Item $tmp
-```
-
-### 2. Invitar al maintainer como colaborador (solo en draft)
-
-> **Usar `PATCH` con `collaborating_users` — NO el endpoint `/collaborators` (ese siempre da 404 cross-repo).**
-> El campo `collaborating_users` es parte del objeto advisory y se setea via el mismo PATCH de actualización.
+## Flujo completo: GHSA nuevo (bash, copy-paste)
 
 ```bash
-# Bash (recomendado — PowerShell tiene problemas con el endpoint /collaborators)
-echo '{"collaborating_users": ["github-username"]}' | \
-  gh api repos/CobaltoSec/advisories/security-advisories/GHSA-xxxx-xxxx-xxxx \
-  -X PATCH -H "Content-Type: application/json" --input -
-```
+GHSA_REPO="CobaltoSec/advisories"
+MAINTAINER="github-username"   # top contributor del repo target
+PKG_NAME="npm-package-name"
+PKG_VERSION="<= x.y.z"
 
-El response incluye `collaborating_users: [{login: "..."}]` si el invite fue exitoso.
-GitHub envía email al maintainer invitándolo al advisory draft.
+# 1. Crear advisory draft
+GHSA_ID=$(echo '{
+  "summary": "...",
+  "description": "...",
+  "severity": "high",
+  "cwe_ids": ["CWE-77"],
+  "vulnerabilities": [{
+    "package": {"ecosystem": "npm", "name": "'"$PKG_NAME"'"},
+    "vulnerable_version_range": "'"$PKG_VERSION"'",
+    "patched_versions": null,
+    "vulnerable_functions": []
+  }]
+}' | gh api repos/$GHSA_REPO/security-advisories -X POST \
+     -H "Content-Type: application/json" --input - \
+     --jq '.ghsa_id')
+echo "Creado: $GHSA_ID"
 
-### 3. Publicar
+# 2. Invitar maintainer como colaborador
+# IMPORTANTE: usar PATCH con collaborating_users — NO PUT /collaborators (404 siempre)
+echo "{\"collaborating_users\": [\"$MAINTAINER\"]}" | \
+  gh api repos/$GHSA_REPO/security-advisories/$GHSA_ID \
+  -X PATCH -H "Content-Type: application/json" --input - \
+  --jq '.collaborating_users[].login'
 
-```powershell
-$body = @{ state = "published" } | ConvertTo-Json
-$tmp = [System.IO.Path]::GetTempFileName()
-$body | Out-File $tmp -Encoding utf8
-gh api repos/CobaltoSec/advisories/security-advisories/$ghsa -X PATCH -H "Content-Type: application/json" --input $tmp
-Remove-Item $tmp
-```
-
-### 4. Verificar
-
-```powershell
-gh api repos/CobaltoSec/advisories/security-advisories/$ghsa |
-  ConvertFrom-Json |
-  Select-Object ghsa_id, severity, summary, state, published_at
+# 3. Verificar
+gh api repos/$GHSA_REPO/security-advisories/$GHSA_ID \
+  --jq '{ghsa: .ghsa_id, state: .state, severity: .severity, collaborators: [.collaborating_users[].login]}'
 ```
 
 ---
 
 ## Proceso: actualizar GHSA existente
 
-```powershell
-$ghsa = "GHSA-xxxx-xxxx-xxxx"
-$body = @{
-  description = "... descripción actualizada ..."
-  severity    = "medium"
-} | ConvertTo-Json
+```bash
+GHSA="GHSA-xxxx-xxxx-xxxx"
 
-$tmp = [System.IO.Path]::GetTempFileName()
-$body | Out-File $tmp -Encoding utf8
-gh api repos/CobaltoSec/advisories/security-advisories/$ghsa -X PATCH -H "Content-Type: application/json" --input $tmp
-Remove-Item $tmp
+echo '{
+  "description": "... descripción actualizada ...",
+  "severity": "critical",
+  "cwe_ids": ["CWE-918", "CWE-22"]
+}' | gh api repos/CobaltoSec/advisories/security-advisories/$GHSA \
+     -X PATCH -H "Content-Type: application/json" --input -
+```
+
+## Proceso: publicar GHSA
+
+```bash
+GHSA="GHSA-xxxx-xxxx-xxxx"
+
+echo '{"state": "published"}' | \
+  gh api repos/CobaltoSec/advisories/security-advisories/$GHSA \
+  -X PATCH -H "Content-Type: application/json" --input -
 ```
 
 ---
@@ -132,10 +117,11 @@ Remove-Item $tmp
 | DoS / crash           | CWE-400  | Uncontrolled Resource Consumption                |
 | Protocol crash        | CWE-755  | Improper Handling of Exceptional Conditions      |
 | Command injection     | CWE-78   | OS Command Injection                             |
+| LFI / path traversal  | CWE-22   | Path Traversal                                   |
 | SSRF                  | CWE-918  | Server-Side Request Forgery                      |
 | Auth bypass HTTP      | CWE-306  | Missing Authentication for Critical Function     |
 | Token exposure        | CWE-522  | Insufficiently Protected Credentials             |
-| Prompt injection      | CWE-77   | Command Injection (prompt context)               |
+| Prompt/query injection| CWE-77   | Injection (prompt/query context)                 |
 | Supply chain          | CWE-1395 | Dependency on Vulnerable Third-Party Component   |
 | Shadow tool           | CWE-345  | Insufficient Verification of Data Authenticity   |
 
@@ -152,29 +138,46 @@ Remove-Item $tmp
 
 ## Maintainers conocidos
 
-| Repo / Package                              | Maintainer GitHub   | PVR habilitado |
-|---------------------------------------------|---------------------|----------------|
-| modelcontextprotocol/servers                | olaservo            | No             |
-| modelcontextprotocol/mcp-server-sqlite      | olaservo            | No             |
-| nicholasgasior/mcp-shell-server             | nicholasgasior      | No             |
-| REMnux/remnux-mcp-server                    | lennyzeltser        | No             |
+| Repo / Package                              | Maintainer GitHub   | Invitado | PVR |
+|---------------------------------------------|---------------------|----------|-----|
+| modelcontextprotocol/servers                | olaservo            | ✅       | No  |
+| modelcontextprotocol/mcp-server-sqlite      | olaservo            | ✅       | No  |
+| nicholasgasior/mcp-shell-server             | nicholasgasior (mako10k) | ✅  | No  |
+| REMnux/remnux-mcp-server                    | lennyzeltser        | N/A (published) | No |
+| microsoft/playwright                        | pavelfeldman        | ✅       | No  |
+| Dusheh/myclaw-toolkit                       | Dusheh              | ✅       | No  |
+| KyrieTangSheng/mcp-server-nationalparks     | KyrieTangSheng      | ✅       | No  |
+| cyanheads/pubmed-mcp-server                 | cyanheads           | ✅       | No  |
+| idachev/mcp-javadc                          | idachev             | ✅       | No  |
 
-PVR = Private Vulnerability Reporting. Si está deshabilitado → crear en CobaltoSec/advisories + invitar maintainer.
+**Cómo encontrar maintainer:** `npm show <package> repository.url` → extrae el GitHub username del repo.
+
+PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen deshabilitado → siempre usar `CobaltoSec/advisories` + invitar via `collaborating_users`.
+
+---
+
+## Errores comunes — no repetir
+
+| Error | Por qué falla | Correcto |
+|-------|--------------|----------|
+| `PUT /security-advisories/{ghsa}/collaborators` | 404 siempre en repos distintos al del package | `PATCH /security-advisories/{ghsa}` con `collaborating_users` |
+| Usar Shrike (`shrike_disclose_github`) para GHSAs de Corvus | Shrike es para huntr/0din/google_vrp — GHSAs de Corvus van via `gh api` directo | `gh api` como en el flujo completo de arriba |
+| Crear GHSA sin invitar collaborador en el mismo paso | Quedan huérfanos sin notificación al maintainer | Crear + invitar como bloque único (ver flujo completo) |
 
 ---
 
 ## GHSAs activos (2026-07-02)
 
-| GHSA                  | Package                              | Severity | Estado          | Disclosure date |
-|-----------------------|--------------------------------------|----------|-----------------|-----------------|
-| GHSA-mf64-cgv4-ppcx   | @playwright/mcp                      | HIGH     | draft, 90d      | 2026-06-25      |
-| GHSA-7763-c5gf-v5fj   | mcp-shell-server                     | HIGH     | draft (+F89)    | pendiente       |
-| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | MEDIUM | draft           | pendiente       |
-| GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH     | draft           | pendiente       |
-| GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM   | **published** ✅ | 2026-07-02      |
-| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL** | draft — updated 2026-07-02 (LFI+SSRF) | 2026-07-29 |
-| GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH     | **published** ✅ | 2026-07-02      |
-| GHSA-3f55-qgq4-f88c   | @modelcontextprotocol/server-sequential-thinking | MEDIUM | **published** ✅ | 2026-07-02 |
-| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH     | draft 2026-07-02 | pendiente       |
-| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH     | draft 2026-07-02 | pendiente       |
-| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH     | draft 2026-07-02 | pendiente       |
+| GHSA                  | Package                              | Severity    | Collaborator    | Estado             | Publicar    |
+|-----------------------|--------------------------------------|-------------|-----------------|-------------------|-------------|
+| GHSA-mf64-cgv4-ppcx   | @playwright/mcp                      | HIGH        | pavelfeldman ✅  | draft, 90d        | 2026-09-25  |
+| GHSA-7763-c5gf-v5fj   | mcp-shell-server                     | HIGH        | mako10k ✅       | draft             | 2026-07-25  |
+| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | MEDIUM   | olaservo ✅      | draft             | 2026-07-25  |
+| GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH        | olaservo ✅      | draft             | 2026-07-25  |
+| GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM      | N/A             | **published** ✅   | —           |
+| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL**| Dusheh ✅        | draft (LFI+SSRF)  | 2026-07-29  |
+| GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH        | N/A             | **published** ✅   | —           |
+| GHSA-3f55-qgq4-f88c   | server-sequential-thinking           | MEDIUM      | N/A             | **published** ✅   | —           |
+| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅| draft            | 2026-08-01  |
+| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅     | draft            | 2026-08-01  |
+| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅       | draft            | 2026-08-01  |
