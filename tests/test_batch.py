@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 from sys import executable
 
@@ -66,6 +67,46 @@ def test_batch_missing_transport_raises(tmp_path: Path):
 
     with pytest.raises(ValueError, match="transport"):
         load_batch_targets(config)
+
+
+@pytest.mark.asyncio
+async def test_batch_summary_has_score_column(tmp_path: Path):
+    """Summary table must include a Score column with risk scores."""
+    targets = [BatchTarget("smoke", "stdio", _MOCK_SERVER_CMD, None)]
+    result = await run_batch(targets, tmp_path, timeout=30)
+    summary = result.summary_md()
+    assert "Score" in summary, "Summary must have a Score column"
+    assert "/100" in summary, "Score must be in N/100 format"
+
+
+@pytest.mark.asyncio
+async def test_batch_combined_sarif_written(tmp_path: Path):
+    """--sarif must produce combined.sarif in the output directory."""
+    targets = [
+        BatchTarget("mock", "stdio", _MOCK_SERVER_CMD, None),
+        BatchTarget("mutating", "stdio", _MUTATING_SERVER_CMD, None),
+    ]
+    await run_batch(targets, tmp_path, timeout=30, sarif=True)
+
+    combined = tmp_path / "combined.sarif"
+    assert combined.exists(), "combined.sarif must be written when sarif=True"
+
+    data = json.loads(combined.read_text(encoding="utf-8"))
+    assert data["version"] == "2.1.0"
+    assert len(data["runs"]) == 2, "combined.sarif must have one run per target"
+
+    # Each run must be tagged with its target
+    ids = {r.get("automationDetails", {}).get("id") for r in data["runs"]}
+    assert "mock" in ids
+    assert "mutating" in ids
+
+
+@pytest.mark.asyncio
+async def test_batch_combined_sarif_not_written_without_flag(tmp_path: Path):
+    """combined.sarif must NOT be written when sarif=False (default)."""
+    targets = [BatchTarget("smoke", "stdio", _MOCK_SERVER_CMD, None)]
+    await run_batch(targets, tmp_path, timeout=30, sarif=False)
+    assert not (tmp_path / "combined.sarif").exists()
 
 
 @pytest.mark.asyncio

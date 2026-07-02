@@ -80,6 +80,34 @@ class ReportGenerator:
         return sarif_path
 
 
+def write_combined_sarif(named_results: list[tuple[str, ScanResult]], output_dir: Path) -> Path:
+    """Merge multiple scan results into a single SARIF file (one run per target).
+
+    Each tuple is (target_name, scan_result). The name is used as the run
+    identifier in automationDetails so CI tools can distinguish targets.
+    The combined SARIF is written to output_dir/combined.sarif.
+    """
+    runs: list[dict] = []
+    for name, result in named_results:
+        sarif = _build_sarif(result)
+        run = sarif["runs"][0]
+        run["automationDetails"] = {"id": name}
+        runs.append(run)
+
+    combined = {
+        "$schema": (
+            "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/"
+            "master/Schemata/sarif-schema-2.1.0.json"
+        ),
+        "version": "2.1.0",
+        "runs": runs,
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "combined.sarif"
+    path.write_text(json.dumps(combined, indent=2), encoding="utf-8")
+    return path
+
+
 def _build_sarif(result: ScanResult) -> dict:
     # Collect unique rules, preserving insertion order (one rule per OWASP category)
     rules_seen: dict[str, dict] = {}

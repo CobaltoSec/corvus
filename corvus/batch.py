@@ -35,8 +35,9 @@ def _filtered_exception_handler(loop: asyncio.AbstractEventLoop, context: dict) 
 
 import yaml
 
-from .core.models import Severity
+from .core.models import Severity, ScanResult
 from .core.session import ScanSession
+from .scoring import compute_risk_score
 from .discovery.enumerator import MCPEnumerator
 from .modules.dynamic.batch_dos import BatchDosModule
 from .modules.dynamic.elicitation_probe import ElicitationProbeModule
@@ -104,26 +105,29 @@ class BatchResult:
     def __init__(self):
         self.targets: list[dict[str, Any]] = []
 
-    def add(self, name: str, transport: str, finding_count: dict[str, int]) -> None:
+    def add(self, name: str, transport: str, finding_count: dict[str, int], risk_score: int | None = None) -> None:
         self.targets.append({
             "name": name,
             "transport": transport,
             "finding_count": finding_count,
+            "risk_score": risk_score,
         })
 
     def summary_md(self) -> str:
         lines = ["# Corvus Batch Scan Summary", ""]
-        lines.append("| Target | CRITICAL | HIGH | MEDIUM | LOW | INFO | Total |")
-        lines.append("|--------|----------|------|--------|-----|------|-------|")
+        lines.append("| Target | CRITICAL | HIGH | MEDIUM | LOW | INFO | Total | Score |")
+        lines.append("|--------|----------|------|--------|-----|------|-------|-------|")
         for t in self.targets:
             fc = t["finding_count"]
             if "error" in fc:
-                lines.append(f"| {t['name']} | ERROR | — | — | — | — | — |")
+                lines.append(f"| {t['name']} | ERROR | — | — | — | — | — | — |")
                 continue
             if "skipped" in fc:
-                lines.append(f"| {t['name']} | SKIP | — | — | — | — | — |")
+                lines.append(f"| {t['name']} | SKIP | — | — | — | — | — | — |")
                 continue
             total = sum(fc.values())
+            score = t.get("risk_score")
+            score_str = f"{score}/100" if score is not None else "—"
             lines.append(
                 f"| {t['name']} "
                 f"| {fc.get('critical', 0)} "
@@ -131,7 +135,8 @@ class BatchResult:
                 f"| {fc.get('medium', 0)} "
                 f"| {fc.get('low', 0)} "
                 f"| {fc.get('info', 0)} "
-                f"| {total} |"
+                f"| {total} "
+                f"| {score_str} |"
             )
         return "\n".join(lines)
 
@@ -193,12 +198,12 @@ async def _scan_one(
     sarif: bool,
     sem: asyncio.Semaphore,
     skip_existing: bool,
-) -> tuple[str, str, dict]:
-    """Scan one target under the concurrency semaphore. Returns (name, transport, result_dict)."""
+) -> tuple[str, str, dict, int | None, ScanResult | None]:
+    """Scan one target. Returns (name, transport, finding_count, risk_score, scan_result)."""
     target_dir = output_dir / target.name
 
     if skip_existing and (target_dir / "report.json").exists():
-        return target.name, target.transport, {"skipped": True}
+        return target.name, target.transport, {"skipped": True}, None, None
 
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -233,9 +238,10 @@ async def _scan_one(
                     if sarif:
                         gen.write_sarif(scan_result)
 
-                    return target.name, target.transport, scan_result.finding_count
+                    risk_score = compute_risk_score(scan_result.findings)
+                    return target.name, target.transport, scan_result.finding_count, risk_score, scan_result
         except Exception as e:
-            return target.name, target.transport, {"error": str(e)}
+            return target.name, target.transport, {"error": str(e)}, None, None
 
 
 async def run_batch(
@@ -267,10 +273,18 @@ async def run_batch(
         for target in targets
     ]
 
-    results = await asyncio.gather(*coros)
+    gathered = await asyncio.gather(*coros)
 
     batch_result = BatchResult()
-    for name, transport, finding_count in results:
-        batch_result.add(name, transport, finding_count)
+    named_scans: list[tuple[str, ScanResult]] = []
+
+    for name, transport, finding_count, risk_score, scan_result in gathered:
+        batch_result.add(name, transport, finding_count, risk_score=risk_score)
+        if scan_result is not None:
+            named_scans.append((name, scan_result))
+
+    if sarif and named_scans:
+        from .reporting.report import write_combined_sarif
+        write_combined_sarif(named_scans, output_dir)
 
     return batch_result

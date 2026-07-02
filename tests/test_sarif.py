@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from corvus.core.models import Finding, MCPSurface, OWASPCategory, ScanResult, Severity
-from corvus.reporting.report import ReportGenerator
+from corvus.reporting.report import ReportGenerator, write_combined_sarif
 
 
 def _minimal_result() -> ScanResult:
@@ -118,3 +118,52 @@ def test_sarif_invocations(tmp_path: Path) -> None:
     invocations = data["runs"][0].get("invocations", [])
     assert invocations
     assert invocations[0]["executionSuccessful"] is True
+
+
+def test_write_combined_sarif_multiple_targets(tmp_path: Path) -> None:
+    r1 = _minimal_result()
+    r2 = ScanResult(
+        target="server-b",
+        transport="http",
+        surface=MCPSurface(server_name="server-b"),
+        findings=[
+            Finding(
+                owasp_category=OWASPCategory.EXT04_SSRF,
+                severity=Severity.HIGH,
+                title="SSRF found",
+                description="SSRF in resource fetch.",
+                remediation="Validate URLs.",
+            )
+        ],
+        modules_run=["ssrf"],
+    )
+
+    path = write_combined_sarif([("server-a", r1), ("server-b", r2)], tmp_path)
+    assert path.name == "combined.sarif"
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["version"] == "2.1.0"
+    assert len(data["runs"]) == 2
+
+
+def test_write_combined_sarif_tags_targets(tmp_path: Path) -> None:
+    r1 = _minimal_result()
+    r2 = ScanResult(
+        target="another-server",
+        transport="stdio",
+        surface=MCPSurface(),
+        findings=[],
+        modules_run=[],
+    )
+
+    path = write_combined_sarif([("alpha", r1), ("beta", r2)], tmp_path)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    ids = {run.get("automationDetails", {}).get("id") for run in data["runs"]}
+    assert "alpha" in ids
+    assert "beta" in ids
+
+
+def test_write_combined_sarif_single_target(tmp_path: Path) -> None:
+    path = write_combined_sarif([("only", _minimal_result())], tmp_path)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert len(data["runs"]) == 1

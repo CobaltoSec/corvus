@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class RawExchange(BaseModel):
@@ -52,6 +52,35 @@ class OWASPCategory(str, Enum):
     EXT14_CANCELLATION_RACE     = "EXT14"  # notifications/cancelled race condition
 
 
+_CVSS_VECTORS: dict[str, str] = {
+    # OWASP MCP Top 10
+    "MCP01": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",   # Token Exposure — confidentiality impact, scope change
+    "MCP02": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N",   # Scope Creep — priv escalation
+    "MCP03": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N",   # Tool Poisoning — user-triggered
+    "MCP04": "AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H",   # Supply Chain — complex, deep impact
+    "MCP05": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",   # Command Injection — full RCE
+    "MCP06": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",   # Rug Pull — intent subversion
+    "MCP07": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",   # Auth Bypass — unauthorized access
+    "MCP08": "AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",   # Lack of Audit — security gap
+    "MCP09": "AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N",   # Shadow Server — covert channel
+    "MCP10": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",   # Context Injection
+    # Extensions
+    "EXT01": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N",   # Schema Bypass — input validation bypass
+    "EXT02": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",   # Schema Audit — weak schema definition
+    "EXT03": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N",   # Shadow Tool — hidden functionality
+    "EXT04": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",   # SSRF — internal network access
+    "EXT05": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",   # Resource URI — path traversal / exposure
+    "EXT06": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N",   # Tool Chaining — cross-tool escalation
+    "EXT08": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",   # Sampling Injection — LLM hijack
+    "EXT09": "AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",   # Elicitation Phishing — credential harvest
+    "EXT10": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",   # Completion Probe — autocomplete enumeration
+    "EXT11": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",   # Log Level Abuse — verbose logging
+    "EXT12": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",   # Prompt Template Injection
+    "EXT13": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",   # Cursor IDOR — pagination abuse
+    "EXT14": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L",   # Cancellation Race — race condition
+}
+
+
 class ToolSpec(BaseModel):
     name: str
     description: str = ""
@@ -93,6 +122,13 @@ class Finding(BaseModel):
     remediation: str = ""
     exploitation_confirmed: bool = False
     confidence: int = 50  # 0-100; how confident we are this is a real finding
+    cvss_vector: str | None = None  # CVSS v3.1 base vector; auto-populated from owasp_category if not set
+
+    @model_validator(mode="after")
+    def _populate_cvss(self) -> "Finding":
+        if self.cvss_vector is None:
+            self.cvss_vector = _CVSS_VECTORS.get(self.owasp_category.value)
+        return self
 
 
 class ScanResult(BaseModel):

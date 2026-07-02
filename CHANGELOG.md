@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-V30] — 2026-07-02 — Risk Score en batch + CVSS v3.1 + combined SARIF
+
+- **Risk Score en batch summary** — `BatchResult.summary_md()` agrega columna `Score (N/100)` usando `compute_risk_score()` por target. `_scan_one()` computa el score y lo propaga a `BatchResult.add(risk_score=...)`.
+- **CVSS v3.1 por finding type** — `_CVSS_VECTORS` (23 entradas, una por `OWASPCategory`) en `models.py`. Campo `cvss_vector: str | None` en `Finding` con `model_validator(mode="after")` que auto-popula desde el map si no se setea explícitamente. Override manual soportado. Persiste en JSON.
+- **Batch SARIF agregado** — `write_combined_sarif(named_results, output_dir)` en `report.py`: genera `combined.sarif` con un `run[]` por target (SARIF 2.1.0 multi-run). Cada run lleva `automationDetails.id = nombre_target` (de la YAML, no el cmd). Escrito automáticamente en `run_batch()` cuando `sarif=True`. CLI batch imprime path. Apto para GitHub Code Scanning.
+- **Tests** — 13 nuevos: `tests/test_cvss.py` (7 nuevos), `test_sarif.py` (+4), `test_batch.py` (+3). Suite: **667/667 pass**.
+
 ## [RT-CORVUS-V29] — 2026-07-01 — CLI + Reporting: init/report/score/delay/env/HTML
 
 - **`corvus init`** — genera `corvus.toml` skeleton con todos los campos comentados (transport/cmd/url/modules/timeout/sarif/fail_on/min_confidence/delay/env/headers/plugin_dirs). Falla si el archivo ya existe.

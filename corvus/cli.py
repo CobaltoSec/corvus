@@ -450,6 +450,10 @@ async def _batch(
 
     console.print(result.summary_md())
     console.print(f"\nSummary: {summary_path}")
+    if sarif:
+        combined_path = output_dir / "combined.sarif"
+        if combined_path.exists():
+            console.print(f"SARIF   : {combined_path}")
 
     if fail_on:
         try:
