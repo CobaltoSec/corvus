@@ -171,6 +171,9 @@ PVR = Private Vulnerability Reporting. Si está deshabilitado → crear en Cobal
 | GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | MEDIUM | draft           | pendiente       |
 | GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH     | draft           | pendiente       |
 | GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM   | **published** ✅ | 2026-07-02      |
-| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | HIGH     | draft           | pendiente       |
+| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL** | draft — updated 2026-07-02 (LFI+SSRF) | 2026-07-29 |
 | GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH     | **published** ✅ | 2026-07-02      |
 | GHSA-3f55-qgq4-f88c   | @modelcontextprotocol/server-sequential-thinking | MEDIUM | **published** ✅ | 2026-07-02 |
+| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH     | draft 2026-07-02 | pendiente       |
+| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH     | draft 2026-07-02 | pendiente       |
+| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH     | draft 2026-07-02 | pendiente       |
