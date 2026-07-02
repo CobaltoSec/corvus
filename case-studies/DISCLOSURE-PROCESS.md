@@ -23,12 +23,27 @@
 
 ## Requisitos
 
-Token GitHub con scopes `repo` + `security_events`.
+Token GitHub (PAT clásico) con scopes: **`repo`** + **`notifications`** + **`write:discussion`**  
+(`security_events` queda incluido como sub-scope de `repo`)
 
 ```powershell
 $env:GITHUB_TOKEN = "ghp_..."
-gh auth status  # verificar: Token scopes: 'repo', 'security_events'
+gh api user --include 2>&1 | Select-String "X-Oauth-Scopes"
+# Esperado: notifications, repo, write:discussion
 ```
+
+### Límites de la API (no solucionables con más scopes)
+
+| Acción | Posible via API |
+|--------|----------------|
+| Crear / actualizar / publicar GHSA | ✅ |
+| Listar advisories + estado | ✅ |
+| Invitar collaborator (solo draft, mismo repo) | ✅ |
+| Invitar collaborator cross-repo | ❌ 404 siempre |
+| Comentar en un advisory | ❌ No existe endpoint |
+| Detectar respuestas de maintainers via notificaciones | ❌ Advisory comments no generan notificaciones API |
+
+**Seguimiento de respuestas:** manual. Revisar el advisory web UI o esperar email de GitHub. No hay forma de automatizarlo.
 
 ---
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-DISC-01] — 2026-07-02 — Disclosure operations + auditoría advisory portfolio
+
+- **GHSA-43j9-hmpq-cgv7 reclassificado** — remnux-mcp-server: CRITICAL→MEDIUM. Mantenedor (lennyzeltser) confirmó que `run_tool` es by-design. El finding real era HTTP transport sin auth, fixeado en v0.1.53. CWE-78→CWE-306, summary actualizado, publicado.
+- **DISCLOSURE-PROCESS.md creado** — playbook completo de disclosure desde Corvus: scripts PowerShell para crear/actualizar/publicar GHSAs via API, tablas CWE/severity mapping, maintainers conocidos, límites de la API (comments no accesibles, notifications no detectan respuestas de advisory).
+- **DISCLOSURE-BATCH2-PROMPT.md creado** — mini prompt listo para sesión de disclosure de F86/F87/F89/F90.
+- **Auditoría portfolio completo (20 advisories)** — 6 fixes aplicados: duplicado GHSA-mc5c cerrado, CWE-89 en 2 SQL injection (era CWE-95), CWE-306 en auth bypass sin CWE, CWE-522 en token exposure, summary limpiado (removido prefijo "CRITICAL" redundante).
+- **Scopes PAT documentados** — `repo` + `notifications` + `write:discussion`. `security_events` incluido como sub-scope de `repo`. Comments en advisories: no existe endpoint REST con ningún scope.
+
 ## [RT-CORVUS-CS01-RESCAN] — 2026-07-02 — CS01 re-scan v1.0.1 + GHSAs #7+#8
 
 - **Re-scan CS01 completo** — 20 targets con los 34 módulos de v1.0.1 (incluyendo osv-supply-chain, proto_fuzz v2, rug_pull v2, completion/logging/prompts/cursor/cancellation-probe).
