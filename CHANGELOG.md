@@ -1,5 +1,17 @@
 # Changelog
 
+## [RT-CORVUS-CS02-RESCAN] — 2026-07-02 — CS02 re-scan v1.0.1 + curación + disclosure
+
+- **Re-scan CS02 completo** — 28/29 targets con 34 módulos v1.0.1 (1 skip-env: mysql-mcp-server). 421 findings brutos (4C 61H 147M 181L 28I).
+- **Curación cuarta pasada F52-F69** — 18 nuevos TPs. Stats CS02: ~51 TP / ~13 FP (FP rate ~20.3%). Nuevos clusters: EXT01 batch_dos (codeloop, upg), LFI CRITICAL (myclaw), injection en nationalparks/pubmed/spartan/javadc/malicious/mysql.
+- **4 GHSAs operados:**
+  - GHSA-qwwj-38wj-ffvw (myclaw-toolkit) → HIGH→**CRITICAL**, agrega LFI via `file://` en `read_page.url` (lee `/etc/passwd` real), CWE-918+CWE-22.
+  - GHSA-rqqc-2cx5-vp44 (mcp-server-nationalparks) — 🆕 HIGH, injection `findParks.stateCode`, 13,831/wk.
+  - GHSA-m2x9-5c27-vvc3 (@cyanheads/pubmed-mcp-server) — 🆕 HIGH, injection 3 params API, 3,385/wk.
+  - GHSA-m6h2-xr6q-9m7p (@idachev/mcp-javadc) — 🆕 HIGH, injection `classFilePath` + `packageName`, CWE-77+CWE-22.
+- **Invite collaborators corregido** — endpoint correcto: `PATCH /security-advisories/{ghsa}` con `collaborating_users` (no `PUT /collaborators` que da 404). KyrieTangSheng/cyanheads/idachev/Dusheh invitados. 4/4 ✅.
+- **DISCLOSURE-PROCESS.md** — flujo bash completo copy-paste (crear+invitar en un bloque), tabla errores comunes, tabla maintainers actualizada (9 entries), CWE-22 agregado. Portfolio total: **11 GHSAs** (4 published, 7 draft).
+
 ## [RT-CORVUS-DISC-01] — 2026-07-02 — Disclosure operations + auditoría advisory portfolio
 
 - **GHSA-43j9-hmpq-cgv7 reclassificado** — remnux-mcp-server: CRITICAL→MEDIUM. Mantenedor (lennyzeltser) confirmó que `run_tool` es by-design. El finding real era HTTP transport sin auth, fixeado en v0.1.53. CWE-78→CWE-306, summary actualizado, publicado.
