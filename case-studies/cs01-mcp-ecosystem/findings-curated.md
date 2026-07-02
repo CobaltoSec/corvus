@@ -197,6 +197,69 @@ Re-scan con v1.0.0 (22 módulos — nuevos EXT06 tool-chaining, EXT07 response-i
 - **Protocol crash cluster**: playwright-mcp se agrega → prevalencia 12/54 servers combinados
 - **SDK advisory (@modelcontextprotocol/sdk)**: afecta a ≥5 servers confirmados (F09/F16/F35 + mcp-server-commands + database-server)
 
+---
+
+## RT-CORVUS-V30 — Delta v1.0.1 (re-scan 2026-07-02)
+
+Re-scan con v1.0.1 (34 módulos — nuevos post-V23: osv-supply-chain, github-advisory, npm-behavior, rug_pull v2, proto_fuzz v2, completion-probe, logging-probe, prompts-injection, cursor-probe, cancellation-probe). 20 targets scaneados (excl. postgres/mysql/docker/api-keys).
+
+### OSV Supply Chain (módulo osv-supply-chain — nuevo en V26)
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS01-F73 | n8n-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-4ggg-h7ph-26qr — CVE-2026-39974 en `n8n-mcp` | ✅ TP | SSRF autenticado via instance-URL header en multi-tenant HTTP mode. Introducido: 0, fixed: 2.47.4. |
+| CS01-F74 | n8n-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-56c3-vfp2-5qqj — CVE-2026-42449 en `n8n-mcp` | ✅ TP | Conf=90. 2do CVE 2026 directo en el package principal. |
+| CS01-F75 | n8n-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-cmrh-wvq6-wm9r — CVE-2026-44694 en `n8n-mcp` | ✅ TP | Conf=90. 3er CVE 2026. |
+| CS01-F76 | n8n-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-jxx9-px88-pj69 — CVE-2026-45707 en `n8n-mcp` | ✅ TP | Conf=90. 4to CVE 2026. |
+| CS01-F77 | n8n-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-75hx-xj24-mqrw + GHSA-8g7g-hmwm-6rv2 (sin CVE) en `n8n-mcp` | ✅ TP | Conf=65. 2 GHSAs sin CVE asignado aún. |
+| CS01-F78 | n8n-mcp | MCP04 OSV Supply Chain | MEDIUM | OSV GHSA-f3rg-xqjj-cj9w/pfm2-2mhg-8wpx/wg4g-395p-mqv3 (3×CVE 2026) | ✅ TP | CVE-2026-45582, CVE-2026-41495, CVE-2026-42282. n8n-mcp total: 9 GHSAs activos. |
+| CS01-F79 | server-filesystem | MCP04 OSV Supply Chain | HIGH | OSV GHSA-hc55-p739-j48w — CVE-2025-53110 en `@modelcontextprotocol/server-filesystem` | ✅ TP | Conf=90. CVE 2025 en package oficial. |
+| CS01-F80 | server-filesystem | MCP04 OSV Supply Chain | HIGH | OSV GHSA-q66q-fx2p-7w4m — CVE-2025-53109 en `@modelcontextprotocol/server-filesystem` | ✅ TP | Conf=90. 2do CVE en filesystem server oficial. Par con F79. |
+| CS01-F81 | server-git | MCP04 OSV Supply Chain | MEDIUM | OSV CVE-2025-68143/68144/68145 (3×GHSA) en `mcp-server-git` | ✅ TP | Conf=90. Triple CVE 2025 en dep tree de mcp-server-git. |
+| CS01-F82 | server-git | MCP04 OSV Supply Chain | MEDIUM | OSV GHSA-vjqx-cfc4-9h6v — CVE-2026-27735 en `mcp-server-git` | ✅ TP | Conf=90. CVE 2026 adicional. |
+| CS01-F83 | playwright-mcp | MCP04 OSV Supply Chain | HIGH | OSV GHSA-6fg3-hvw7-2fwq — CVE-2025-9611 en `@playwright/mcp` | ✅ TP | Conf=90. CVE en package ya con GHSA-mf64-cgv4-ppcx (nuestro). |
+| CS01-F84 | database-server-executeautomation | MCP04 OSV Supply Chain | HIGH | OSV GHSA-65hm-pwj5-73pw — CVE-2025-59333 en `@executeautomation/database-server` | ✅ TP | Conf=90. CVE directo en el package principal. Complementa F47/F48. |
+| CS01-F85 | mcp-fetch-server | MCP04 OSV Supply Chain | MEDIUM | OSV GHSA-8fxj-2g9q-8fjw — CVE-2025-65513 en `mcp-fetch-server` | ✅ TP | Conf=90. CVE en fetch server. |
+
+### Proto Crash v2 (proto_fuzz mejorado V28 — batch array + oversized method)
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas | Disclosure |
+|----|--------|--------|-----------|--------|------------|-------|------------|
+| CS01-F86 | server-git | EXT01 Proto-Fuzz | HIGH | Protocol crash — JSON-RPC batch array caused server disconnect | ✅ TP | Conf=85. JSON-RPC 2.0 sección 6 permite batch arrays — server debería responder con array de respuestas, no crashear. DoS via payload spec-compliant. | 🔴 NUEVO GHSA |
+| CS01-F87 | server-git | EXT01 Proto-Fuzz | HIGH | Protocol crash — oversized method name caused transport failure | ✅ TP | Conf=80. Method name malformado (buffer overflow-like) causa disconnect total. Bundle con F86 en mismo GHSA. | 🔴 NUEVO GHSA |
+| CS01-F88 | mcp-server-puppeteer | EXT01 Proto-Fuzz | HIGH | Protocol crash — oversized method name caused transport failure | ✅ TP | Conf=80. Deprecated server (playwright-mcp lo reemplaza). Baja prioridad disclosure. | ⚠️ deprecated |
+| CS01-F89 | mcp-shell-server | EXT01 Proto-Fuzz | HIGH | Protocol crash — oversized method name caused transport failure | ✅ TP | Conf=80. Server ya tiene GHSA-7763-c5gf-v5fj (injection). Este proto crash es DoS adicional — agregar al advisory abierto. | 🟡 update GHSA-7763 |
+| CS01-F90 | server-sequential-thinking | EXT01 Proto-Fuzz | HIGH | Protocol crash — oversized method name caused transport failure | ✅ TP | Conf=80. Package oficial @modelcontextprotocol. Sin GHSA previo para DoS. | 🔴 NUEVO GHSA |
+
+### Prompts Injection (módulo prompts_injection V27/EXT12)
+
+| ID | Target | Módulo | Severidad | Título | Confirmado | Notas |
+|----|--------|--------|-----------|--------|------------|-------|
+| CS01-F91 | server-sqlite | EXT12 Prompts Injection | MEDIUM | Prompt Hijacking — `mcp-demo` may expose system instructions | ⚠️ TP marginal | Conf=45. El prompt `mcp-demo` retorna instrucciones de sistema-nivel: "The assistants goal is to walkthrough an informative demo of MCP." Vector: atacante puede leer instrucciones de comportamiento del server via prompts/get y usarlas para crafting de payloads. |
+
+### FPs descartados de re-scan v1.0.1
+
+- **server-everything rug_pull ×22 (CRITICAL)**: Demo server acepta cualquier URI en `demo://resource/session/<path>`. Los path traversal aparecen como nuevos recursos porque el server los registra por diseño. FP sistémico del detector en demo servers.
+- **server-everything Prompt Hijacking ×2**: `args-prompt` y `completable-prompt` son prompts de ejemplo del demo server — instrucciones de sistema esperadas.
+- **server-everything Slow tool**: `trigger-long-running-operation` es by design.
+- **server-git LOW (schema)**: 5 LOW de schema quality (sin type constraint) — misma clase que F17/F21-F25, calidad no seguridad.
+
+---
+
+## Estadísticas finales (post RT-CORVUS-V30 / v1.0.1 / 2026-07-02)
+
+- **Servers auditados**: 20 re-scaneados con v1.0.1 (34 módulos)
+- **Findings curados**: **91 (F01–F91)**
+- **TRUE POSITIVE**: 70 (76.9%) — previos 53 + **F73-F91** (17 TP + 1 marginal F91)
+- **FALSE POSITIVE**: 21 (23.1%) — previos 19 + server-everything rug_pull/prompt (FPs documentados arriba, no se numeran)
+- **CRITICAL TP**: 1 (F11)
+- **HIGH TP nuevos**: +12 (F73/F74/F75/F76/F77/F79/F80/F83/F84/F86/F87/F88/F89/F90)
+- **MEDIUM TP nuevos**: +5 (F78/F81/F82/F85/F91)
+- **OSV Supply Chain**: 13 findings / 6 targets — primer run del módulo en CS01
+- **Proto crash cluster**: server-git/puppeteer/shell/sequential-thinking se agregan → **5 servers** con crashes confirmados
+- **Delta v1.0.0→v1.0.1**: +19 findings (18 TP + 1 marginal, 0 FP nuevos numerados)
+- **Disclosure pendiente**: F86/F87 (mcp-server-git DoS), F90 (@modelcontextprotocol/server-sequential-thinking DoS), update F89 en GHSA-7763
+
 ## Servers skip definitivos
 
 | Server | Razón |

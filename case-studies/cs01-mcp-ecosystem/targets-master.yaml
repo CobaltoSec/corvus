@@ -12,10 +12,11 @@ targets:
   - '@modelcontextprotocol/server-filesystem'
   - /tmp
   status: done
-  last_scanned: '2026-06-30'
-  findings_summary: 3H 4M
+  last_scanned: '2026-07-02'
+  findings_summary: 5H 4M 1L
+  risk_score: 80
   curation: TP
-  notes: Shadow tool pattern — read_file/write_file/edit_file shadows well-known built-ins
+  notes: Shadow tool pattern + 2 CVEs nuevos OSV (CVE-2025-53110/53109). F79/F80.
 - name: server-memory
   tier: A
   transport: stdio
@@ -36,11 +37,12 @@ targets:
   - -y
   - '@modelcontextprotocol/server-sequential-thinking'
   status: done
-  last_scanned: '2026-06-30'
-  findings_summary: 1H 1M
-  curation: FP
-  notes: Server stateful by design — rug-pull FP, tool-poisoning FP (desc larga es
-    el protocolo)
+  last_scanned: '2026-07-02'
+  findings_summary: 1H 2M 1L
+  risk_score: 20
+  curation: partial
+  notes: 'Rug-pull/tool-poisoning FP (by design). Re-scan v1.0.1: F90 — proto crash
+    oversized method HIGH (DISCLOSURE CANDIDATE, package oficial @modelcontextprotocol).'
 - name: server-everything
   tier: A
   transport: stdio
@@ -90,12 +92,13 @@ targets:
   - --repository
   - C:/Temp/testrepo
   status: done
-  last_scanned: '2026-06-30'
-  findings_summary: 2M 5L
-  curation: FP
-  notes: 'Python/uvx mcp-server-git 1.28.0. 12 tools. Clean — sin cmd injection, supply
-    chain, shadow tools. 5 LOW parámetros sin type constraint (calidad, no seguridad).
-    Correcto: C:/Temp/testrepo (no /tmp en Windows).'
+  last_scanned: '2026-07-02'
+  findings_summary: 2H 5M 6L
+  risk_score: 51
+  curation: partial
+  notes: 'Python/uvx mcp-server-git. Re-scan v1.0.1: 2H proto crash (F86/F87 — batch
+    array + oversized method, DISCLOSURE CANDIDATE nuevo GHSA). 4M OSV CVEs (F81/F82
+    — CVE-2025-68143/44/45 + CVE-2026-27735). 5L schema quality.'
 - name: server-postgres
   tier: A
   transport: stdio
@@ -223,13 +226,12 @@ targets:
   - -y
   - '@playwright/mcp'
   status: done
-  last_scanned: '2026-07-01'
-  findings_summary: 8H 3M 7L 4I
+  last_scanned: '2026-07-02'
+  findings_summary: 6H 4M 8L 4I
+  risk_score: 94
   curation: done
-  notes: 'Microsoft Playwright 1.61.0-alpha. F33/F34: path traversal filename params.
-    F14: SSRF manual. v1.0.0 delta: F63 (unsafe exec), F64 (evaluate.function), F65
-    (network_request singular), F66 (SSRF auto), F67 (proto-crash). Schema bypass
-    ×7 FP (permissive browser automation schema).'
+  notes: 'F33/F34/F63-F67 previos. Re-scan v1.0.1: F83 — CVE-2025-9611 via OSV (HIGH).
+    Schema bypass FP cluster. Score 94/100.'
 - name: npm-search-mcp-server
   tier: B
   transport: stdio
@@ -250,10 +252,11 @@ targets:
   - -y
   - n8n-mcp
   status: done
-  notes: 'F18: tools_documentation.topic reflection TP (prompt injection). F59: search_nodes
-    response flooding TP (v0.9.0). 6L schema bypass + 1M schema. 2H curados.'
-  last_scanned: '2026-06-30'
-  findings_summary: 2H 3M 6L
+  notes: 'F18/F59 previos. Re-scan v1.0.1: 9 GHSAs OSV activos (F73-F78) — 6H+3M
+    incluyendo SSRF CVE-2026-39974. Score 100/100. Server más vulnerable del dataset.'
+  last_scanned: '2026-07-02'
+  findings_summary: 8H 6M 7L
+  risk_score: 100
   curation: TP
 - name: shell-command-mcp
   tier: B

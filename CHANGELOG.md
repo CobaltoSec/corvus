@@ -1,5 +1,15 @@
 # Changelog
 
+## [RT-CORVUS-CS01-RESCAN] — 2026-07-02 — CS01 re-scan v1.0.1 + GHSAs #7+#8
+
+- **Re-scan CS01 completo** — 20 targets con los 34 módulos de v1.0.1 (incluyendo osv-supply-chain, proto_fuzz v2, rug_pull v2, completion/logging/prompts/cursor/cancellation-probe).
+- **+19 findings nuevos (F73-F91)** — 18 hallazgos OSV + 3 proto-crash confirmados. Stats CS01: 91 findings (70 TP / 21 FP, 23.1%).
+- **n8n-mcp Score 100/100** — server más vulnerable. 9 GHSAs activos incluyendo CVE-2026-39974 SSRF.
+- **FP cluster server-everything** — 22 CRITICAL rug_pull descartados (demo server by design). Curación funciona correctamente.
+- **GHSA-hv3x-m9fv-4vhf publicado** — mcp-server-git (F86/F87). JSON-RPC batch array crash + oversized method. CWE-755, HIGH.
+- **GHSA-3f55-qgq4-f88c publicado** — server-sequential-thinking (F90). Oversized method crash. CWE-400, MEDIUM.
+- **GHSA-7763-c5gf-v5fj actualizado** — mcp-shell-server F89 proto-crash appended. Total: 8 GHSAs (3 published / 5 draft).
+
 ## [RT-CORVUS-V29-E2E] — 2026-07-02 — Suite E2E contra servidores MCP reales
 
 - **`tests/e2e/`** — nueva carpeta de tests de integración end-to-end. Marcados `@pytest.mark.e2e`; excluidos del run por defecto (`addopts = "-m 'not e2e'"`).

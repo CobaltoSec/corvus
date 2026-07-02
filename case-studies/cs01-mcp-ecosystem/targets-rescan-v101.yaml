@@ -1,0 +1,167 @@
+meta:
+  case_study: CS01
+  description: OWASP MCP Ecosystem Audit — CS01 re-scan v1.0.1 (2026-07-02)
+  corvus_version: 1.0.1
+  notes: Re-scan con 34 módulos (incluye V27+V28 nuevos). Excluye targets que requieren infra externa (postgres/mysql/docker/api-keys).
+targets:
+- name: server-filesystem
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-filesystem'
+  - /tmp
+
+- name: server-memory
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-memory'
+
+- name: server-sequential-thinking
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-sequential-thinking'
+
+- name: server-everything
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-everything'
+
+- name: server-github
+  tier: A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-github'
+
+- name: server-git
+  tier: A
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-git
+  - --repository
+  - C:/Temp/testrepo
+
+- name: server-sqlite
+  tier: A
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-sqlite
+  - --db-path
+  - C:\Temp\test.db
+
+- name: mcp-server-fetch
+  tier: B
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-fetch
+
+- name: mcp-server-puppeteer
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-puppeteer'
+
+- name: playwright-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@playwright/mcp'
+
+- name: npm-search-mcp-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - npm-search-mcp-server
+
+- name: n8n-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - n8n-mcp
+
+- name: shell-command-mcp
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - shell-command-mcp
+
+- name: mcp-fetch-server
+  tier: B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-fetch-server
+
+- name: mcp-server-commands
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-commands
+
+- name: super-shell-mcp
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - super-shell-mcp
+
+- name: mcp-shell-server
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mako10k/mcp-shell-server'
+
+- name: mcp-server-time
+  tier: C
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-time
+
+- name: mcp-homescan
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-homescan
+
+- name: database-server-executeautomation
+  tier: C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@executeautomation/database-server'
+  - C:/Temp/test.db
