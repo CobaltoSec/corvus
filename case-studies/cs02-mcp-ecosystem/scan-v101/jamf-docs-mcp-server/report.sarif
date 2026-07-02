@@ -1,0 +1,378 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP03",
+              "name": "MCP03",
+              "shortDescription": {
+                "text": "MCP03"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT06",
+              "name": "EXT06",
+              "shortDescription": {
+                "text": "EXT06"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP10",
+              "name": "MCP10",
+              "shortDescription": {
+                "text": "MCP10"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP07",
+              "name": "MCP07",
+              "shortDescription": {
+                "text": "MCP07"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_list_products'. Description is 1108 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_list_products",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_search'. Description is 3094 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_search",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_get_article'. Description is 2159 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_get_article",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_get_toc'. Description is 1666 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_get_toc",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_glossary_lookup'. Description is 1557 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_glossary_lookup",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP03",
+          "level": "warning",
+          "message": {
+            "text": "Excessive description length in 'jamf_docs_batch_get_articles'. Description is 1263 chars (limit 1000). May contain hidden content."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_batch_get_articles",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT06",
+          "level": "error",
+          "message": {
+            "text": "Tool Chaining \u2014 'jamf_docs_search' directs LLM to call jamf_docs_list_products. Tool 'jamf_docs_search' description references tool(s) 'jamf_docs_list_products' from the same server using compliance/policy language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_search",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'jamf_docs_search.query'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: sql)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_search",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'jamf_docs_glossary_lookup.term'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: generic_string)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_glossary_lookup",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'jamf_docs_search' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_search",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'jamf_docs_glossary_lookup' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_glossary_lookup",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "warning",
+          "message": {
+            "text": "Prompt Hijacking \u2014 'jamf_troubleshoot' may expose system instructions. prompts/get for 'jamf_troubleshoot' returned content consistent with a system prompt leak or instruction override in response to a hijack payload."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "warning",
+          "message": {
+            "text": "Prompt Hijacking \u2014 'jamf_setup_guide' may expose system instructions. prompts/get for 'jamf_setup_guide' returned content consistent with a system prompt leak or instruction override in response to a hijack payload."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "warning",
+          "message": {
+            "text": "Prompt Hijacking \u2014 'jamf_compare_versions' may expose system instructions. prompts/get for 'jamf_compare_versions' returned content consistent with a system prompt leak or instruction override in response to a hijack payload."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Hidden param accepted \u2014 'jamf_docs_get_article' responds differently to _debug. Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 56 \u2192 234 chars"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_get_article",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Hidden param accepted \u2014 'jamf_docs_batch_get_articles' responds differently to _debug. Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 277 \u2192 417 chars"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "jamf_docs_batch_get_articles",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP07",
+          "level": "warning",
+          "message": {
+            "text": "initialize accepts protocol version downgrade. The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Null request ID accepted \u2014 JSON-RPC spec violation. The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

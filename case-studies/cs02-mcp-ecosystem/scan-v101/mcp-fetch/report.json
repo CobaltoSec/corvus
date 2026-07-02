@@ -1,0 +1,522 @@
+{
+  "target": "npx -y @kazuph/mcp-fetch",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-fetch",
+    "server_version": "1.6.2",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "imageFetch",
+        "description": "\n画像取得に強いMCPフェッチツール。記事本文をMarkdown化し、ページ内の画像を抽出・最適化して返します。\n\n新APIの既定（imagesを指定した場合）\n- 画像: 取得してBASE64で返却（最大3枚を縦結合した1枚JPEG）\n- 保存: しない（オプトイン）\n- クロスオリジン: 許可（CDN想定）\n\nパラメータ（新API）\n- url: 取得先URL（必須）\n- images: true | { output, layout, maxCount, startIndex, size, originPolicy, saveDir }\n  - output: \"base64\" | \"file\" | \"both\"（既定: base64）\n  - layout: \"merged\" | \"individual\" | \"both\"（既定: merged）\n  - maxCount/startIndex（既定: 3 / 0）\n  - size: { maxWidth, maxHeight, quality }（既定: 1000/1600/80）\n  - originPolicy: \"cross-origin\" | \"same-origin\"（既定: cross-origin）\n- text: { maxLength, startIndex, raw }（既定: 20000/0/false）\n- security: { ignoreRobotsTxt }（既定: false）\n\n旧APIキー（enableFetchImages, returnBase64, saveImages, imageMax*, imageStartIndex 等）は後方互換のため引き続き受け付けます（非推奨）。\n\nExamples（新API）\n{\n  \"url\": \"https://example.com\",\n  \"images\": true\n}\n\n{\n  \"url\": \"https://example.com\",\n  \"images\": { \"output\": \"both\", \"layout\": \"both\", \"maxCount\": 4 }\n}\n\nExamples（旧API互換）\n{\n  \"url\": \"https://example.com\",\n  \"enableFetchImages\": true,\n  \"returnBase64\": true,\n  \"imageMaxCount\": 2\n}",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "maxLength": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1000000
+                }
+              ],
+              "default": 20000
+            },
+            "startIndex": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0
+                }
+              ],
+              "default": 0
+            },
+            "imageStartIndex": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0
+                }
+              ],
+              "default": 0
+            },
+            "raw": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "imageMaxCount": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              ],
+              "default": 3
+            },
+            "imageMaxHeight": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 100,
+                  "maximum": 10000
+                }
+              ],
+              "default": 4000
+            },
+            "imageMaxWidth": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 100,
+                  "maximum": 10000
+                }
+              ],
+              "default": 1000
+            },
+            "imageQuality": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              ],
+              "default": 80
+            },
+            "enableFetchImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "allowCrossOriginImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": true
+            },
+            "ignoreRobotsTxt": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "saveImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": true
+            },
+            "returnBase64": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "images": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "output": {
+                      "type": "string",
+                      "enum": [
+                        "base64",
+                        "file",
+                        "both"
+                      ]
+                    },
+                    "layout": {
+                      "type": "string",
+                      "enum": [
+                        "merged",
+                        "individual",
+                        "both"
+                      ]
+                    },
+                    "maxCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "startIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "size": {
+                      "type": "object",
+                      "properties": {
+                        "maxWidth": {
+                          "type": "integer",
+                          "minimum": 100,
+                          "maximum": 10000
+                        },
+                        "maxHeight": {
+                          "type": "integer",
+                          "minimum": 100,
+                          "maximum": 10000
+                        },
+                        "quality": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 100
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "originPolicy": {
+                      "type": "string",
+                      "enum": [
+                        "cross-origin",
+                        "same-origin"
+                      ]
+                    },
+                    "saveDir": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "text": {
+              "type": "object",
+              "properties": {
+                "maxLength": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1000000
+                },
+                "startIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "raw": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "ignoreRobotsTxt": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'imageFetch'",
+      "description": "Description is 1053 chars (limit 1000). May contain hidden content.",
+      "tool_name": "imageFetch",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'imageFetch'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "imageFetch",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'maxLength' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "maxLength",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'maxLength'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'startIndex' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "startIndex",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'startIndex'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'imageStartIndex' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "imageStartIndex",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'imageStartIndex'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'imageMaxCount' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "imageMaxCount",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'imageMaxCount'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'imageMaxHeight' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "imageMaxHeight",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'imageMaxHeight'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'imageMaxWidth' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "imageMaxWidth",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'imageMaxWidth'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'imageQuality' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "imageQuality",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'imageQuality'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'images' in 'imageFetch' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "imageFetch",
+      "parameter": "images",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'images'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT04",
+      "severity": "high",
+      "title": "SSRF (timeout) — 'imageFetch.url' hung on SSRF payload",
+      "description": "Call with SSRF payload 'http://100.100.100.200/latest/meta-data/' timed out after 12.0s, suggesting the server is attempting the network request.",
+      "tool_name": "imageFetch",
+      "parameter": "url",
+      "payload": "http://100.100.100.200/latest/meta-data/",
+      "evidence": null,
+      "remediation": "Block outbound requests to RFC-1918 and link-local ranges. Use an allowlist for permitted URL schemes and hosts.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 79.54599999999846,
+  "exchanges": []
+}

@@ -1,0 +1,369 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP02",
+              "name": "MCP02",
+              "shortDescription": {
+                "text": "MCP02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP04",
+              "name": "MCP04",
+              "shortDescription": {
+                "text": "MCP04"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT03",
+              "name": "EXT03",
+              "shortDescription": {
+                "text": "EXT03"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT05",
+              "name": "EXT05",
+              "shortDescription": {
+                "text": "EXT05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP01",
+              "name": "MCP01",
+              "shortDescription": {
+                "text": "MCP01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'extract_archive' inputSchema requests credential fields. Tool 'extract_archive' inputSchema declares field(s) associated with credentials or secrets: password. This may indicate the tool harvests authentication material from the LLM caller."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "extract_archive",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'download_file' accepts write-path param (path traversal risk). Tool 'download_file' accepts a file path parameter (file_path, output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "download_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP04",
+          "level": "warning",
+          "message": {
+            "text": "Supply Chain \u2014 'uuid' has moderate vulnerability (no CVE assigned). Package 'uuid' (dependency of '@remnux/mcp-server') has a known moderate vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'run_tool' description reveals arbitrary execution intent. Tool 'run_tool' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "run_tool",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'analyze_file' description reveals arbitrary execution intent. Tool 'analyze_file' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "analyze_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT05",
+          "level": "warning",
+          "message": {
+            "text": "Resource URI \u2014 large attack surface (148 resources exposed). The server exposes 148 MCP resources (threshold: 20). A large resource surface increases the risk of accidentally exposing sensitive data and makes it harder for operators to audit what information is accessible."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "error",
+          "message": {
+            "text": "Injection reflected \u2014 'run_tool.command'. SQL error keywords detected in response \u2014 error-based SQLi confirmed (field: command)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "run_tool",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "error",
+          "message": {
+            "text": "Injection reflected \u2014 'run_tool.input_file'. Payload was reflected verbatim in the response without sanitization (field classification: command)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "run_tool",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'get_file_info'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_file_info",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'analyze_file'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "analyze_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'suggest_tools'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "suggest_tools",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'check_behavior_prerequisites'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "check_behavior_prerequisites",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'verify_string_usage'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "verify_string_usage",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "warning",
+          "message": {
+            "text": "Token Exposure \u2014 home directory path in 'compare_files'. Tool response contains home directory path."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "compare_files",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "error",
+          "message": {
+            "text": "Protocol crash \u2014 oversized method name caused transport failure. The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Protocol crash \u2014 deeply nested params caused server disconnect. Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

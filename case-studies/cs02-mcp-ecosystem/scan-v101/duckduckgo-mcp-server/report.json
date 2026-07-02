@@ -1,0 +1,228 @@
+{
+  "target": "npx -y @ericthered926/duckduckgo-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "duckduckgo-mcp-server",
+    "server_version": "0.3.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "duckduckgo_web_search",
+        "description": "Web search via DuckDuckGo. Returns max 3 results with 150-char snippets. Use 'limit' param to override (1-20). Supports region/time filters.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query (max 400 chars)",
+              "maxLength": 400
+            },
+            "limit": {
+              "type": "number",
+              "description": "Override default result limit (1-20, default: 3)",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "count": {
+              "type": "number",
+              "description": "[DEPRECATED: use 'limit'] Number of results",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "safeSearch": {
+              "type": "string",
+              "description": "Content filtering level",
+              "enum": [
+                "strict",
+                "moderate",
+                "off"
+              ],
+              "default": "moderate"
+            },
+            "region": {
+              "type": "string",
+              "description": "Region for localized results. Examples: 'us-en' (US), 'uk-en' (UK), 'de-de' (Germany), 'wt-wt' (worldwide, default)",
+              "default": "wt-wt"
+            },
+            "time": {
+              "type": "string",
+              "description": "Time range filter for results",
+              "enum": [
+                "day",
+                "week",
+                "month",
+                "year",
+                "all"
+              ],
+              "default": "all"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "duckduckgo_news_search",
+        "description": "News search via DuckDuckGo. Returns max 3 articles with 150-char excerpts. Use 'limit' param to override (1-20).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "News search query (max 400 chars)",
+              "maxLength": 400
+            },
+            "limit": {
+              "type": "number",
+              "description": "Override default result limit (1-20, default: 3)",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "count": {
+              "type": "number",
+              "description": "[DEPRECATED: use 'limit'] Number of results",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "safeSearch": {
+              "type": "string",
+              "description": "Content filtering level",
+              "enum": [
+                "strict",
+                "moderate",
+                "off"
+              ],
+              "default": "moderate"
+            },
+            "time": {
+              "type": "string",
+              "description": "Time range for news articles",
+              "enum": [
+                "day",
+                "week",
+                "month",
+                "year",
+                "all"
+              ],
+              "default": "all"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'duckduckgo_web_search' description suggests privilege escalation",
+      "description": "Tool 'duckduckgo_web_search' description contains a scope-escalation signal: 'override'. This may indicate the tool operates beyond its declared purpose.",
+      "tool_name": "duckduckgo_web_search",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Web search via DuckDuckGo. Returns max 3 results with 150-char snippets. Use 'limit' param to override (1-20). Supports region/time filters.",
+      "remediation": "Review and restrict the tool's effective scope. Remove or replace terms that imply privilege escalation.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'duckduckgo_news_search' description suggests privilege escalation",
+      "description": "Tool 'duckduckgo_news_search' description contains a scope-escalation signal: 'override'. This may indicate the tool operates beyond its declared purpose.",
+      "tool_name": "duckduckgo_news_search",
+      "parameter": null,
+      "payload": null,
+      "evidence": "News search via DuckDuckGo. Returns max 3 articles with 150-char excerpts. Use 'limit' param to override (1-20).",
+      "remediation": "Review and restrict the tool's effective scope. Remove or replace terms that imply privilege escalation.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 69.34400000000096,
+  "exchanges": []
+}

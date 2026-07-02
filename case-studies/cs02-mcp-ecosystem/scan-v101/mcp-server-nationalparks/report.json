@@ -1,0 +1,286 @@
+{
+  "target": "npx -y mcp-server-nationalparks",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "nationalparks-mcp-server",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "findParks",
+        "description": "Search for national parks based on state, name, activities, or other criteria",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "stateCode": {
+              "type": "string",
+              "description": "Filter parks by state code (e.g., \"CA\" for California, \"NY\" for New York). Multiple states can be comma-separated (e.g., \"CA,OR,WA\")"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter parks by name or description"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of parks to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "activities": {
+              "type": "string",
+              "description": "Filter by available activities (e.g., \"hiking,camping\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getParkDetails",
+        "description": "Get detailed information about a specific national park",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "The park code of the national park (e.g., \"yose\" for Yosemite, \"grca\" for Grand Canyon)"
+            }
+          },
+          "required": [
+            "parkCode"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getAlerts",
+        "description": "Get current alerts for national parks including closures, hazards, and important information",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter alerts by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of alerts to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter alerts by title or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getVisitorCenters",
+        "description": "Get information about visitor centers and their operating hours",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter visitor centers by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of visitor centers to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter visitor centers by name or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getCampgrounds",
+        "description": "Get information about available campgrounds and their amenities",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter campgrounds by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of campgrounds to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter campgrounds by name or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getEvents",
+        "description": "Find upcoming events at parks",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter events by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of events to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "dateStart": {
+              "type": "string",
+              "description": "Start date for filtering events (format: YYYY-MM-DD)"
+            },
+            "dateEnd": {
+              "type": "string",
+              "description": "End date for filtering events (format: YYYY-MM-DD)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter events by title or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'findParks' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "findParks",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'findParks.stateCode'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "findParks",
+      "parameter": "stateCode",
+      "payload": "' OR '1'='1",
+      "evidence": "{\"error\":\"Invalid state code(s): ' OR '1'='1\",\"validStateCodes\":[\"AL\",\"AK\",\"AZ\",\"AR\",\"CA\",\"CO\",\"CT\",\"DE\",\"FL\",\"GA\",\"HI\",\"ID\",\"IL\",\"IN\",\"IA\",\"KS\",\"KY\",\"LA\",\"ME\",\"MD\",\"MA\",\"MI\",\"MN\",\"MS\",\"MO\",\"MT\",\"NE\",\"NV\",\"NH\",\"NJ\",\"NM\",\"NY\",\"NC\",\"ND\",\"OH\",\"OK\",\"OR\",\"PA\",\"RI\",\"SC\",\"SD\",\"TN\",\"TX\",\"UT\",\"VT\",\"VA\",\"WA\",",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 70.73500000000058,
+  "exchanges": []
+}

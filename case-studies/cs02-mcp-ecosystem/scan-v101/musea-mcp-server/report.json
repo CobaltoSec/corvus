@@ -1,0 +1,662 @@
+{
+  "target": "npx -y @vizejs/musea-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "musea-mcp-server",
+    "server_version": "0.0.1-alpha.11",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "analyze_component",
+        "description": "Statically analyze a Vue SFC to extract its props and emits. Accepts a Vue component path directly, or an art-file reference that resolves to the linked component source.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .vue component file or .art.vue file (relative to project root)"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by its display title, then analyze its component source"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by its component reference or component basename, then analyze it"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file, then analyze the linked component source"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "get_palette",
+        "description": "Derive an interactive props palette (control types, defaults, ranges, options) for a component described by an Art file. Falls back to SFC analysis when native palette inference is sparse.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .art.vue file (relative to project root)"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by title instead of path"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by component reference or component basename"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file before generating the palette"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "list_components",
+        "description": "List components registered in the design system. Returns titles, categories, tags, status, variant names, and related resource URIs.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Filter by category"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Filter by tag"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "ready",
+                "deprecated"
+              ],
+              "description": "Filter by status badge"
+            },
+            "component": {
+              "type": "string",
+              "description": "Filter by component reference or component basename"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of components to return (default: all)"
+            },
+            "includeVariants": {
+              "type": "boolean",
+              "description": "Include per-variant metadata in the result (default: false)"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "title",
+                "category",
+                "status",
+                "variants"
+              ],
+              "description": "Sort order for the result list (default: title)"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_component",
+        "description": "Get full details of a design-system component: metadata, variants, source-component analysis, palette data, documentation, and related resource URIs.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .art.vue file (relative to project root)"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by display title instead of path"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by component reference or component basename"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file before loading details"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            },
+            "includeAnalysis": {
+              "type": "boolean",
+              "description": "Include resolved component props/emits analysis (default: true)"
+            },
+            "includePalette": {
+              "type": "boolean",
+              "description": "Include inferred palette data (default: true)"
+            },
+            "includeDocumentation": {
+              "type": "boolean",
+              "description": "Include generated Markdown docs inline (default: false)"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "get_variant",
+        "description": "Retrieve a single variant (template and metadata) from a component, resolving the component by path, title, component name, or fuzzy query.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .art.vue file"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by title"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by component reference or component basename"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file before looking up the variant"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            },
+            "variant": {
+              "type": "string",
+              "description": "Variant name"
+            },
+            "includeAnalysis": {
+              "type": "boolean",
+              "description": "Include resolved component props/emits analysis (default: false)"
+            }
+          },
+          "required": [
+            "variant"
+          ]
+        }
+      },
+      {
+        "name": "search_components",
+        "description": "Ranked full-text search over component titles, descriptions, categories, tags, component names, and variant names.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query"
+            },
+            "category": {
+              "type": "string",
+              "description": "Restrict matches to one category"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Restrict matches to one tag"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "ready",
+                "deprecated"
+              ],
+              "description": "Restrict matches to one status"
+            },
+            "component": {
+              "type": "string",
+              "description": "Restrict matches to a component reference/basename before searching"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (default: 10)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "recommend_components",
+        "description": "Intent-oriented component recommendation. Useful when the user describes a task or UX goal rather than knowing exact component names.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "task": {
+              "type": "string",
+              "description": "Intent or UI task to solve"
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category filter"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Optional tag filter"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "ready",
+                "deprecated"
+              ],
+              "description": "Optional status filter"
+            },
+            "component": {
+              "type": "string",
+              "description": "Optional component reference/basename filter"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of recommendations to return (default: 5)"
+            }
+          },
+          "required": [
+            "task"
+          ]
+        }
+      },
+      {
+        "name": "generate_variants",
+        "description": "Analyze a Vue component's props and auto-generate an .art.vue file containing appropriate variant combinations (default, boolean toggles, enum values, etc.).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentPath": {
+              "type": "string",
+              "description": "Path to the .vue component file (relative to project root)"
+            },
+            "maxVariants": {
+              "type": "number",
+              "description": "Maximum number of variants to generate (default: 20)"
+            },
+            "includeDefault": {
+              "type": "boolean",
+              "description": "Include a default variant (default: true)"
+            },
+            "includeBooleanToggles": {
+              "type": "boolean",
+              "description": "Generate variants that toggle each boolean prop (default: true)"
+            },
+            "includeEnumVariants": {
+              "type": "boolean",
+              "description": "Generate one variant per enum/union value (default: true)"
+            }
+          },
+          "required": [
+            "componentPath"
+          ]
+        }
+      },
+      {
+        "name": "generate_csf",
+        "description": "Convert an .art.vue file into Storybook CSF 3.0 code for integration with existing Storybook setups.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .art.vue file"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by title"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by component reference or component basename"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file before converting to CSF"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "generate_docs",
+        "description": "Generate Markdown documentation for a design-system component from its .art.vue definition.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the .art.vue file (relative to project root)"
+            },
+            "title": {
+              "type": "string",
+              "description": "Resolve an art file by title"
+            },
+            "component": {
+              "type": "string",
+              "description": "Resolve an art file by component reference or component basename"
+            },
+            "query": {
+              "type": "string",
+              "description": "Fuzzy-search an art file before generating docs"
+            },
+            "ref": {
+              "type": "string",
+              "description": "Generic art-file reference: path, title, component name, or search text"
+            },
+            "includeSource": {
+              "type": "boolean",
+              "description": "Embed source code in the output (default: false)"
+            },
+            "includeTemplates": {
+              "type": "boolean",
+              "description": "Embed variant templates in the output (default: false)"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "generate_catalog",
+        "description": "Produce a single Markdown catalog covering every component in the design system, grouped by category.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "includeSource": {
+              "type": "boolean",
+              "description": "Embed source code in the catalog (default: false)"
+            },
+            "includeTemplates": {
+              "type": "boolean",
+              "description": "Embed variant templates in the catalog (default: false)"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_tokens",
+        "description": "Read design tokens (colors, spacing, typography, etc.) from a Style Dictionary-compatible JSON file or directory. Auto-detects common paths if not specified.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "tokensPath": {
+              "type": "string",
+              "description": "Path to tokens JSON file or directory (relative to project root). Auto-detects tokens/, design-tokens/, or style-dictionary/ if omitted."
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "json",
+                "markdown"
+              ],
+              "description": "Output format (default: json)"
+            }
+          }
+        }
+      },
+      {
+        "name": "search_tokens",
+        "description": "Search flattened design tokens by token name, category path, value, or description. Much more practical than loading the full token tree for large systems.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query"
+            },
+            "tokensPath": {
+              "type": "string",
+              "description": "Path to tokens JSON file or directory (relative to project root). Auto-detects common locations if omitted."
+            },
+            "type": {
+              "type": "string",
+              "description": "Optional token type filter, e.g. color, dimension, typography"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of matches to return (default: 20)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "musea://index",
+        "name": "Component Index",
+        "description": "JSON summary of the project component registry",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "musea://catalog",
+        "name": "Component Catalog",
+        "description": "Markdown catalog for the whole design system",
+        "mime_type": "text/markdown"
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'generate_catalog' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "generate_catalog",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'recommend_components.task'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "recommend_components",
+      "parameter": "task",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"task\": \"<script>alert(1)</script>\",\n  \"recommendations\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'list_components' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "list_components",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_components.query' silently accepts wrong type",
+      "description": "Expected type 'string', sent int value '12345' — no error returned.",
+      "tool_name": "search_components",
+      "parameter": "query",
+      "payload": "12345",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_components' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "search_components",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'recommend_components.task' silently accepts wrong type",
+      "description": "Expected type 'string', sent int value '12345' — no error returned.",
+      "tool_name": "recommend_components",
+      "parameter": "task",
+      "payload": "12345",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'recommend_components' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "recommend_components",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'generate_catalog' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "generate_catalog",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 438.79700000000594,
+  "exchanges": []
+}

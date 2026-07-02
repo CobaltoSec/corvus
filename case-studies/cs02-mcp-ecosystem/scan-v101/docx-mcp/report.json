@@ -1,0 +1,1932 @@
+{
+  "target": "npx -y @usejunior/docx-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "safe-docx",
+    "server_version": "0.2.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "read_file",
+        "description": "Read document content (DOCX, ODT, or Google Doc). Output is token-limited (~14k tokens) by default with pagination metadata (has_more, next_offset). Use offset/limit to paginate.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "offset": {
+              "description": "1-based paragraph offset for pagination. Negative values count from end.",
+              "type": "number"
+            },
+            "limit": {
+              "description": "Max paragraphs to return. When omitted, output is token-limited to ~14k tokens with pagination.",
+              "type": "number"
+            },
+            "node_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "toon",
+                "json",
+                "simple"
+              ]
+            },
+            "comment_rendering": {
+              "description": "How to render comments in read_file output. Use \"paragraph_notes\" (default) for paragraph-local comment threads, \"inline_markers\" to add `[cm-start:N]`/`[cm-end:N]` milestones in TOON output (combined with the thread blocks), \"endnotes\" to collect threaded comments into a trailing #COMMENTS block in TOON output, or \"none\" for the legacy output with no comment rendering.",
+              "type": "string",
+              "enum": [
+                "none",
+                "paragraph_notes",
+                "endnotes",
+                "inline_markers"
+              ]
+            },
+            "show_formatting": {
+              "description": "When true (default), shows inline formatting tags (<b>, <i>, <u>, <highlighting>, <a>). When false, emits plain text with no inline tags.",
+              "type": "boolean"
+            },
+            "include_fingerprint": {
+              "description": "When true and format=\"json\", include a portable content_fingerprint (\"sha256:nfkc:<32hex>\") on each paragraph. Read-only metadata derived from the paragraph's normalized visible text; NOT an edit anchor. Edit tools accept only `_bk_*` IDs. No effect on TOON/simple output. Ignored for Google Docs and ODT.",
+              "type": "boolean"
+            },
+            "include_footnotes": {
+              "description": "When true and format=\"json\", attach a `footnotes` array ({id, display_number, text}) to each paragraph node for the footnotes anchored to it. Windowed to the returned slice (a paginated walk returns each footnote exactly once) and counted toward the read token budget. Footnotes with an empty body or no anchored paragraph are excluded — use get_footnotes for the authoritative full enumeration. No effect on TOON/simple output. Ignored for Google Docs and ODT. Default: false.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "grep",
+        "description": "Search paragraphs with regex. Use file_path for session-based search, file_paths for stateless multi-file search, or google_doc_id for Google Docs. ODT supported via file_path (single-file) only.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "file_paths": {
+              "description": "Multiple file paths for stateless multi-file search. No session created.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "case_sensitive": {
+              "type": "boolean"
+            },
+            "whole_word": {
+              "type": "boolean"
+            },
+            "max_results": {
+              "type": "number"
+            },
+            "context_chars": {
+              "type": "number"
+            },
+            "dedupe_by_paragraph": {
+              "type": "boolean"
+            },
+            "search_xml": {
+              "description": "When true, search raw XML (word/document.xml) instead of paragraph text.",
+              "type": "boolean"
+            },
+            "include_context": {
+              "description": "When false, skip document view context (list labels, headers) for faster results. Default: true.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "batch_edit",
+        "description": "Single-agent front door for applying multiple edit steps (replace_text, insert_paragraph) to a document in one call. Validates all steps first, rejects conflicts before applying anything, then executes valid steps sequentially. Accepts inline steps or a plan_file_path JSON array.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "steps": {
+              "description": "JSON array of edit steps. Each step needs step_id, operation, and operation-specific fields.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {}
+              }
+            },
+            "plan_file_path": {
+              "description": "Path to a .json file containing an array of edit steps. Mutually exclusive with steps.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "replace_text",
+        "description": "Replace text in a paragraph by provider paragraph id, preserving formatting where supported. Supports DOCX, ODT, and Google Docs.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "target_paragraph_id": {
+              "type": "string"
+            },
+            "old_string": {
+              "type": "string"
+            },
+            "new_string": {
+              "type": "string"
+            },
+            "instruction": {
+              "type": "string"
+            },
+            "normalize_first": {
+              "description": "Merge format-identical adjacent runs before searching. Useful when text is fragmented across runs.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "target_paragraph_id",
+            "old_string",
+            "new_string",
+            "instruction"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "insert_paragraph",
+        "description": "Insert a paragraph before/after an anchor paragraph by paragraph id. Supports DOCX, ODT, and Google Docs. (ODT paragraph ids are positional and shift after insertion — re-read before further edits.)",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "positional_anchor_node_id": {
+              "type": "string"
+            },
+            "new_string": {
+              "type": "string"
+            },
+            "instruction": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string",
+              "enum": [
+                "BEFORE",
+                "AFTER"
+              ]
+            },
+            "style_source_id": {
+              "description": "Paragraph _bk_* ID to clone formatting (pPr and template run) from instead of the positional anchor. Falls back to anchor with a warning if not found.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "positional_anchor_node_id",
+            "new_string",
+            "instruction"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "save",
+        "description": "Save document. For DOCX: saves clean and/or tracked changes output. For ODT: saves an .odt package. For Google Docs: checkpoint (default) returns revisionId, or snapshot exports as DOCX.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "save_to_local_path": {
+              "type": "string"
+            },
+            "clean_bookmarks": {
+              "type": "boolean"
+            },
+            "save_format": {
+              "type": "string",
+              "enum": [
+                "clean",
+                "tracked",
+                "both"
+              ]
+            },
+            "allow_overwrite": {
+              "type": "boolean"
+            },
+            "tracked_save_to_local_path": {
+              "type": "string"
+            },
+            "tracked_changes_author": {
+              "type": "string"
+            },
+            "tracked_changes_engine": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "atomizer"
+              ]
+            },
+            "fail_on_rebuild_fallback": {
+              "description": "When true, return an error instead of a destructive output if the comparison engine falls back to rebuild mode (which destroys table structure). Default: false.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "save_to_local_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "export",
+        "description": "Export a document to a portable rendering (Markdown, semantic HTML, or plain text). Writes an output file (default: source path with the format extension, e.g. .md, .html, or .txt) and returns its path, byte count, and the rendered content (under `content`). Intentionally lossy (no round-trip); HTML is the semantic tier, not pixel-faithful. DOCX only — Google Docs is not supported.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "format": {
+              "description": "Output format: 'markdown' (default, writes .md), 'html' (writes .html), or 'plaintext' (writes .txt).",
+              "type": "string",
+              "enum": [
+                "markdown",
+                "html",
+                "plaintext"
+              ]
+            },
+            "output_path": {
+              "description": "Where to write the rendering. Defaults to the source path with the format extension.",
+              "type": "string"
+            },
+            "allow_overwrite": {
+              "description": "Overwrite output_path if it already exists. Default: false.",
+              "type": "boolean"
+            },
+            "include_markdown": {
+              "description": "Include the rendered content (under `content`) in the response. Default: true; set false for large documents.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "convert_to_odt",
+        "description": "Convert a DOCX document to OpenDocument Text (.odt) using the native model-to-model converter (no LibreOffice involved). Writes the .odt (default: source path with the .odt extension), validates ODF packaging safety before writing, and returns the output path plus a `lossiness` summary itemizing every downgraded construct. Conversion is semantic and intentionally lossy: text, headings, bold/italic/underline, hyperlinks, lists, and tables are mapped; richer styling, tracked changes, comments, and headers/footers are not. DOCX in, ODT out — Google Docs and .odt inputs are not supported.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "output_path": {
+              "description": "Where to write the .odt. Defaults to the source path with the .odt extension.",
+              "type": "string"
+            },
+            "allow_overwrite": {
+              "description": "Overwrite output_path if it already exists. Default: false.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "format_layout",
+        "description": "Apply layout controls (paragraph spacing, table row height, cell padding). Google Docs supports paragraph spacing only.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "strict": {
+              "type": "boolean"
+            },
+            "paragraph_spacing": {
+              "type": "object",
+              "properties": {
+                "paragraph_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "before_twips": {
+                  "type": "number"
+                },
+                "after_twips": {
+                  "type": "number"
+                },
+                "line_twips": {
+                  "type": "number"
+                },
+                "line_rule": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "exact",
+                    "atLeast"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "row_height": {
+              "type": "object",
+              "properties": {
+                "table_indexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "row_indexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "value_twips": {
+                  "type": "number"
+                },
+                "rule": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "exact",
+                    "atLeast"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "cell_padding": {
+              "type": "object",
+              "properties": {
+                "table_indexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "row_indexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "cell_indexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "top_dxa": {
+                  "type": "number"
+                },
+                "bottom_dxa": {
+                  "type": "number"
+                },
+                "left_dxa": {
+                  "type": "number"
+                },
+                "right_dxa": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "accept_changes",
+        "description": "Accept all tracked changes in the document body, producing a clean document with no revision markup. Returns acceptance stats.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "has_tracked_changes",
+        "description": "Check whether the document body contains tracked-change markers (insertions, deletions, moves, and property-change records). Read-only.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_file_status",
+        "description": "Get file/session metadata including edit count, normalization stats, and cache info. Supports DOCX, ODT, and Google Docs.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "close_file",
+        "description": "Close an open file session, or close all sessions with explicit confirmation. Supports DOCX, ODT, and Google Docs.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "google_doc_id": {
+              "description": "Google Doc ID or URL (alternative to file_path). Extract from URL: docs.google.com/document/d/{ID}/edit",
+              "type": "string"
+            },
+            "clear_all": {
+              "type": "boolean"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "add_comment",
+        "description": "Add a comment or threaded reply to a document. Provide target_paragraph_id + anchor_text for root comments, or parent_comment_id for replies. Supports DOCX and ODT (ODT backs comments with office:annotation; threaded replies are DOCX-only).",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "target_paragraph_id": {
+              "description": "Paragraph ID to anchor the comment to (for root comments).",
+              "type": "string"
+            },
+            "anchor_text": {
+              "description": "Text within the paragraph to anchor the comment to. If omitted, anchors to entire paragraph.",
+              "type": "string"
+            },
+            "parent_comment_id": {
+              "description": "Parent comment ID for threaded replies.",
+              "type": "number"
+            },
+            "author": {
+              "type": "string",
+              "description": "Comment author name."
+            },
+            "text": {
+              "type": "string",
+              "description": "Comment body text."
+            },
+            "initials": {
+              "description": "Author initials (defaults to first letter of author name).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path",
+            "author",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_comments",
+        "description": "Get all comments from the document with IDs, authors, dates, text, and anchored paragraph IDs. Range-anchored DOCX comments also expose optional end_paragraph_id, start_run_index, start_char_offset, end_run_index, and end_char_offset fields describing the covered span. Includes threaded replies (DOCX). Supports DOCX and ODT. Read-only.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "delete_comment",
+        "description": "Delete a comment and all its threaded replies from the document. Cascade-deletes all descendants.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "comment_id": {
+              "type": "number",
+              "description": "Comment ID to delete."
+            }
+          },
+          "required": [
+            "file_path",
+            "comment_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "compare_documents",
+        "description": "Compare two documents and produce a tracked-changes output document. Provide original_file_path + revised_file_path for standalone comparison, or file_path to compare session edits against the original. DOCX and ODF (.odt) support both modes. DOCX stats count insertions/deletions as contiguous ranges, expose atom totals as insertedAtoms/deletedAtoms, and report formatChanges separately from modifiedParagraphs. ODF compares at inline granularity (a modified paragraph is marked up in place — only the changed spans are struck or inserted).",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "original_file_path": {
+              "description": "Path to the original DOCX or .odt file.",
+              "type": "string"
+            },
+            "revised_file_path": {
+              "description": "Path to the revised DOCX or .odt file.",
+              "type": "string"
+            },
+            "file_path": {
+              "description": "Path to the DOCX or ODT file.",
+              "type": "string"
+            },
+            "save_to_local_path": {
+              "type": "string",
+              "description": "Path to save the tracked-changes output (DOCX or .odt)."
+            },
+            "author": {
+              "description": "Author name for track changes. Default: 'Comparison' (DOCX) or the configured AI author (ODF).",
+              "type": "string"
+            },
+            "engine": {
+              "description": "Comparison engine (DOCX only). Default: 'auto'.",
+              "type": "string",
+              "enum": [
+                "auto",
+                "atomizer"
+              ]
+            }
+          },
+          "required": [
+            "save_to_local_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_footnotes",
+        "description": "Get all footnotes from the document with IDs, display numbers, text, and anchored paragraph IDs. Read-only.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "add_footnote",
+        "description": "Add a footnote anchored to a paragraph. Optionally position the reference after specific text using after_text. Note: [^N] markers in read_file output are display-only and not part of the editable text used by replace_text.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "target_paragraph_id": {
+              "type": "string",
+              "description": "Paragraph ID to anchor the footnote to."
+            },
+            "after_text": {
+              "description": "Text after which to insert the footnote reference. If omitted, appends at end of paragraph.",
+              "type": "string"
+            },
+            "text": {
+              "type": "string",
+              "description": "Footnote body text."
+            }
+          },
+          "required": [
+            "file_path",
+            "target_paragraph_id",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "update_footnote",
+        "description": "Update the text content of an existing footnote.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "note_id": {
+              "type": "number",
+              "description": "Footnote ID to update."
+            },
+            "new_text": {
+              "type": "string",
+              "description": "New footnote body text."
+            }
+          },
+          "required": [
+            "file_path",
+            "note_id",
+            "new_text"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "delete_footnote",
+        "description": "Delete a footnote and its reference from the document.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "note_id": {
+              "type": "number",
+              "description": "Footnote ID to delete."
+            }
+          },
+          "required": [
+            "file_path",
+            "note_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "clear_formatting",
+        "description": "Clear specific run-level formatting (bold, italic, underline, highlight, color, font) from paragraphs.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "paragraph_ids": {
+              "description": "Paragraph IDs to clear formatting from. If omitted, clears from all paragraphs.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "clear_highlight": {
+              "description": "Remove highlight formatting.",
+              "type": "boolean"
+            },
+            "clear_bold": {
+              "description": "Remove bold formatting.",
+              "type": "boolean"
+            },
+            "clear_italic": {
+              "description": "Remove italic formatting.",
+              "type": "boolean"
+            },
+            "clear_underline": {
+              "description": "Remove underline formatting.",
+              "type": "boolean"
+            },
+            "clear_color": {
+              "description": "Remove font color.",
+              "type": "boolean"
+            },
+            "clear_font": {
+              "description": "Remove font family and size.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "extract_revisions",
+        "description": "Extract tracked changes as structured JSON with before/after text per paragraph, revision details, and comments. Supports pagination via offset and limit. Read-only - does not modify the document.",
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the DOCX or ODT file."
+            },
+            "offset": {
+              "description": "0-based offset for pagination. Default: 0.",
+              "type": "number"
+            },
+            "limit": {
+              "description": "Max entries per page (1-500). Default: 50.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'save' accepts write-path param (path traversal risk)",
+      "description": "Tool 'save' accepts a file path parameter (file_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory.",
+      "tool_name": "save",
+      "parameter": null,
+      "payload": null,
+      "evidence": "path param(s): file_path | description: Save document. For DOCX: saves clean and/or tracked changes output. For ODT: saves an .odt package. For Google Docs: checkpoint (default) returns revisionId, or snapshot exports as DOCX.",
+      "remediation": "Validate and canonicalize file path inputs. Restrict writes to an explicit base directory using path.resolve() or os.path.abspath() checks. Manual verification recommended.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'export' accepts write-path param (path traversal risk)",
+      "description": "Tool 'export' accepts a file path parameter (file_path, output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory.",
+      "tool_name": "export",
+      "parameter": null,
+      "payload": null,
+      "evidence": "path param(s): file_path, output_path | description: Export a document to a portable rendering (Markdown, semantic HTML, or plain text). Writes an output file (default: source path with the format extension, e.g. .md, .html, or .txt) and returns its pat",
+      "remediation": "Validate and canonicalize file path inputs. Restrict writes to an explicit base directory using path.resolve() or os.path.abspath() checks. Manual verification recommended.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'convert_to_odt' accepts write-path param (path traversal risk)",
+      "description": "Tool 'convert_to_odt' accepts a file path parameter (file_path, output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory.",
+      "tool_name": "convert_to_odt",
+      "parameter": null,
+      "payload": null,
+      "evidence": "path param(s): file_path, output_path | description: Convert a DOCX document to OpenDocument Text (.odt) using the native model-to-model converter (no LibreOffice involved). Writes the .odt (default: source path with the .odt extension), validates ODF p",
+      "remediation": "Validate and canonicalize file path inputs. Restrict writes to an explicit base directory using path.resolve() or os.path.abspath() checks. Manual verification recommended.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'grep' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "grep",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'export' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "export",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'convert_to_odt' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "convert_to_odt",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'format_layout' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "format_layout",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'close_file' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "close_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'read_file' conflicts with a high-value built-in name",
+      "description": "Tool 'read_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "read_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'batch_edit' description reveals arbitrary execution intent",
+      "description": "Tool 'batch_edit' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "batch_edit",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Single-agent front door for applying multiple edit steps (replace_text, insert_paragraph) to a document in one call. Validates all steps first, rejects conflicts before applying anything, then executes valid steps sequentially. Accepts inline steps or a plan_file_path JSON array.",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'export.format'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "export",
+      "parameter": "format",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_FORMAT\",\n    \"message\": \"Invalid export format: <script>alert(1)</script>\",\n    \"hint\": \"Supported formats: markdown, html, plaintext.\"\n  }\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'read_file' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "read_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'grep' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "grep",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'batch_edit' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "batch_edit",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'batch_edit.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "batch_edit",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'batch_edit' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "batch_edit",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'replace_text' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['target_paragraph_id', 'old_string', 'new_string', 'instruction']",
+      "tool_name": "replace_text",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'replace_text.target_paragraph_id' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "replace_text",
+      "parameter": "target_paragraph_id",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'replace_text' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "replace_text",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'insert_paragraph' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['positional_anchor_node_id', 'new_string', 'instruction']",
+      "tool_name": "insert_paragraph",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'insert_paragraph.positional_anchor_node_id' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "insert_paragraph",
+      "parameter": "positional_anchor_node_id",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'insert_paragraph' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "insert_paragraph",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'save' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['save_to_local_path']",
+      "tool_name": "save",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'save.save_to_local_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "save",
+      "parameter": "save_to_local_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'save' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "save",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'export' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "export",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'convert_to_odt' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "convert_to_odt",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-028",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'format_layout' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "format_layout",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-029",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'accept_changes' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "accept_changes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-030",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'accept_changes.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "accept_changes",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-031",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'accept_changes' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "accept_changes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-032",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'has_tracked_changes' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "has_tracked_changes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-033",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'has_tracked_changes.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "has_tracked_changes",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-034",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'has_tracked_changes' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "has_tracked_changes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-035",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_file_status' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_file_status",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-036",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'close_file' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "close_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-037",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'add_comment' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path', 'author', 'text']",
+      "tool_name": "add_comment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-038",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'add_comment.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "add_comment",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-039",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'add_comment' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "add_comment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-040",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'get_comments' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "get_comments",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-041",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_comments.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "get_comments",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-042",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_comments' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_comments",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-043",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'delete_comment' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path', 'comment_id']",
+      "tool_name": "delete_comment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-044",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'delete_comment.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "delete_comment",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-045",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'delete_comment' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "delete_comment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-046",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'compare_documents' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['save_to_local_path']",
+      "tool_name": "compare_documents",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-047",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'compare_documents.save_to_local_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "compare_documents",
+      "parameter": "save_to_local_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-048",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'compare_documents' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "compare_documents",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-049",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'get_footnotes' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "get_footnotes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-050",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_footnotes.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "get_footnotes",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-051",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_footnotes' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_footnotes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-052",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'add_footnote' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path', 'target_paragraph_id', 'text']",
+      "tool_name": "add_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-053",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'add_footnote.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "add_footnote",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-054",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'add_footnote' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "add_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-055",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'update_footnote' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path', 'note_id', 'new_text']",
+      "tool_name": "update_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-056",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'update_footnote.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "update_footnote",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-057",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'update_footnote' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "update_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-058",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'delete_footnote' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path', 'note_id']",
+      "tool_name": "delete_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-059",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'delete_footnote.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "delete_footnote",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-060",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'delete_footnote' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "delete_footnote",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-061",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'clear_formatting' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "clear_formatting",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-062",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'clear_formatting.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "clear_formatting",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-063",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'clear_formatting' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "clear_formatting",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-064",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'extract_revisions' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['file_path']",
+      "tool_name": "extract_revisions",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-065",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'extract_revisions.file_path' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "extract_revisions",
+      "parameter": "file_path",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-066",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'extract_revisions' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "extract_revisions",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-067",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-068",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-069",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 78.17099999999846,
+  "exchanges": []
+}

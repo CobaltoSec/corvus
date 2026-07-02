@@ -1,0 +1,640 @@
+{
+  "target": "npx -y @cyanheads/pubmed-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "@cyanheads/mcp-ts-core",
+    "server_version": "0.8.18",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "pubmed_search_articles",
+        "description": "Search PubMed with full query syntax, filters, and date ranges. Returns PMIDs and optional brief summaries. Supports field-specific filters (author, journal, MeSH terms), common filters (language, species, free full text), and pagination via offset for paging through large result sets.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "PubMed search query (supports full NCBI syntax)"
+            },
+            "maxResults": {
+              "default": 20,
+              "description": "Maximum results to return",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "offset": {
+              "default": 0,
+              "description": "Result offset for pagination (0-based)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "sort": {
+              "default": "relevance",
+              "description": "Sort order: relevance (default), pub_date (newest first), author, or journal",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "pub_date",
+                "author",
+                "journal"
+              ]
+            },
+            "dateRange": {
+              "description": "Filter by date range. The filter is applied only when both `minDate` and `maxDate` are non-empty; either one empty disables the entire date range.",
+              "type": "object",
+              "properties": {
+                "minDate": {
+                  "type": "string",
+                  "pattern": "^$|^\\d{4}([/\\-.]\\d{1,2}([/\\-.]\\d{1,2})?)?$",
+                  "description": "Start date (YYYY/MM/DD, YYYY/MM, or YYYY); empty string disables this bound"
+                },
+                "maxDate": {
+                  "type": "string",
+                  "pattern": "^$|^\\d{4}([/\\-.]\\d{1,2}([/\\-.]\\d{1,2})?)?$",
+                  "description": "End date (YYYY/MM/DD, YYYY/MM, or YYYY); empty string disables this bound"
+                },
+                "dateType": {
+                  "default": "pdat",
+                  "description": "Date type: pdat (publication), mdat (modification), edat (entrez)",
+                  "type": "string",
+                  "enum": [
+                    "pdat",
+                    "mdat",
+                    "edat"
+                  ]
+                }
+              },
+              "required": [
+                "minDate",
+                "maxDate"
+              ]
+            },
+            "publicationTypes": {
+              "description": "Filter by publication type (e.g. \"Review\", \"Clinical Trial\", \"Meta-Analysis\"). Multiple values are OR'd — any match qualifies.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "author": {
+              "description": "Filter by author name (e.g. \"Smith J\")",
+              "type": "string"
+            },
+            "journal": {
+              "description": "Filter by journal name",
+              "type": "string"
+            },
+            "meshTerms": {
+              "description": "Filter by MeSH terms. Multiple terms are AND'd — all must match.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "description": "Filter by language (e.g. \"english\")",
+              "type": "string"
+            },
+            "hasAbstract": {
+              "description": "Only include articles with abstracts",
+              "type": "boolean"
+            },
+            "freeFullText": {
+              "description": "Only include free full text articles",
+              "type": "boolean"
+            },
+            "species": {
+              "description": "Filter by species",
+              "type": "string",
+              "enum": [
+                "humans",
+                "animals"
+              ]
+            },
+            "summaryCount": {
+              "default": 0,
+              "description": "Fetch brief summaries for top N results (0 = PMIDs only)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_fetch_articles",
+        "description": "Fetch full article metadata by PubMed IDs. Returns detailed article information including abstract, authors, journal, MeSH terms.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "pmids": {
+              "minItems": 1,
+              "maxItems": 200,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              },
+              "description": "PubMed IDs to fetch"
+            },
+            "includeMesh": {
+              "default": true,
+              "description": "Include MeSH terms",
+              "type": "boolean"
+            },
+            "includeGrants": {
+              "default": false,
+              "description": "Include grant information",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "pmids"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_fetch_fulltext",
+        "description": "Fetch full-text articles. Primary source is PubMed Central (structured JATS with sections and references). When a PMID has no PMC copy, transparently falls back to Unpaywall (open-access copies hosted by publishers or institutional repositories) and returns best-effort HTML-as-Markdown or PDF-as-text. Set UNPAYWALL_EMAIL to enable the fallback. Provide exactly one of `pmcids` (PMC IDs directly) or `pmids` (PubMed IDs, auto-resolved via the PMC ID Converter) — not both, not neither.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "pmcids": {
+              "description": "PMC IDs to fetch (e.g. [\"PMC9575052\"]). Provide exactly one of `pmcids` or `pmids`.",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pmids": {
+              "description": "PubMed IDs. Provide exactly one of `pmcids` or `pmids`. Articles in PMC are returned as structured JATS; articles not in PMC are retrieved from Unpaywall when UNPAYWALL_EMAIL is set and a DOI is available.",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              }
+            },
+            "includeReferences": {
+              "default": false,
+              "description": "Include reference list. Applies to `source=pmc` results only.",
+              "type": "boolean"
+            },
+            "maxSections": {
+              "description": "Maximum top-level body sections. Applies to `source=pmc` results only.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "sections": {
+              "description": "Filter to specific sections by title, case-insensitive (e.g. [\"Introduction\", \"Methods\", \"Results\", \"Discussion\"]). Applies to `source=pmc` results only.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "pubmed_format_citations",
+        "description": "Get formatted citations for PubMed articles in one or more styles (APA, MLA, BibTeX, RIS). Pass a single style as a string or multiple as an array.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "pmids": {
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              },
+              "description": "PubMed IDs to cite"
+            },
+            "format": {
+              "default": "apa",
+              "description": "Citation format(s) to generate — single style as a string or multiple as an array. Allowed values: apa, mla, bibtex, ris.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "apa",
+                    "mla",
+                    "bibtex",
+                    "ris"
+                  ],
+                  "description": "Single citation style. One of: apa, mla, bibtex, ris."
+                },
+                {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "apa",
+                      "mla",
+                      "bibtex",
+                      "ris"
+                    ]
+                  },
+                  "description": "Multiple citation styles to generate. Each entry: apa, mla, bibtex, or ris."
+                }
+              ]
+            }
+          },
+          "required": [
+            "pmids"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_find_related",
+        "description": "Find articles related to a source article — similar content, citing articles, or references.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "pmid": {
+              "type": "string",
+              "pattern": "^\\d+$",
+              "description": "Source PubMed ID"
+            },
+            "relationship": {
+              "default": "similar",
+              "description": "Relationship type: similar (content-based), cited_by (articles citing this one), references (articles this one cites)",
+              "type": "string",
+              "enum": [
+                "similar",
+                "cited_by",
+                "references"
+              ]
+            },
+            "maxResults": {
+              "default": 10,
+              "description": "Maximum related articles",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "pmid"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_spell_check",
+        "description": "Spell-check a query and get NCBI's suggested correction. Useful for refining search queries.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 2,
+              "description": "PubMed search query to spell-check"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_lookup_mesh",
+        "description": "Search and explore the MeSH (Medical Subject Headings) controlled vocabulary. Returns descriptor records with tree numbers, scope notes, and entry terms.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "MeSH descriptor name or free-text term to look up"
+            },
+            "maxResults": {
+              "default": 10,
+              "description": "Maximum results",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "includeDetails": {
+              "default": true,
+              "description": "Fetch full MeSH records (scope notes, tree numbers, entry terms)",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_lookup_citation",
+        "description": "Look up PubMed IDs from partial bibliographic citations. Useful when you have a reference (journal, year, volume, page, author) and need the PMID. Uses NCBI ECitMatch for deterministic matching — more reliable than searching by citation fields. Each citation must include at least one bibliographic field (journal, year, volume, firstPage, or authorName); more fields = better match accuracy.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "citations": {
+              "minItems": 1,
+              "maxItems": 25,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "journal": {
+                    "description": "Journal title or ISO abbreviation (e.g., \"proc natl acad sci u s a\")",
+                    "type": "string"
+                  },
+                  "year": {
+                    "description": "Publication year (e.g., \"1991\")",
+                    "type": "string"
+                  },
+                  "volume": {
+                    "description": "Volume number",
+                    "type": "string"
+                  },
+                  "firstPage": {
+                    "description": "First page number",
+                    "type": "string"
+                  },
+                  "authorName": {
+                    "description": "Author name, typically \"lastname initials\" (e.g., \"mann bj\")",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "Arbitrary label to track this citation in results. Auto-assigned if omitted.",
+                    "type": "string"
+                  }
+                },
+                "description": "Citation to match against PubMed. Must include at least one bibliographic field (journal, year, volume, firstPage, or authorName)."
+              },
+              "description": "Citations to look up. More fields = better match accuracy."
+            }
+          },
+          "required": [
+            "citations"
+          ]
+        }
+      },
+      {
+        "name": "pubmed_convert_ids",
+        "description": "Convert between article identifiers (DOI, PMID, PMCID). Accepts up to 50 IDs of a single type per request. Uses the NCBI PMC ID Converter API — only resolves articles indexed in PubMed Central. For articles not in PMC, use pubmed_search_articles instead.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "ids": {
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "Article identifiers to convert. All IDs must be the same type. DOIs: \"10.1093/nar/gks1195\", PMIDs: \"23193287\", PMCIDs: \"PMC3531190\"."
+            },
+            "idType": {
+              "type": "string",
+              "enum": [
+                "pmcid",
+                "pmid",
+                "doi"
+              ],
+              "description": "The type of IDs being submitted. Required so the API can unambiguously resolve them."
+            }
+          },
+          "required": [
+            "ids",
+            "idType"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "pubmed://database/info",
+        "name": "database-info",
+        "description": "PubMed database metadata including field list, last update date, and record count.",
+        "mime_type": "application/json"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "research_plan",
+        "description": "Generate a structured research plan outline for a biomedical research project.",
+        "arguments": [
+          {
+            "name": "title",
+            "description": "Project title",
+            "required": true
+          },
+          {
+            "name": "goal",
+            "description": "Primary research goal",
+            "required": true
+          },
+          {
+            "name": "keywords",
+            "description": "Research keywords (comma-separated)",
+            "required": true
+          },
+          {
+            "name": "organism",
+            "description": "Target organism",
+            "required": false
+          },
+          {
+            "name": "includeAgentPrompts",
+            "description": "Include inline guidance blocks under each phase with execution-time hints (\"true\" or \"false\")",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'pubmed_fetch_fulltext' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "pubmed_fetch_fulltext",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'format' in 'pubmed_format_citations' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "pubmed_format_citations",
+      "parameter": "format",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'format'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'pubmed_search_articles.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "pubmed_search_articles",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "## PubMed Search Results\n**Query:** ' OR '1'='1\n**Effective Query:** ' OR '1'='1\n**Total Found:** 185783 | **Returned:** 20 | **Offset:** 0\n**Search URL:** https://pubmed.ncbi.nlm.nih.gov/?term='%20OR%20'1'%3D'1\n\n**PMIDs:** 30000545, 30000564, 30000563, 30000559, 29999787, 30000679, 30000059, 300006",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'pubmed_search_articles.author'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "pubmed_search_articles",
+      "parameter": "author",
+      "payload": "' OR '1'='1",
+      "evidence": "## PubMed Search Results\n**Query:** test\n**Effective Query:** test AND ' OR '1'='1[Author]\n**Total Found:** 0 | **Returned:** 0 | **Offset:** 0\n**Search URL:** https://pubmed.ncbi.nlm.nih.gov/?term=test%20AND%20'%20OR%20'1'%3D'1%5BAuthor%5D\n\n### Applied Filters\n- **Author:** ' OR '1'='1\n\n> No result",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'pubmed_search_articles.journal'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "pubmed_search_articles",
+      "parameter": "journal",
+      "payload": "' OR '1'='1",
+      "evidence": "## PubMed Search Results\n**Query:** test\n**Effective Query:** test AND \"' OR '1'='1\"[Journal]\n**Total Found:** 0 | **Returned:** 0 | **Offset:** 0\n**Search URL:** https://pubmed.ncbi.nlm.nih.gov/?term=test%20AND%20%22'%20OR%20'1'%3D'1%22%5BJournal%5D\n\n### Applied Filters\n- **Journal:** ' OR '1'='1\n\n",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'pubmed_search_articles.language'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "pubmed_search_articles",
+      "parameter": "language",
+      "payload": "' OR '1'='1",
+      "evidence": "## PubMed Search Results\n**Query:** test\n**Effective Query:** test AND ' OR '1'='1[Language]\n**Total Found:** 0 | **Returned:** 0 | **Offset:** 0\n**Search URL:** https://pubmed.ncbi.nlm.nih.gov/?term=test%20AND%20'%20OR%20'1'%3D'1%5BLanguage%5D\n\n### Applied Filters\n- **Language:** ' OR '1'='1\n\n> No ",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 102.1720000000023,
+  "exchanges": []
+}

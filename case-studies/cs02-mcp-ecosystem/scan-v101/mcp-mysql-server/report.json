@@ -1,0 +1,3413 @@
+{
+  "target": "npx -y @berthojoris/mcp-mysql-server mysql://root:root@localhost:3306/test",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mysql-mcp-server",
+    "server_version": "1.43.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "list_databases",
+        "description": "Lists all databases available on the MySQL server. Use this to discover what databases exist before querying them.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "list_tables",
+        "description": "Lists all tables in the connected database. Use this as the first step when exploring an unfamiliar database to see available tables.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name to list tables from"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_database_summary",
+        "description": "📊 Returns a high-level overview of the database including all tables, their columns, data types, row counts, and relationships. RECOMMENDED: Use this first when exploring a new database to understand its structure quickly. Features: database overview, per-table breakdown with primary keys, columns with nullable info and foreign key references, optional relationship summary, and configurable table limits.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "max_tables": {
+              "type": "number",
+              "description": "Optional: maximum number of tables to include (default: all tables, max 500)"
+            },
+            "include_relationships": {
+              "type": "boolean",
+              "description": "Optional: include foreign key relationships section (default: true)"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_schema_erd",
+        "description": "📈 Generates a visual Mermaid.js ER diagram showing tables and their relationships. Perfect for visualizing database structure and foreign key connections. Use when users ask to 'visualize' or 'diagram' the database.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_schema_rag_context",
+        "description": "🎯 AI-OPTIMIZED: Returns ultra-compact schema information (tables, columns, keys, relationships, comments, row estimates) designed specifically for LLM context windows. Use keyword_filter for concept-focused schema discovery.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "max_tables": {
+              "type": "number",
+              "description": "Optional: maximum number of tables to include (default 50, max 200)"
+            },
+            "max_columns": {
+              "type": "number",
+              "description": "Optional: maximum number of columns per table (default 12, max 200)"
+            },
+            "include_relationships": {
+              "type": "boolean",
+              "description": "Whether to include FK relationships section (default: true)"
+            },
+            "include_comments": {
+              "type": "boolean",
+              "description": "Optional: include TABLE_COMMENT and COLUMN_COMMENT metadata (default: false)"
+            },
+            "keyword_filter": {
+              "type": "string",
+              "description": "Optional: only include tables relevant to this keyword, ranked by table names, column names, and comments"
+            }
+          }
+        }
+      },
+      {
+        "name": "find_tables_by_keyword",
+        "description": "🔎 Schema discovery: finds candidate tables for a concept or keyword by searching table names, column names, TABLE_COMMENT, and COLUMN_COMMENT metadata. Use when users ask 'which table stores X?' before reading sample data.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "keyword": {
+              "type": "string",
+              "description": "Concept or keyword to find, such as survey, invoice, feedback, or customer"
+            },
+            "search_in": {
+              "type": "string",
+              "enum": [
+                "table_names",
+                "column_names",
+                "comments",
+                "all"
+              ],
+              "description": "Where to search (default: all)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Optional: maximum number of ranked tables to return (default 20, max 100)"
+            }
+          },
+          "required": [
+            "keyword"
+          ]
+        }
+      },
+      {
+        "name": "search_schema",
+        "description": "🧭 Unified schema discovery for natural-language 'where is X?' questions. Searches schema metadata by default and can optionally perform a guarded sample-data scan when mode sample_data is requested.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Concept or keyword to discover"
+            },
+            "modes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "table_names",
+                  "column_names",
+                  "comments",
+                  "sample_data"
+                ]
+              },
+              "description": "Discovery modes (default: table_names, column_names, comments). sample_data requires read permission."
+            },
+            "max_results": {
+              "type": "number",
+              "description": "Optional: maximum combined results to return (default 20, max 100)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional: restrict sample_data mode to these tables"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional: restrict sample_data mode to these columns"
+            },
+            "max_tables": {
+              "type": "number",
+              "description": "Optional: max tables scanned in sample_data mode (default 20, max 100)"
+            },
+            "limit_per_table": {
+              "type": "number",
+              "description": "Optional: max matching rows returned per table in sample_data mode (default 5, max 20)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "search_data_across_tables",
+        "description": "🔍 Guarded read-only keyword scan across text-like table data. Use only when schema metadata does not reveal where a concept is stored; enforces max table and per-table result limits.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "keyword": {
+              "type": "string",
+              "description": "Keyword to search inside text-like column values"
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional: restrict scan to these tables"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional: restrict scan to these column names"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "max_tables": {
+              "type": "number",
+              "description": "Optional: maximum tables to scan (default 20, max 100)"
+            },
+            "limit_per_table": {
+              "type": "number",
+              "description": "Optional: maximum rows returned per table (default 5, max 20)"
+            }
+          },
+          "required": [
+            "keyword"
+          ]
+        }
+      },
+      {
+        "name": "get_column_statistics",
+        "description": "Returns detailed statistics for a specific column: min/max values, average, distinct count, null percentage, and value distribution. Use to understand data quality and ranges in a column before writing queries.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "column_name": {
+              "type": "string",
+              "description": "Name of the column"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "column_name"
+          ]
+        }
+      },
+      {
+        "name": "read_table_schema",
+        "description": "Returns complete schema definition for a table: columns, data types, constraints, keys, indexes, and defaults. Use when you need detailed structural information about a specific table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to read schema from"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "create_record",
+        "description": "Inserts a single new record into a table. For inserting multiple records at once, use bulk_insert for better performance.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to insert into"
+            },
+            "data": {
+              "type": "object",
+              "description": "Object containing column names and values to insert"
+            }
+          },
+          "required": [
+            "table_name",
+            "data"
+          ]
+        }
+      },
+      {
+        "name": "read_records",
+        "description": "Reads records from a table with built-in filtering, pagination, and sorting. Use this for simple data retrieval. For complex queries with JOINs or aggregations, use run_select_query instead.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to read from"
+            },
+            "filters": {
+              "type": "array",
+              "description": "Array of filter conditions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "type": "string",
+                    "enum": [
+                      "eq",
+                      "neq",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "like",
+                      "in"
+                    ]
+                  },
+                  "value": {
+                    "description": "Value to compare against (can be string, number, boolean, or array for \"in\" operator)"
+                  }
+                },
+                "required": [
+                  "field",
+                  "operator",
+                  "value"
+                ]
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "number",
+                  "description": "Page number (starting from 1)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Number of records per page"
+                }
+              }
+            },
+            "sorting": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "description": "Field name to sort by"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              }
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "update_record",
+        "description": "Updates records in a table based on specified conditions. For updating many records with different values, use bulk_update for better performance.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to update"
+            },
+            "data": {
+              "type": "object",
+              "description": "Object containing column names and new values"
+            },
+            "conditions": {
+              "type": "array",
+              "description": "Array of conditions to identify which records to update",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "type": "string",
+                    "enum": [
+                      "eq",
+                      "neq",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "like",
+                      "in"
+                    ]
+                  },
+                  "value": {}
+                },
+                "required": [
+                  "field",
+                  "operator",
+                  "value"
+                ]
+              }
+            }
+          },
+          "required": [
+            "table_name",
+            "data",
+            "conditions"
+          ]
+        }
+      },
+      {
+        "name": "delete_record",
+        "description": "Deletes records from a table based on specified conditions. Always requires conditions for safety (no WHERE-less deletes). For deleting multiple record sets, use bulk_delete.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to delete from"
+            },
+            "conditions": {
+              "type": "array",
+              "description": "Array of conditions to identify which records to delete",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "type": "string",
+                    "enum": [
+                      "eq",
+                      "neq",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "like",
+                      "in"
+                    ]
+                  },
+                  "value": {}
+                },
+                "required": [
+                  "field",
+                  "operator",
+                  "value"
+                ]
+              }
+            }
+          },
+          "required": [
+            "table_name",
+            "conditions"
+          ]
+        }
+      },
+      {
+        "name": "bulk_insert",
+        "description": "⚡ PERFORMANCE: Inserts multiple records efficiently using batch processing. Handles 1000s of rows with automatic batching. Use this instead of create_record when inserting many records at once (10+ rows).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to insert into"
+            },
+            "data": {
+              "type": "array",
+              "description": "Array of objects containing column names and values to insert",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "batch_size": {
+              "type": "number",
+              "description": "Optional batch size for processing (default: 1000, max: 10000)",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "table_name",
+            "data"
+          ]
+        }
+      },
+      {
+        "name": "bulk_update",
+        "description": "⚡ PERFORMANCE: Updates multiple records with different values in batches. Each update can have unique conditions and data. Much faster than calling update_record repeatedly for multiple rows.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to update"
+            },
+            "updates": {
+              "type": "array",
+              "description": "Array of update operations with data and conditions",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "Object containing column names and new values",
+                    "additionalProperties": true
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "description": "Array of conditions to identify which records to update",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string"
+                        },
+                        "operator": {
+                          "type": "string",
+                          "enum": [
+                            "eq",
+                            "neq",
+                            "gt",
+                            "gte",
+                            "lt",
+                            "lte",
+                            "like",
+                            "in"
+                          ]
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator",
+                        "value"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "data",
+                  "conditions"
+                ]
+              }
+            },
+            "batch_size": {
+              "type": "number",
+              "description": "Optional batch size for processing (default: 100, max: 1000)",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "table_name",
+            "updates"
+          ]
+        }
+      },
+      {
+        "name": "bulk_delete",
+        "description": "⚡ PERFORMANCE: Deletes multiple sets of records efficiently in batches. Each condition set defines a separate delete operation. More efficient than calling delete_record multiple times.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to delete from"
+            },
+            "condition_sets": {
+              "type": "array",
+              "description": "Array of condition sets, each defining records to delete",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "description": "Array of conditions for this delete operation",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "operator": {
+                      "type": "string",
+                      "enum": [
+                        "eq",
+                        "neq",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "like",
+                        "in"
+                      ]
+                    },
+                    "value": {}
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ]
+                }
+              }
+            },
+            "batch_size": {
+              "type": "number",
+              "description": "Optional batch size for processing (default: 100, max: 1000)",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "table_name",
+            "condition_sets"
+          ]
+        }
+      },
+      {
+        "name": "plan_seed_data",
+        "description": "🌱 RELATIONAL SEEDER: Analyzes target tables, foreign keys, constraints, and row counts to build a safe parent-first seed plan. Use this before generating preview or inserting dummy relational data.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific connected database name"
+            },
+            "target_tables": {
+              "type": "array",
+              "description": "Target tables to seed",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "rows_per_table": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              ],
+              "description": "Rows to create for target tables, either a single number or table-to-count map (default: 10)"
+            },
+            "include_dependencies": {
+              "type": "boolean",
+              "description": "Include parent tables required by foreign keys (default: true)"
+            },
+            "include_children": {
+              "type": "boolean",
+              "description": "Include child tables that reference included tables for nested relational seeding (default: false)"
+            },
+            "child_rows_per_parent": {
+              "type": "number",
+              "description": "Rows to create in child tables for each parent row (default: 2)",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "respect_existing_data": {
+              "type": "boolean",
+              "description": "Reuse existing parent records when possible instead of creating new parent rows (default: true)"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "append"
+              ],
+              "description": "Seed strategy (currently append)"
+            },
+            "random_seed": {
+              "type": "number",
+              "description": "Deterministic seed for repeatable preview and execution (default: 42)"
+            },
+            "max_rows_per_table": {
+              "type": "number",
+              "description": "Safety cap for generated rows per table (default: 1000)",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "max_related_tables": {
+              "type": "number",
+              "description": "Safety cap for dependency/child expansion (default: 25)",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "seed_rules": {
+              "type": "object",
+              "description": "Optional generator overrides keyed by table.column or column name",
+              "additionalProperties": true
+            },
+            "require_confirmation": {
+              "type": "boolean",
+              "description": "Require confirm_token for non-dry-run execution (default: true)"
+            }
+          },
+          "required": [
+            "target_tables"
+          ]
+        }
+      },
+      {
+        "name": "generate_seed_preview",
+        "description": "🌱 RELATIONAL SEEDER: Generates deterministic dummy row previews from a seed plan without writing to the database. Shows symbolic foreign-key placeholders for review before execution.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "plan_id": {
+              "type": "string",
+              "description": "Seed plan ID returned by plan_seed_data"
+            },
+            "locale": {
+              "type": "string",
+              "description": "Optional locale hint for generated values (default: en_US)"
+            },
+            "realistic": {
+              "type": "boolean",
+              "description": "Whether to prefer realistic generated values (default: true)"
+            },
+            "max_preview_rows_per_table": {
+              "type": "number",
+              "description": "Maximum preview rows per table (default: 3)",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "email_domain": {
+              "type": "string",
+              "description": "Safe email domain for generated emails (default: example.test)"
+            }
+          },
+          "required": [
+            "plan_id"
+          ]
+        }
+      },
+      {
+        "name": "execute_seed_plan",
+        "description": "🌱 RELATIONAL SEEDER: Executes a confirmed seed plan with dry-run enabled by default, production-name guard, transaction rollback on errors, and foreign-key ID resolution.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "plan_id": {
+              "type": "string",
+              "description": "Seed plan ID returned by plan_seed_data"
+            },
+            "dry_run": {
+              "type": "boolean",
+              "description": "If true, returns execution preview without inserting rows (default: true)"
+            },
+            "use_transaction": {
+              "type": "boolean",
+              "description": "Use a transaction and rollback on error (default: true)"
+            },
+            "batch_size": {
+              "type": "number",
+              "description": "Reserved batch-size hint for large plans (default: 1 for ID-safe inserts)",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "on_error": {
+              "type": "string",
+              "enum": [
+                "rollback",
+                "stop"
+              ],
+              "description": "Error behavior (default: rollback)"
+            },
+            "confirm_token": {
+              "type": "string",
+              "description": "Confirmation token returned by plan_seed_data; required when dry_run is false"
+            },
+            "allow_production": {
+              "type": "boolean",
+              "description": "Allow writes to production-like database names (default: false)"
+            },
+            "email_domain": {
+              "type": "string",
+              "description": "Safe email domain for generated emails (default: example.test)"
+            }
+          },
+          "required": [
+            "plan_id"
+          ]
+        }
+      },
+      {
+        "name": "validate_seed_integrity",
+        "description": "🌱 RELATIONAL SEEDER: Validates seed results with FK orphan checks, required-column checks, unique-collision checks, and inserted row-count checks.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "plan_id": {
+              "type": "string",
+              "description": "Seed plan ID returned by plan_seed_data"
+            },
+            "tables": {
+              "type": "array",
+              "description": "Optional table subset to validate",
+              "items": {
+                "type": "string"
+              }
+            },
+            "check_foreign_keys": {
+              "type": "boolean",
+              "description": "Check foreign key integrity (default: true)"
+            },
+            "check_orphans": {
+              "type": "boolean",
+              "description": "Alias for check_foreign_keys"
+            },
+            "check_required_columns": {
+              "type": "boolean",
+              "description": "Check NOT NULL required columns (default: true)"
+            },
+            "check_unique_collisions": {
+              "type": "boolean",
+              "description": "Check unique index collisions (default: true)"
+            },
+            "check_row_counts": {
+              "type": "boolean",
+              "description": "Check inserted row counts when execution metadata is available (default: true)"
+            }
+          },
+          "required": [
+            "plan_id"
+          ]
+        }
+      },
+      {
+        "name": "infer_seed_rules",
+        "description": "🌱 ADVANCED SEEDER: Infers safe seed generator rules from schema metadata, sample row patterns, unique constraints, and optional ecommerce/POS/CRM domain presets without returning raw PII samples.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific connected database name"
+            },
+            "tables": {
+              "type": "array",
+              "description": "Optional table subset to analyze; defaults to schema tables up to max_tables",
+              "items": {
+                "type": "string"
+              }
+            },
+            "domain": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "generic",
+                "ecommerce",
+                "pos",
+                "crm"
+              ],
+              "description": "Optional domain preset for better business-like dummy data (default: auto)"
+            },
+            "sample_size": {
+              "type": "number",
+              "description": "Number of sample rows per table used to infer ranges and enum-like choices (default: 25, max: 100)",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "max_tables": {
+              "type": "number",
+              "description": "Maximum number of tables to analyze when tables is omitted (default: 50)",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        }
+      },
+      {
+        "name": "seed_from_template",
+        "description": "🌱 TEMPLATE SEEDER: Creates a plan-first FK-aware seed workflow from ecommerce, POS, or CRM templates. It detects matching tables, applies domain rules, and returns a seed plan for preview/execution.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific connected database name"
+            },
+            "template": {
+              "type": "string",
+              "enum": [
+                "ecommerce",
+                "pos",
+                "crm"
+              ],
+              "description": "Business seed template to apply"
+            },
+            "scale": {
+              "type": "string",
+              "enum": [
+                "small",
+                "medium",
+                "large"
+              ],
+              "description": "Template size preset (default: small)"
+            },
+            "include": {
+              "type": "array",
+              "description": "Optional concrete table list to seed instead of auto-detected template matches",
+              "items": {
+                "type": "string"
+              }
+            },
+            "exclude": {
+              "type": "array",
+              "description": "Optional table names to ignore during template matching",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rows_per_table": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              ],
+              "description": "Optional row-count override for the generated plan"
+            },
+            "include_dependencies": {
+              "type": "boolean",
+              "description": "Include parent tables required by foreign keys (default: true)"
+            },
+            "include_children": {
+              "type": "boolean",
+              "description": "Include child tables that reference included template tables (default: false)"
+            },
+            "respect_existing_data": {
+              "type": "boolean",
+              "description": "Reuse existing parent records when possible instead of creating new parent rows (default: true)"
+            },
+            "random_seed": {
+              "type": "number",
+              "description": "Deterministic seed for repeatable preview and execution"
+            },
+            "require_confirmation": {
+              "type": "boolean",
+              "description": "Require confirm_token for non-dry-run execution (default: true)"
+            }
+          },
+          "required": [
+            "template"
+          ]
+        }
+      },
+      {
+        "name": "run_select_query",
+        "description": "⚡ PRIMARY TOOL FOR SELECT QUERIES. Executes read-only SELECT statements with parameterization, optimizer hints, query caching, and dry-run mode. Supports complex queries with JOINs, subqueries, and aggregations. ⚠️ ONLY for SELECT - use execute_write_query for INSERT/UPDATE, use execute_ddl for CREATE/ALTER/DROP.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL SELECT query to execute"
+            },
+            "params": {
+              "type": "array",
+              "description": "Optional array of parameters for parameterized queries",
+              "items": {}
+            },
+            "hints": {
+              "type": "object",
+              "description": "Optional MySQL optimizer hints to apply to the query",
+              "properties": {
+                "maxExecutionTime": {
+                  "type": "number",
+                  "description": "Maximum execution time in milliseconds"
+                },
+                "forceIndex": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ],
+                  "description": "Force usage of specific index(es)"
+                },
+                "ignoreIndex": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ],
+                  "description": "Ignore specific index(es)"
+                },
+                "straightJoin": {
+                  "type": "boolean",
+                  "description": "Use STRAIGHT_JOIN to force join order"
+                },
+                "noCache": {
+                  "type": "boolean",
+                  "description": "Disable query cache for this query"
+                },
+                "sqlBigResult": {
+                  "type": "boolean",
+                  "description": "Optimize for large result sets"
+                },
+                "sqlSmallResult": {
+                  "type": "boolean",
+                  "description": "Optimize for small result sets"
+                }
+              }
+            },
+            "useCache": {
+              "type": "boolean",
+              "description": "Whether to use query result caching (default: true)"
+            },
+            "dry_run": {
+              "type": "boolean",
+              "description": "If true, returns query plan and estimated cost without executing (Safe Mode)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "execute_write_query",
+        "description": "⚡ PRIMARY TOOL FOR INSERT/UPDATE QUERIES. Executes data modification statements with parameterization support. Returns affected row count and execution details. DELETE SQL requires the separate \"delete\" permission in addition to \"execute\". ⚠️ NOT for SELECT (use run_select_query), NOT for DDL (use execute_ddl for CREATE/ALTER/DROP/TRUNCATE/RENAME).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL query to execute (INSERT or UPDATE; DELETE requires the delete permission)"
+            },
+            "params": {
+              "type": "array",
+              "description": "Optional array of parameters for parameterized queries",
+              "items": {}
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "repair_query",
+        "description": "🔧 Diagnoses SQL query errors and suggests fixes. Analyzes syntax errors, missing columns/tables, and logic issues. Provide the query and optional error message to get repair recommendations. Use when a query fails or needs debugging.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The SQL query to analyze or repair"
+            },
+            "error_message": {
+              "type": "string",
+              "description": "Optional error message received when executing the query"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "create_table",
+        "description": "🏗️ Creates a new table with columns, data types, constraints, and indexes. Simplified interface compared to raw DDL. Requires \"ddl\" permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to create"
+            },
+            "columns": {
+              "type": "array",
+              "description": "Array of column definitions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Column name"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "MySQL data type (e.g., VARCHAR(255), INT, TEXT)"
+                  },
+                  "nullable": {
+                    "type": "boolean",
+                    "description": "Whether column can be NULL"
+                  },
+                  "primary_key": {
+                    "type": "boolean",
+                    "description": "Whether this is the primary key"
+                  },
+                  "auto_increment": {
+                    "type": "boolean",
+                    "description": "Whether column auto-increments"
+                  },
+                  "default": {
+                    "type": "string",
+                    "description": "Default value"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type"
+                ]
+              }
+            },
+            "indexes": {
+              "type": "array",
+              "description": "Optional indexes to create",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "unique": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "table_name",
+            "columns"
+          ]
+        }
+      },
+      {
+        "name": "alter_table",
+        "description": "🔧 Modifies existing table structure: add/drop/modify/rename columns, add/drop indexes. Supports multiple operations in one call. Requires \"ddl\" permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to alter"
+            },
+            "operations": {
+              "type": "array",
+              "description": "Array of alter operations to perform",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "add_column",
+                      "drop_column",
+                      "modify_column",
+                      "rename_column",
+                      "add_index",
+                      "drop_index"
+                    ],
+                    "description": "Type of alteration"
+                  },
+                  "column_name": {
+                    "type": "string"
+                  },
+                  "new_column_name": {
+                    "type": "string"
+                  },
+                  "column_type": {
+                    "type": "string"
+                  },
+                  "nullable": {
+                    "type": "boolean"
+                  },
+                  "default": {
+                    "type": "string"
+                  },
+                  "index_name": {
+                    "type": "string"
+                  },
+                  "index_columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "unique": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              }
+            }
+          },
+          "required": [
+            "table_name",
+            "operations"
+          ]
+        }
+      },
+      {
+        "name": "drop_table",
+        "description": "🗑️ DESTRUCTIVE: Permanently deletes a table and ALL its data. Cannot be undone! Requires \"ddl\" permission. ⚠️ WARNING: IRREVERSIBLE!",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to drop"
+            },
+            "if_exists": {
+              "type": "boolean",
+              "description": "If true, will not error if table does not exist"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "execute_ddl",
+        "description": "⚡ PRIMARY TOOL FOR DDL STATEMENTS. Executes schema modification queries: CREATE, ALTER, DROP, TRUNCATE, RENAME. Use for complex DDL that structured tools don't cover. ⚠️ NOT for SELECT (use run_select_query), NOT for INSERT/UPDATE/DELETE (use execute_write_query). Requires \"ddl\" permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "DDL SQL query to execute (must start with CREATE, ALTER, DROP, TRUNCATE, or RENAME - NO SELECT queries!)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "describe_connection",
+        "description": "Returns current database connection details: host, database name, user, port, and connection status. Use to verify which database you're connected to.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "cursor_execute_request",
+        "description": "Cursor compatibility bridge for clients that can call MCP tools but cannot send arguments. Reads .cursor/mysql-mcp-request.json (or MYSQL_MCP_CURSOR_REQUEST_FILE) and dispatches to the requested MySQL MCP tool. The request file supports {\"tool\":\"execute_ddl\",\"arguments\":{\"query\":\"DROP TABLE IF EXISTS t;\"}} or direct SQL with {\"query\":\"...\",\"mode\":\"auto\"}.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "read_changelog",
+        "description": "Reads the MySQL MCP Server changelog to see version history, new features, bug fixes, and breaking changes. Useful for understanding tool capabilities and recent updates.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string",
+              "description": "Optional: specific version to read (e.g., '1.0.0')"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Optional: limit character count (default: 5000)"
+            }
+          }
+        }
+      },
+      {
+        "name": "test_connection",
+        "description": "Tests database connectivity and measures latency. Returns connection status and response time. Use to troubleshoot connection issues or check database availability.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "list_all_tools",
+        "description": "📋 Returns complete catalog of all available tools with names, descriptions, parameters, and current permissions. Use to discover tool capabilities or when users ask 'what can you do?'.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_all_tables_relationships",
+        "description": "Gets ALL table foreign key relationships in the entire database in a single efficient query. Returns a comprehensive relationship map showing parent-child connections between all tables. Much faster than querying table-by-table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "begin_transaction",
+        "description": "🔄 Starts a new database transaction and returns a transaction ID. Use with commit_transaction or rollback_transaction to group multiple operations atomically. Essential for data consistency when multiple changes must succeed or fail together.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "transactionId": {
+              "type": "string",
+              "description": "Optional custom transaction ID. If not provided, one will be generated."
+            }
+          }
+        }
+      },
+      {
+        "name": "commit_transaction",
+        "description": "✅ Commits an active transaction, making all changes permanent. Use after successful completion of all operations within a transaction started by begin_transaction.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "transactionId": {
+              "type": "string",
+              "description": "The transaction ID to commit"
+            }
+          },
+          "required": [
+            "transactionId"
+          ]
+        }
+      },
+      {
+        "name": "rollback_transaction",
+        "description": "↩️ Rolls back an active transaction, undoing ALL changes made within it. Use when an error occurs during transaction or when changes need to be cancelled.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "transactionId": {
+              "type": "string",
+              "description": "The transaction ID to rollback"
+            }
+          },
+          "required": [
+            "transactionId"
+          ]
+        }
+      },
+      {
+        "name": "get_transaction_status",
+        "description": "Shows all active transactions with their IDs, start times, and operation counts. Use to monitor transaction state or debug transaction issues.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "execute_in_transaction",
+        "description": "Executes a SQL query within an existing transaction context. The query becomes part of the transaction and will be committed or rolled back with it. Use after begin_transaction.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "transactionId": {
+              "type": "string",
+              "description": "The transaction ID to execute the query within"
+            },
+            "query": {
+              "type": "string",
+              "description": "SQL query to execute within the transaction"
+            },
+            "params": {
+              "type": "array",
+              "description": "Optional array of parameters for parameterized queries",
+              "items": {}
+            }
+          },
+          "required": [
+            "transactionId",
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "list_stored_procedures",
+        "description": "Lists all stored procedures in the specified database.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name to list procedures from"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_stored_procedure_info",
+        "description": "Gets detailed information about a specific stored procedure including parameters and metadata.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedure_name": {
+              "type": "string",
+              "description": "Name of the stored procedure to get information for"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "procedure_name"
+          ]
+        }
+      },
+      {
+        "name": "execute_stored_procedure",
+        "description": "Executes a stored procedure with optional parameters.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedure_name": {
+              "type": "string",
+              "description": "Name of the stored procedure to execute"
+            },
+            "parameters": {
+              "type": "array",
+              "description": "Optional array of parameters to pass to the stored procedure",
+              "items": {}
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "procedure_name"
+          ]
+        }
+      },
+      {
+        "name": "create_stored_procedure",
+        "description": "Creates a new stored procedure with the specified parameters and body.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedure_name": {
+              "type": "string",
+              "description": "Name of the stored procedure to create"
+            },
+            "parameters": {
+              "type": "array",
+              "description": "Optional array of parameter definitions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Parameter name"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "IN",
+                      "OUT",
+                      "INOUT"
+                    ],
+                    "description": "Parameter mode"
+                  },
+                  "data_type": {
+                    "type": "string",
+                    "description": "MySQL data type (e.g., VARCHAR(255), INT)"
+                  }
+                },
+                "required": [
+                  "name",
+                  "mode",
+                  "data_type"
+                ]
+              }
+            },
+            "body": {
+              "type": "string",
+              "description": "SQL body of the stored procedure"
+            },
+            "comment": {
+              "type": "string",
+              "description": "Optional comment for the stored procedure"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "procedure_name",
+            "body"
+          ]
+        }
+      },
+      {
+        "name": "drop_stored_procedure",
+        "description": "Drops (deletes) a stored procedure. WARNING: This is irreversible!",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedure_name": {
+              "type": "string",
+              "description": "Name of the stored procedure to drop"
+            },
+            "if_exists": {
+              "type": "boolean",
+              "description": "If true, will not error if procedure does not exist"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "procedure_name"
+          ]
+        }
+      },
+      {
+        "name": "show_create_procedure",
+        "description": "Shows the CREATE statement for a stored procedure.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedure_name": {
+              "type": "string",
+              "description": "Name of the stored procedure to show CREATE statement for"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "procedure_name"
+          ]
+        }
+      },
+      {
+        "name": "export_table_to_csv",
+        "description": "📄 Exports table data to CSV format with filtering, pagination, and sorting. For sensitive data, use safe_export_table instead which includes automatic data masking.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to export"
+            },
+            "filters": {
+              "type": "array",
+              "description": "Array of filter conditions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "type": "string",
+                    "enum": [
+                      "eq",
+                      "neq",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "like",
+                      "in"
+                    ]
+                  },
+                  "value": {
+                    "description": "Value to compare against (can be string, number, boolean, or array for \"in\" operator)"
+                  }
+                },
+                "required": [
+                  "field",
+                  "operator",
+                  "value"
+                ]
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "number",
+                  "description": "Page number (starting from 1)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Number of records per page"
+                }
+              }
+            },
+            "sorting": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "description": "Field name to sort by"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              }
+            },
+            "include_headers": {
+              "type": "boolean",
+              "description": "Whether to include column headers in the CSV output"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "export_query_to_csv",
+        "description": "📄 Executes a SELECT query and exports results to CSV format. Supports complex queries with JOINs and aggregations. For sensitive data, consider using safe_export_table or adding manual data masking.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL SELECT query to execute and export"
+            },
+            "params": {
+              "type": "array",
+              "description": "Optional array of parameters for parameterized queries",
+              "items": {}
+            },
+            "include_headers": {
+              "type": "boolean",
+              "description": "Whether to include column headers in the CSV output"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "analyze_query",
+        "description": "🔍 Analyzes a SQL query using EXPLAIN and provides optimization suggestions: missing indexes, inefficient operations, cost estimates. Returns actionable recommendations. Use before running expensive queries.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL query to analyze"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "get_optimization_hints",
+        "description": "Get suggested MySQL optimizer hints for a specific optimization goal (SPEED, MEMORY, or STABILITY).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "goal": {
+              "type": "string",
+              "enum": [
+                "SPEED",
+                "MEMORY",
+                "STABILITY"
+              ],
+              "description": "Optimization goal: SPEED for faster queries, MEMORY for lower memory usage, STABILITY for consistent performance"
+            }
+          },
+          "required": [
+            "goal"
+          ]
+        }
+      },
+      {
+        "name": "list_views",
+        "description": "Lists all views in the connected database.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_view_info",
+        "description": "Gets detailed information about a specific view including columns and definition.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "view_name": {
+              "type": "string",
+              "description": "Name of the view"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "view_name"
+          ]
+        }
+      },
+      {
+        "name": "create_view",
+        "description": "Creates a new view with the specified SELECT definition. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "view_name": {
+              "type": "string",
+              "description": "Name of the view to create"
+            },
+            "definition": {
+              "type": "string",
+              "description": "SELECT statement that defines the view"
+            },
+            "or_replace": {
+              "type": "boolean",
+              "description": "If true, replaces existing view"
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "UNDEFINED",
+                "MERGE",
+                "TEMPTABLE"
+              ],
+              "description": "View algorithm"
+            },
+            "security": {
+              "type": "string",
+              "enum": [
+                "DEFINER",
+                "INVOKER"
+              ],
+              "description": "Security context"
+            },
+            "check_option": {
+              "type": "string",
+              "enum": [
+                "CASCADED",
+                "LOCAL"
+              ],
+              "description": "Check option for updatable views"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "view_name",
+            "definition"
+          ]
+        }
+      },
+      {
+        "name": "alter_view",
+        "description": "Alters an existing view definition. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "view_name": {
+              "type": "string",
+              "description": "Name of the view to alter"
+            },
+            "definition": {
+              "type": "string",
+              "description": "New SELECT statement that defines the view"
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "UNDEFINED",
+                "MERGE",
+                "TEMPTABLE"
+              ],
+              "description": "View algorithm"
+            },
+            "security": {
+              "type": "string",
+              "enum": [
+                "DEFINER",
+                "INVOKER"
+              ],
+              "description": "Security context"
+            },
+            "check_option": {
+              "type": "string",
+              "enum": [
+                "CASCADED",
+                "LOCAL"
+              ],
+              "description": "Check option"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "view_name",
+            "definition"
+          ]
+        }
+      },
+      {
+        "name": "drop_view",
+        "description": "Drops a view. Requires 'ddl' permission. WARNING: This is irreversible!",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "view_name": {
+              "type": "string",
+              "description": "Name of the view to drop"
+            },
+            "if_exists": {
+              "type": "boolean",
+              "description": "If true, will not error if view does not exist"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "view_name"
+          ]
+        }
+      },
+      {
+        "name": "show_create_view",
+        "description": "Shows the CREATE statement for a view.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "view_name": {
+              "type": "string",
+              "description": "Name of the view"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "view_name"
+          ]
+        }
+      },
+      {
+        "name": "list_triggers",
+        "description": "Lists all triggers in the database, optionally filtered by table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            },
+            "table_name": {
+              "type": "string",
+              "description": "Optional: filter triggers for specific table"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_trigger_info",
+        "description": "Gets detailed information about a specific trigger.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "trigger_name": {
+              "type": "string",
+              "description": "Name of the trigger"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "trigger_name"
+          ]
+        }
+      },
+      {
+        "name": "create_trigger",
+        "description": "Creates a new trigger on a table. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "trigger_name": {
+              "type": "string",
+              "description": "Name of the trigger"
+            },
+            "table_name": {
+              "type": "string",
+              "description": "Table the trigger is associated with"
+            },
+            "timing": {
+              "type": "string",
+              "enum": [
+                "BEFORE",
+                "AFTER"
+              ],
+              "description": "When the trigger fires"
+            },
+            "event": {
+              "type": "string",
+              "enum": [
+                "INSERT",
+                "UPDATE",
+                "DELETE"
+              ],
+              "description": "Event that fires the trigger"
+            },
+            "body": {
+              "type": "string",
+              "description": "SQL statements to execute"
+            },
+            "definer": {
+              "type": "string",
+              "description": "Optional: user who owns the trigger"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "trigger_name",
+            "table_name",
+            "timing",
+            "event",
+            "body"
+          ]
+        }
+      },
+      {
+        "name": "drop_trigger",
+        "description": "Drops a trigger. Requires 'ddl' permission. WARNING: This is irreversible!",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "trigger_name": {
+              "type": "string",
+              "description": "Name of the trigger to drop"
+            },
+            "if_exists": {
+              "type": "boolean",
+              "description": "If true, will not error if trigger does not exist"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "trigger_name"
+          ]
+        }
+      },
+      {
+        "name": "show_create_trigger",
+        "description": "Shows the CREATE statement for a trigger.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "trigger_name": {
+              "type": "string",
+              "description": "Name of the trigger"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "trigger_name"
+          ]
+        }
+      },
+      {
+        "name": "list_indexes",
+        "description": "Lists all indexes for a specific table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "get_index_info",
+        "description": "Gets detailed information about a specific index.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Name of the index"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "index_name"
+          ]
+        }
+      },
+      {
+        "name": "create_index",
+        "description": "Creates a new index on a table. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Name of the index"
+            },
+            "columns": {
+              "type": "array",
+              "description": "Columns to index (string or object with column, length, order)",
+              "items": {}
+            },
+            "unique": {
+              "type": "boolean",
+              "description": "Whether index is unique"
+            },
+            "index_type": {
+              "type": "string",
+              "enum": [
+                "BTREE",
+                "HASH",
+                "FULLTEXT",
+                "SPATIAL"
+              ],
+              "description": "Index type"
+            },
+            "comment": {
+              "type": "string",
+              "description": "Optional comment"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "index_name",
+            "columns"
+          ]
+        }
+      },
+      {
+        "name": "drop_index",
+        "description": "Drops an index from a table. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Name of the index to drop"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "index_name"
+          ]
+        }
+      },
+      {
+        "name": "analyze_index",
+        "description": "Analyzes a table to update index statistics.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to analyze"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "list_foreign_keys",
+        "description": "Lists all foreign key constraints for a table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "list_constraints",
+        "description": "Lists all constraints (PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK) for a table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "add_foreign_key",
+        "description": "Adds a foreign key constraint to a table. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "constraint_name": {
+              "type": "string",
+              "description": "Name of the constraint"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Columns in the foreign key"
+            },
+            "referenced_table": {
+              "type": "string",
+              "description": "Referenced table name"
+            },
+            "referenced_columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Referenced columns"
+            },
+            "on_delete": {
+              "type": "string",
+              "enum": [
+                "CASCADE",
+                "SET NULL",
+                "RESTRICT",
+                "NO ACTION",
+                "SET DEFAULT"
+              ]
+            },
+            "on_update": {
+              "type": "string",
+              "enum": [
+                "CASCADE",
+                "SET NULL",
+                "RESTRICT",
+                "NO ACTION",
+                "SET DEFAULT"
+              ]
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "constraint_name",
+            "columns",
+            "referenced_table",
+            "referenced_columns"
+          ]
+        }
+      },
+      {
+        "name": "drop_foreign_key",
+        "description": "Drops a foreign key constraint. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "constraint_name": {
+              "type": "string",
+              "description": "Name of the constraint to drop"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "constraint_name"
+          ]
+        }
+      },
+      {
+        "name": "add_unique_constraint",
+        "description": "Adds a unique constraint to a table. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "constraint_name": {
+              "type": "string",
+              "description": "Name of the constraint"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Columns in the unique constraint"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "constraint_name",
+            "columns"
+          ]
+        }
+      },
+      {
+        "name": "drop_constraint",
+        "description": "Drops a UNIQUE or CHECK constraint. Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "constraint_name": {
+              "type": "string",
+              "description": "Name of the constraint"
+            },
+            "constraint_type": {
+              "type": "string",
+              "enum": [
+                "UNIQUE",
+                "CHECK"
+              ],
+              "description": "Type of constraint"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "constraint_name",
+            "constraint_type"
+          ]
+        }
+      },
+      {
+        "name": "add_check_constraint",
+        "description": "Adds a CHECK constraint to a table (MySQL 8.0.16+). Requires 'ddl' permission.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "constraint_name": {
+              "type": "string",
+              "description": "Name of the constraint"
+            },
+            "expression": {
+              "type": "string",
+              "description": "Check expression (e.g., 'age >= 18')"
+            },
+            "enforced": {
+              "type": "boolean",
+              "description": "Whether constraint is enforced (default: true)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "constraint_name",
+            "expression"
+          ]
+        }
+      },
+      {
+        "name": "analyze_table",
+        "description": "Analyzes a table to update index statistics for the query optimizer.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to analyze"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "optimize_table",
+        "description": "Optimizes a table to reclaim unused space and defragment data.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to optimize"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "check_table",
+        "description": "Checks a table for errors.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to check"
+            },
+            "check_type": {
+              "type": "string",
+              "enum": [
+                "QUICK",
+                "FAST",
+                "MEDIUM",
+                "EXTENDED",
+                "CHANGED"
+              ],
+              "description": "Type of check"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "repair_table",
+        "description": "Repairs a corrupted table (MyISAM, ARCHIVE, CSV only).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to repair"
+            },
+            "quick": {
+              "type": "boolean",
+              "description": "Quick repair"
+            },
+            "extended": {
+              "type": "boolean",
+              "description": "Extended repair"
+            },
+            "use_frm": {
+              "type": "boolean",
+              "description": "Use .frm file to repair"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "truncate_table",
+        "description": "🗑️ DESTRUCTIVE: Removes ALL rows from a table instantly (faster than DELETE). Resets auto-increment counters. Cannot be undone! Requires 'ddl' permission. ⚠️ WARNING: IRREVERSIBLE!",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to truncate"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "get_table_status",
+        "description": "Gets detailed status and statistics for one or all tables.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Optional: specific table name (omit for all tables)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "flush_table",
+        "description": "Flushes table(s) - closes and reopens them.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Optional: specific table (omit for all tables)"
+            },
+            "with_read_lock": {
+              "type": "boolean",
+              "description": "Acquire read lock after flushing"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_table_size",
+        "description": "Gets size information for one or all tables including data and index sizes.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Optional: specific table name (omit for all tables)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          }
+        }
+      },
+      {
+        "name": "create_fulltext_index",
+        "description": "Creates a FULLTEXT index on one or more text columns in a table. Supports ngram and mecab parsers for advanced text search capabilities (useful for languages like Chinese, Japanese, Korean). Use this to enable full-text search on text columns.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to create the fulltext index on"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of column names to include in the fulltext index"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Optional: custom name for the index (default: auto-generated)"
+            },
+            "parser": {
+              "type": "string",
+              "enum": [
+                "ngram",
+                "mecab"
+              ],
+              "description": "Optional: parser for CJK languages (ngram or mecab)"
+            },
+            "ngram_token_size": {
+              "type": "number",
+              "description": "Optional: token size for ngram parser (default: 2)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "columns"
+          ]
+        }
+      },
+      {
+        "name": "fulltext_search",
+        "description": "Performs full-text search on a table using MATCH AGAINST clause. Supports natural language, boolean mode, and query expansion. Returns results ordered by relevance score. Use this for efficient text search on indexed columns.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to search"
+            },
+            "search_term": {
+              "type": "string",
+              "description": "Search term or query"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional: array of column names to search (default: all fulltext indexed columns)"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "natural_language",
+                "natural_language_with_query_expansion",
+                "boolean",
+                "query_expansion"
+              ],
+              "description": "Search mode (default: natural_language)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Optional: maximum number of results (default: 100)"
+            },
+            "offset": {
+              "type": "number",
+              "description": "Optional: offset for pagination (default: 0)"
+            },
+            "order_by": {
+              "type": "string",
+              "description": "Optional: column to order by (default: relevance_score)"
+            },
+            "order_direction": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "description": "Optional: order direction (default: DESC)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name",
+            "search_term"
+          ]
+        }
+      },
+      {
+        "name": "get_fulltext_info",
+        "description": "Retrieves information about FULLTEXT indexes on a table including index names, columns, and parser details. Use this to discover what fulltext indexes exist on a table.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Optional: specific index name to query (default: all indexes)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "drop_fulltext_index",
+        "description": "Drops a FULLTEXT index from a table. Use this to remove a fulltext index that is no longer needed.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Optional: name of the index to drop (default: first fulltext index found)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "get_fulltext_stats",
+        "description": "Retrieves statistics for FULLTEXT indexes on a table including document count, size, and key length. Use this to analyze index performance and size.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "optimize_fulltext",
+        "description": "Optimizes a table to update FULLTEXT index statistics and reclaim space. Use this after bulk inserts or updates to improve search performance.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to optimize"
+            },
+            "database": {
+              "type": "string",
+              "description": "Optional: specific database name"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'list_databases' claims unrestricted access scope",
+      "description": "Tool 'list_databases' description contains a broad-scope claim: 'all data'. Unrestricted scope tools risk being exploited for lateral movement or privilege escalation in an MCP session.",
+      "tool_name": "list_databases",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Lists all databases available on the MySQL server. Use this to discover what databases exist before querying them.",
+      "remediation": "Scope tools to the minimum necessary access. Replace 'any path' / 'all files' with explicit allowlists. Validate and restrict inputs server-side.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'run_select_query'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "run_select_query",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'execute_ddl'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "execute_ddl",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'cursor_execute_request'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "cursor_execute_request",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'rows_per_table' in 'plan_seed_data' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "plan_seed_data",
+      "parameter": "rows_per_table",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'rows_per_table'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'infer_seed_rules' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "infer_seed_rules",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'rows_per_table' in 'seed_from_template' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "seed_from_template",
+      "parameter": "rows_per_table",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'rows_per_table'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'begin_transaction' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "begin_transaction",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'flush_table' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "flush_table",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'execute_seed_plan' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_seed_plan' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "execute_seed_plan",
+      "parameter": null,
+      "payload": null,
+      "evidence": "🌱 RELATIONAL SEEDER: Executes a confirmed seed plan with dry-run enabled by default, production-name guard, transaction rollback on errors, and foreign-key ID resolution.",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'run_select_query' description reveals arbitrary execution intent",
+      "description": "Tool 'run_select_query' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "run_select_query",
+      "parameter": null,
+      "payload": null,
+      "evidence": "⚡ PRIMARY TOOL FOR SELECT QUERIES. Executes read-only SELECT statements with parameterization, optimizer hints, query caching, and dry-run mode. Supports complex queries with JOINs, subqueries, and aggregations. ⚠️ ONLY for SELECT - use execute_write_query for INSERT/UPDATE, use execute_ddl for CREA",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'execute_write_query' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_write_query' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "execute_write_query",
+      "parameter": null,
+      "payload": null,
+      "evidence": "⚡ PRIMARY TOOL FOR INSERT/UPDATE QUERIES. Executes data modification statements with parameterization support. Returns affected row count and execution details. DELETE SQL requires the separate \"delete\" permission in addition to \"execute\". ⚠️ NOT for SELECT (use run_select_query), NOT for DDL (use e",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT03",
+      "severity": "medium",
+      "title": "Shadow Tool — 'execute_ddl' (DB tool) description reveals execution intent",
+      "description": "Tool 'execute_ddl' description contains execution keywords. DB-prefixed tools legitimately execute queries, but verify the scope is restricted to the intended database context.",
+      "tool_name": "execute_ddl",
+      "parameter": null,
+      "payload": null,
+      "evidence": "⚡ PRIMARY TOOL FOR DDL STATEMENTS. Executes schema modification queries: CREATE, ALTER, DROP, TRUNCATE, RENAME. Use for complex DDL that structured tools don't cover. ⚠️ NOT for SELECT (use run_select_query), NOT for INSERT/UPDATE/DELETE (use execute_write_query). Requires \"ddl\" permission.",
+      "remediation": "Declare the allowed SQL operation types in the schema and reject statements outside the declared scope (e.g. no DDL if tool is DQL only).",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'execute_in_transaction' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_in_transaction' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "execute_in_transaction",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Executes a SQL query within an existing transaction context. The query becomes part of the transaction and will be committed or rolled back with it. Use after begin_transaction.",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'execute_stored_procedure' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_stored_procedure' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "execute_stored_procedure",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Executes a stored procedure with optional parameters.",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'export_query_to_csv' description reveals arbitrary execution intent",
+      "description": "Tool 'export_query_to_csv' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "export_query_to_csv",
+      "parameter": null,
+      "payload": null,
+      "evidence": "📄 Executes a SELECT query and exports results to CSV format. Supports complex queries with JOINs and aggregations. For sensitive data, consider using safe_export_table or adding manual data masking.",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'begin_transaction' directs LLM to call commit_transaction",
+      "description": "Tool 'begin_transaction' description references tool(s) 'commit_transaction', 'rollback_transaction' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "begin_transaction",
+      "parameter": null,
+      "payload": null,
+      "evidence": "🔄 Starts a new database transaction and returns a transaction ID. Use with commit_transaction or rollback_transaction to group multiple operations atomically. Essential for data consistency when multiple changes must succeed or fail together.",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'repair_query.error_message'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "repair_query",
+      "parameter": "error_message",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"status\": \"success\",\n  \"suggestions\": [\n    \"Check SQL syntax matching your MySQL version.\",\n    \"Verify table and column names using 'list_tables' or 'read_table_schema'.\",\n    \"Ensure string literals are quoted correctly.\"\n  ],\n  \"fixed_query\": \"test\",\n  \"analysis\": {\n    \"issue\": \"Syntax/Exec",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'analyze_query.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "analyze_query",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"originalQuery\": \"' OR '1'='1\",\n  \"queryType\": \"OTHER\",\n  \"tables\": [],\n  \"hasJoins\": false,\n  \"hasSubqueries\": false,\n  \"hasGroupBy\": false,\n  \"hasOrderBy\": false,\n  \"hasLimit\": false,\n  \"estimatedComplexity\": \"LOW\",\n  \"suggestions\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_optimization_hints.goal'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_optimization_hints",
+      "parameter": "goal",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"goal\": \"<script>alert(1)</script>\",\n  \"hints\": {}\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'analyze_query' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "analyze_query",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'get_optimization_hints' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['goal']",
+      "tool_name": "get_optimization_hints",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_optimization_hints.goal' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "get_optimization_hints",
+      "parameter": "goal",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_optimization_hints' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_optimization_hints",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'list_tables' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "list_tables",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'read_table_schema' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "read_table_schema",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'create_record' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 62 → 123 chars",
+      "tool_name": "create_record",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 62 → 123 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-028",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'update_record' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 109 → 170 chars",
+      "tool_name": "update_record",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 109 → 170 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-029",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'delete_record' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 63 → 124 chars",
+      "tool_name": "delete_record",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 63 → 124 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-030",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'bulk_insert' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 57 → 118 chars",
+      "tool_name": "bulk_insert",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 57 → 118 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-031",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'list_stored_procedures' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "list_stored_procedures",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-032",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'get_stored_procedure_info' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "get_stored_procedure_info",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-033",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'execute_stored_procedure' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 87 → 208 chars",
+      "tool_name": "execute_stored_procedure",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 87 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-034",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'create_stored_procedure' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "create_stored_procedure",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-035",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'drop_stored_procedure' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "drop_stored_procedure",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-036",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Hidden param accepted — 'show_create_procedure' responds differently to _debug",
+      "description": "Parameter '_debug' caused a response size or format change. The server may be accepting undeclared parameters. Probe response significantly larger: 45 → 208 chars",
+      "tool_name": "show_create_procedure",
+      "parameter": null,
+      "payload": "{\"_debug\": true}",
+      "evidence": "Diff: Probe response significantly larger: 45 → 208 chars",
+      "remediation": "Set additionalProperties: false in the tool schema and reject unknown parameters. Validate all inputs against a strict allowlist.",
+      "exploitation_confirmed": false,
+      "confidence": 55,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-037",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-038",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-039",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 66.73500000000058,
+  "exchanges": []
+}

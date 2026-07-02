@@ -1,0 +1,198 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT05",
+              "name": "EXT05",
+              "shortDescription": {
+                "text": "EXT05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'spartan_health_check' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "spartan_health_check",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'spartan_cache_clear' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "spartan_cache_clear",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'spartan_cache_rebuild' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "spartan_cache_rebuild",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT05",
+          "level": "warning",
+          "message": {
+            "text": "Resource URI \u2014 large attack surface (172 resources exposed). The server exposes 172 MCP resources (threshold: 20). A large resource surface increases the risk of accidentally exposing sensitive data and makes it harder for operators to audit what information is accessible."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'spartan_components_get.name'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: generic_string)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "spartan_components_get",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "error",
+          "message": {
+            "text": "Injection reflected \u2014 'spartan_components_get.spartanVersion'. Payload was reflected verbatim in the response without sanitization (field classification: generic_string)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "spartan_components_get",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "error",
+          "message": {
+            "text": "Protocol crash \u2014 oversized method name caused transport failure. The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Protocol crash \u2014 deeply nested params caused server disconnect. Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

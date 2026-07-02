@@ -1,0 +1,2282 @@
+{
+  "target": "npx -y european-parliament-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "european-parliament-mcp-server",
+    "server_version": "1.3.33",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_meps",
+        "description": "Retrieve Members of European Parliament with optional filters (country, political group, committee, active status). Returns paginated results with MEP details including name, country, political group, committees, and contact information.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string",
+              "description": "ISO 3166-1 alpha-2 country code (e.g., \"SE\" for Sweden)",
+              "pattern": "^[A-Z]{2}$",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "group": {
+              "type": "string",
+              "description": "Political group identifier (e.g., \"EPP\", \"S&D\", \"Greens/EFA\")",
+              "minLength": 1,
+              "maxLength": 50
+            },
+            "committee": {
+              "type": "string",
+              "description": "Committee identifier (e.g., \"ENVI\", \"AGRI\")",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "active": {
+              "type": "boolean",
+              "description": "Filter by active status",
+              "default": true
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_mep_details",
+        "description": "Retrieve detailed information about a specific Member of European Parliament including biography, contact information, committee memberships, voting statistics, and parliamentary activities. Personal data access is logged for GDPR compliance.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "MEP identifier (e.g., \"MEP-124810\")",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      },
+      {
+        "name": "get_plenary_sessions",
+        "description": "Retrieve European Parliament plenary sessions/meetings. Supports single meeting lookup by eventId or list with year, date, and location filters. Returns session details including date, location, agenda items, voting records, and attendance statistics.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "eventId": {
+              "type": "string",
+              "description": "Meeting event ID for single meeting lookup"
+            },
+            "year": {
+              "type": "number",
+              "description": "Filter by calendar year (recommended for annual counts)",
+              "minimum": 1900,
+              "maximum": 2100
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "location": {
+              "type": "string",
+              "description": "Session location (e.g., \"Strasbourg\", \"Brussels\")",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_voting_records",
+        "description": "Retrieve voting records from European Parliament plenary sessions. Filter by session, topic, or date range. Returns aggregate vote counts (for/against/abstain) and final result. The EP API only provides aggregate vote tallies, not individual MEP positions. NOTE: The EP publishes roll-call voting data with a delay of several weeks, so queries for the most recent 1-2 months may return empty results — this is expected EP API behavior, not an error.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sessionId": {
+              "type": "string",
+              "description": "Plenary session identifier",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "topic": {
+              "type": "string",
+              "description": "Vote topic or keyword to search",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "search_documents",
+        "description": "Search European Parliament legislative documents by keyword, or retrieve a single document by docId. Filter by document type (REPORT, RESOLUTION, DECISION, DIRECTIVE, REGULATION, OPINION), date range, and committee. Returns document metadata including title, authors, status, and PDF/XML links.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single document lookup (bypasses keyword search)"
+            },
+            "keyword": {
+              "type": "string",
+              "description": "Search keyword or phrase (alphanumeric, spaces, hyphens, underscores only)",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[a-zA-Z0-9\\s\\-_]+$"
+            },
+            "documentType": {
+              "type": "string",
+              "description": "Filter by document type",
+              "enum": [
+                "REPORT",
+                "RESOLUTION",
+                "DECISION",
+                "DIRECTIVE",
+                "REGULATION",
+                "OPINION",
+                "AMENDMENT"
+              ]
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "committee": {
+              "type": "string",
+              "description": "Committee identifier",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_committee_info",
+        "description": "Retrieve detailed information about EP corporate bodies/committees. Query by ID, abbreviation, or set showCurrent=true for all current active bodies. Returns composition, chair, vice-chairs, members, meeting schedules, and areas of responsibility.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Committee identifier",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "abbreviation": {
+              "type": "string",
+              "description": "Committee abbreviation (e.g., \"ENVI\", \"AGRI\", \"ECON\")",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "showCurrent": {
+              "type": "boolean",
+              "description": "If true, returns all current active corporate bodies",
+              "default": false
+            }
+          }
+        }
+      },
+      {
+        "name": "get_parliamentary_questions",
+        "description": "Retrieve European Parliament questions (written and oral) submitted by MEPs, or a single question by docId. Filter by question type, author, topic, status (pending/answered), and date range. Returns question text, answers if available, and metadata.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single question lookup"
+            },
+            "type": {
+              "type": "string",
+              "description": "Question type",
+              "enum": [
+                "WRITTEN",
+                "ORAL"
+              ]
+            },
+            "author": {
+              "type": "string",
+              "description": "MEP identifier or name of question author",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "topic": {
+              "type": "string",
+              "description": "Question topic or keyword to search",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "status": {
+              "type": "string",
+              "description": "Question status",
+              "enum": [
+                "PENDING",
+                "ANSWERED"
+              ]
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date filter (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_server_health",
+        "description": "Check server health and feed availability status. Returns server version, uptime, per-feed health status (ok/error/unknown), overall availability level (Full/Degraded/Sparse/Unavailable/Unknown), and a `lifecycleCache` block ({state: WARM|STALE|COLD, ageMs, corpusSize, lastRefreshErrorAt}) reporting the state of the corpus-wide lifecycle-statistics cache that feeds `monitor_legislative_pipeline`. Per-feed `lastProbedAt` and `lastAttempt` staleness timestamps are included only once a feed has been probed (absent for never-probed feeds). `Unknown` is reported when no feeds have been probed yet (cache empty) and must NOT be interpreted as an outage — consumers should attempt at least one feed probe before treating the server as down. Does not make upstream API calls — reports cached status from recent tool invocations. Use this to check which feeds are healthy before making data requests and to adapt data collection strategy.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "analyze_voting_patterns",
+        "description": "Analyze MEP voting behavior including voting alignment with political group, cross-party voting patterns, attendance rates, and topic-based voting analysis. Returns comprehensive voting statistics and patterns over a specified time period.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepId": {
+              "type": "string",
+              "description": "MEP identifier",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "compareWithGroup": {
+              "type": "boolean",
+              "description": "Compare MEP voting with political group average",
+              "default": true
+            }
+          },
+          "required": [
+            "mepId"
+          ]
+        }
+      },
+      {
+        "name": "track_legislation",
+        "description": "Track European Parliament legislative procedure progress including current status, timeline of stages, committee assignments, amendments, voting records, and next steps. Provides comprehensive overview of legislation journey from proposal to adoption.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "procedureId": {
+              "type": "string",
+              "description": "Legislative procedure identifier (e.g., \"2024/0001(COD)\")",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "procedureId"
+          ]
+        }
+      },
+      {
+        "name": "generate_report",
+        "description": "Generate comprehensive analytical reports on European Parliament data. Supports MEP activity reports, committee performance reports, voting statistics, and legislation progress reports. Returns structured report with summary, sections, statistics, and recommendations.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "reportType": {
+              "type": "string",
+              "description": "Type of report to generate",
+              "enum": [
+                "MEP_ACTIVITY",
+                "COMMITTEE_PERFORMANCE",
+                "VOTING_STATISTICS",
+                "LEGISLATION_PROGRESS"
+              ]
+            },
+            "subjectId": {
+              "type": "string",
+              "description": "Subject identifier (MEP ID, Committee ID, etc.) - optional for aggregate reports",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Report period start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Report period end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          "required": [
+            "reportType"
+          ]
+        }
+      },
+      {
+        "name": "assess_mep_influence",
+        "description": "Compute MEP influence score using a 5-dimension weighted model: Voting Activity (25%), Legislative Output (25%), Committee Engagement (20%), Parliamentary Oversight (15%), Coalition Building (15%). Returns overall score, rank, dimension breakdowns, and computed attributes including participation rate, loyalty score, diversity index, and leadership indicator.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepId": {
+              "type": "string",
+              "description": "MEP identifier",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "includeDetails": {
+              "type": "boolean",
+              "description": "Include detailed breakdown per dimension",
+              "default": false
+            }
+          },
+          "required": [
+            "mepId"
+          ]
+        }
+      },
+      {
+        "name": "analyze_coalition_dynamics",
+        "description": "Analyze political group coalition dynamics including cohesion rates, cross-party alliances, defection rates, and stress indicators. Computes parliamentary fragmentation index, effective number of parties, grand coalition viability, and opposition strength. Uses CIA Coalition Analysis methodology.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "groupIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Political group identifiers to analyze (omit for all groups)",
+              "minItems": 1,
+              "maxItems": 10
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "minimumCohesion": {
+              "type": "number",
+              "description": "Threshold for coalition allianceSignal detection (0-1, default 0.5). NOTE: Until per-MEP roll-call data is exposed by the EP Open Data Portal, this is applied to coalitionPairs[].sizeSimilarityScore (a group-size ratio proxy) — NOT to vote-level cohesion. The parameter name is preserved for backward compatibility.",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.5
+            }
+          }
+        }
+      },
+      {
+        "name": "detect_voting_anomalies",
+        "description": "Detect unusual voting patterns including party defections, abstention spikes, week-over-week alignment shifts, and cross-party movement signals. Uses DOCEO RCV roll-call records and per-MEP rolling baselines (defection z ≥1.5, abstention z ≥1.5, WoW Δ ≥20pp, cross-party share ≥60%). Returns anomalies with evidenceVoteIds, severity classification (HIGH/MEDIUM/LOW), group stability score, defection trend, and risk level.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepId": {
+              "type": "string",
+              "description": "MEP identifier (omit for broad analysis)",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "groupId": {
+              "type": "string",
+              "description": "Political group to analyze",
+              "minLength": 1,
+              "maxLength": 50
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "sensitivityThreshold": {
+              "type": "number",
+              "description": "Anomaly sensitivity (0-1, lower = more anomalies detected). Default 0.3 matches the spec thresholds (z≥1.5, WoW≥20pp, cross-party≥60%).",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.3
+            }
+          }
+        }
+      },
+      {
+        "name": "compare_political_groups",
+        "description": "Compare political groups across multiple dimensions: voting discipline, activity level, legislative output, attendance, and cohesion. Returns rankings, computed performance scores, seat share, effectiveness per member, parliamentary balance index, and competitive index.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "groupIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Political group identifiers to compare (minimum 2)",
+              "minItems": 2,
+              "maxItems": 10
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dimensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "voting_discipline",
+                  "activity_level",
+                  "legislative_output",
+                  "attendance",
+                  "cohesion"
+                ]
+              },
+              "description": "Comparison dimensions (omit for all)"
+            }
+          },
+          "required": [
+            "groupIds"
+          ]
+        }
+      },
+      {
+        "name": "analyze_legislative_effectiveness",
+        "description": "Analyze legislative effectiveness of an MEP or committee using real EP Open Data Portal sources. Computes reports authored, opinions delivered, amendments tabled/adopted, questions asked, and legislativeSuccessRate by fanning out /procedures, /adopted-texts, /plenary-session-documents-items, and /parliamentary-questions under independent 6s timeouts. For subjectType=COMMITTEE, aggregates per-MEP across the committee membership.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "subjectType": {
+              "type": "string",
+              "enum": [
+                "MEP",
+                "COMMITTEE"
+              ],
+              "description": "Subject type to analyze"
+            },
+            "subjectId": {
+              "type": "string",
+              "description": "Subject identifier (MEP ID or committee abbreviation)",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          "required": [
+            "subjectType",
+            "subjectId"
+          ]
+        }
+      },
+      {
+        "name": "monitor_legislative_pipeline",
+        "description": "Monitor legislative pipeline status with lifecycle-driven bottleneck detection and timeline forecasting. Tracks procedures through their authoritative event sequence (REFERRAL → COM_VOTE → EP_ADOPTION → SIGNATURE / REJECTION). Returns pipeline health score, throughput rate, bottleneck index (procedures with dwell ≥ 95th percentile of historical distribution), stalled procedure rate, legislative momentum, per-procedure lifecycleEvents, and a forecastBasis discriminator (HISTORICAL_MEDIAN | INSUFFICIENT_DATA | NOT_APPLICABLE — the last when every visible procedure is already completed).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "committee": {
+              "type": "string",
+              "description": "Filter by committee",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "ACTIVE",
+                "STALLED",
+                "COMPLETED"
+              ],
+              "description": "Pipeline status filter",
+              "default": "ACTIVE"
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Analysis start date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "Analysis end date (YYYY-MM-DD format)",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        }
+      },
+      {
+        "name": "analyze_committee_activity",
+        "description": "Analyze European Parliament committee workload, meeting frequency, document production, decisions adopted, legislative output, and member engagement. Fans out four EP sources in parallel with per-source timeouts and reports data availability per source.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "committeeId": {
+              "type": "string",
+              "description": "Committee identifier or abbreviation (e.g., \"ENVI\", \"ITRE\")"
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD). Defaults to trailing 6 months."
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD). Defaults to today."
+            }
+          },
+          "required": [
+            "committeeId"
+          ]
+        }
+      },
+      {
+        "name": "track_mep_attendance",
+        "description": "Track and analyze MEP attendance patterns across plenary sessions. Provides attendance rates, trends, and engagement categorization. Filter by individual MEP, country, or political group.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepId": {
+              "type": "string",
+              "description": "MEP identifier (omit for group/country overview)"
+            },
+            "country": {
+              "type": "string",
+              "description": "Filter by country (ISO 3166-1 alpha-2)"
+            },
+            "groupId": {
+              "type": "string",
+              "description": "Filter by political group"
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of MEPs to return (default: 20)"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "analyze_country_delegation",
+        "description": "Analyze a country's MEP delegation in the European Parliament — political group distribution, voting behavior, committee presence, and national cohesion. Reveals national interest patterns that cut across party lines.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string",
+              "description": "ISO 3166-1 alpha-2 country code (e.g., \"SE\", \"DE\", \"FR\")"
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            }
+          },
+          "required": [
+            "country"
+          ]
+        }
+      },
+      {
+        "name": "generate_political_landscape",
+        "description": "Generate a comprehensive political landscape overview of the European Parliament — group sizes, seat shares, coalition dynamics, bloc analysis, and power balance. Single-call situational awareness for strategic intelligence.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "network_analysis",
+        "description": "MEP relationship network mapping using committee co-membership and DOCEO roll-call vote similarity. Computes weighted-degree + Brandes betweenness centrality, deterministic label-propagation clusters with Newman modularity Q, and identifies cross-cluster brokers. Supports depth-bounded ego networks when mepId is supplied.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepId": {
+              "type": "number",
+              "description": "Optional MEP ID to focus the network analysis (ego network)"
+            },
+            "analysisType": {
+              "type": "string",
+              "enum": [
+                "committee",
+                "voting",
+                "combined"
+              ],
+              "description": "Edge mode: committee, voting (DOCEO RCV), or combined (mean of both).",
+              "default": "combined"
+            },
+            "depth": {
+              "type": "number",
+              "description": "BFS traversal depth applied to the ego network when mepId is provided (1-3, default 2).",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 2
+            },
+            "minSimilarity": {
+              "type": "number",
+              "description": "Minimum DOCEO co-vote agreement to retain a voting-similarity edge (0-1, default 0.7).",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.7
+            }
+          }
+        }
+      },
+      {
+        "name": "sentiment_tracker",
+        "description": "Track political group sentiment over a configurable time window. Combines current EP API MEP composition with DOCEO roll-call vote (RCV) cohesion / defection data aggregated across last_month (~30d), last_quarter (~90d) or last_year (~365d). Returns per-group sentiment scores (-1 to +1), IMPROVING/STABLE/DECLINING/VOLATILE trends derived from half-window and sub-window DOCEO cohesion deltas, polarization index (1 − seat-share-weighted mean cohesion), and consensus/divisive vote subjects. Falls back to seat-share proxy with confidenceLevel=LOW when DOCEO coverage is insufficient.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string",
+              "description": "Political group ID to track (omit for all groups)",
+              "minLength": 1,
+              "maxLength": 50
+            },
+            "timeframe": {
+              "type": "string",
+              "enum": [
+                "last_month",
+                "last_quarter",
+                "last_year"
+              ],
+              "description": "DOCEO RCV aggregation window: last_month (~30d), last_quarter (~90d), or last_year (~365d). Falls back to seat-share-only proxy with confidenceLevel=LOW when DOCEO coverage is insufficient.",
+              "default": "last_quarter"
+            }
+          }
+        }
+      },
+      {
+        "name": "early_warning_system",
+        "description": "Detect emerging political shifts, coalition fracture signals, and unusual patterns. Generates warnings with severity levels (CRITICAL/HIGH/MEDIUM/LOW), computes stability score (0-100), trend indicators, and overall risk level. Configurable sensitivity and focus area.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sensitivity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "description": "Detection sensitivity — higher surfaces more warnings",
+              "default": "medium"
+            },
+            "focusArea": {
+              "type": "string",
+              "enum": [
+                "coalitions",
+                "attendance",
+                "all"
+              ],
+              "description": "Area of political activity to monitor",
+              "default": "all"
+            }
+          }
+        }
+      },
+      {
+        "name": "comparative_intelligence",
+        "description": "Cross-reference 2-10 MEP activities across voting, committee, legislative, and attendance dimensions. Returns ranked profiles, correlation matrix, outlier detection, and cluster analysis for comprehensive comparative intelligence.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepIds": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "description": "List of MEP IDs to compare (2-10 MEPs)",
+              "minItems": 2,
+              "maxItems": 10
+            },
+            "dimensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "voting",
+                  "committee",
+                  "legislative",
+                  "attendance"
+                ]
+              },
+              "description": "Dimensions to include in the comparison",
+              "default": [
+                "voting",
+                "committee",
+                "legislative",
+                "attendance"
+              ]
+            }
+          },
+          "required": [
+            "mepIds"
+          ]
+        }
+      },
+      {
+        "name": "correlate_intelligence",
+        "description": "Cross-tool OSINT intelligence correlation engine. Combines outputs from assess_mep_influence + detect_voting_anomalies (ELEVATED_ATTENTION alerts), early_warning_system + analyze_coalition_dynamics (COALITION_FRACTURE alerts), and optionally network_analysis + comparative_intelligence (COMPREHENSIVE_PROFILE alerts). Returns consolidated intelligence alerts with evidence chains and recommendations.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mepIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "minItems": 1,
+              "maxItems": 5,
+              "description": "MEP identifiers to cross-correlate (1–5 MEPs)"
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50
+              },
+              "maxItems": 8,
+              "description": "Political groups for coalition fracture analysis (omit to use all major groups)"
+            },
+            "sensitivityLevel": {
+              "type": "string",
+              "enum": [
+                "HIGH",
+                "MEDIUM",
+                "LOW"
+              ],
+              "default": "MEDIUM",
+              "description": "Alert sensitivity — HIGH surfaces more signals, LOW reduces noise"
+            },
+            "includeNetworkAnalysis": {
+              "type": "boolean",
+              "default": false,
+              "description": "Run network centrality analysis (increases response time)"
+            }
+          },
+          "required": [
+            "mepIds"
+          ]
+        }
+      },
+      {
+        "name": "get_current_meps",
+        "description": "Get currently active Members of European Parliament (today's date). Returns only MEPs with active mandates. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_speeches",
+        "description": "Get European Parliament plenary speeches and debate contributions. Supports single speech lookup by speechId or list with date range filtering (dateFrom/dateTo mapped to EP API sitting-date/sitting-date-end). Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "speechId": {
+              "type": "string",
+              "description": "Speech ID for single speech lookup"
+            },
+            "dateFrom": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD). Mapped to EP API sitting-date parameter."
+            },
+            "dateTo": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD). Mapped to EP API sitting-date-end parameter."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_procedures",
+        "description": "Get European Parliament legislative procedures. Supports single procedure lookup by processId or paginated list. Note: The EP API /procedures endpoint does not support year filtering. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "processId": {
+              "type": "string",
+              "description": "Process ID for single procedure lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_adopted_texts",
+        "description": "Get European Parliament adopted texts including legislative resolutions, positions, and non-legislative resolutions. Supports single document lookup by docId or list with year filter. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single adopted text lookup"
+            },
+            "year": {
+              "type": "number",
+              "description": "Filter by year of adoption (e.g., 2024)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_events",
+        "description": "Get European Parliament events including hearings, conferences, seminars, and institutional events. Supports single event lookup by eventId or paginated list. Note: The EP API /events endpoint has no date filtering — only pagination (limit/offset) is supported. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "eventId": {
+              "type": "string",
+              "description": "Event ID for single event lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_meeting_activities",
+        "description": "Get activities linked to a specific EP plenary sitting (debates, votes, presentations). Requires a sitting ID. Note: this endpoint can be slower than decisions; use a smaller limit for faster responses. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sittingId": {
+              "type": "string",
+              "description": "Meeting / sitting identifier (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100, default 20)",
+              "default": 20
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "sittingId"
+          ]
+        }
+      },
+      {
+        "name": "get_meeting_decisions",
+        "description": "Get decisions made in a specific EP plenary sitting. Returns adopted decisions and voting outcomes. Requires a sitting ID. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sittingId": {
+              "type": "string",
+              "description": "Meeting / sitting identifier (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "sittingId"
+          ]
+        }
+      },
+      {
+        "name": "get_mep_declarations",
+        "description": "Get MEP declarations of financial interests filed under the Rules of Procedure. Supports single declaration lookup by docId or list with year filter. Data source: European Parliament Open Data Portal. GDPR: Access is audit-logged.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single declaration lookup"
+            },
+            "year": {
+              "type": "number",
+              "description": "Filter by filing year (e.g., 2024)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_incoming_meps",
+        "description": "Get incoming Members of European Parliament for the current parliamentary term. Returns MEPs who are newly joining. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_outgoing_meps",
+        "description": "Get outgoing Members of European Parliament for the current parliamentary term. Returns MEPs who are leaving parliament. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_homonym_meps",
+        "description": "Get homonym Members of European Parliament (MEPs with identical names) for the current parliamentary term. Useful for name disambiguation. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_plenary_documents",
+        "description": "Get European Parliament plenary documents. Supports single document lookup by docId or list with year filter. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single document lookup"
+            },
+            "year": {
+              "type": "number",
+              "description": "Filter by year"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_committee_documents",
+        "description": "Get European Parliament committee documents. Supports single document lookup by docId or paginated list. Note: The EP API /committee-documents endpoint does not support year filtering. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single document lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_plenary_session_documents",
+        "description": "Get European Parliament plenary session documents (agendas, minutes, voting lists). Supports single document lookup by docId. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single document lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_plenary_session_document_items",
+        "description": "Get European Parliament plenary session document items. Returns individual items within plenary session documents. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_controlled_vocabularies",
+        "description": "Get European Parliament controlled vocabularies (standardized classification terms). Supports single vocabulary lookup by vocId. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "vocId": {
+              "type": "string",
+              "description": "Vocabulary ID for single vocabulary lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_external_documents",
+        "description": "Get external documents (non-EP documents such as Council positions, Commission proposals) from the European Parliament data portal. Supports single document lookup by docId or paginated list. Note: The EP API /external-documents endpoint does not support year filtering. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "docId": {
+              "type": "string",
+              "description": "Document ID for single document lookup"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_meeting_foreseen_activities",
+        "description": "Get foreseen (planned) activities for a specific EP meeting/plenary sitting. Returns scheduled agenda items. Note: this endpoint can be slower than decisions; use a smaller limit for faster responses. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sittingId": {
+              "type": "string",
+              "description": "Meeting / sitting identifier (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100, default 20)",
+              "default": 20
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "sittingId"
+          ]
+        }
+      },
+      {
+        "name": "get_procedure_events",
+        "description": "Get events linked to a specific EP legislative procedure (hearings, debates, votes). Returns the timeline of events for a procedure. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "processId": {
+              "type": "string",
+              "description": "Procedure process ID (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100)",
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "processId"
+          ]
+        }
+      },
+      {
+        "name": "get_meeting_plenary_session_documents",
+        "description": "Get plenary session documents for a specific EP meeting/plenary sitting. Returns session documents associated with the meeting. Note: this endpoint can be slower than decisions; use a smaller limit for faster responses. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sittingId": {
+              "type": "string",
+              "description": "Meeting / sitting identifier (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100, default 20)",
+              "default": 20
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "sittingId"
+          ]
+        }
+      },
+      {
+        "name": "get_meeting_plenary_session_document_items",
+        "description": "Get plenary session document items for a specific EP meeting/plenary sitting. Returns individual agenda item documents for the meeting. Note: this endpoint can be slower than decisions; use a smaller limit for faster responses. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "sittingId": {
+              "type": "string",
+              "description": "Meeting / sitting identifier (required)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results to return (1-100, default 20)",
+              "default": 20
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "default": 0
+            }
+          },
+          "required": [
+            "sittingId"
+          ]
+        }
+      },
+      {
+        "name": "get_all_generated_stats",
+        "description": "Retrieve precomputed European Parliament activity statistics (2004-2026) with monthly breakdowns, category rankings, percentile scores, statistical analysis, political landscape history (group composition, fragmentation index, coalition dynamics), analytical commentary, and trend-based predictions for 2027-2031. Data covers parliamentary terms EP6-EP10 including plenary sessions, legislative acts, roll-call votes, committee meetings, parliamentary questions, resolutions, speeches, adopted texts, procedures, events, documents, MEP turnover, and declarations. Static data refreshed weekly by agentic workflow; optional near-real-time DOCEO XML enrichment is bounded by a short timeout and omitted when unavailable.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "yearFrom": {
+              "type": "number",
+              "description": "Start year for filtering (default: 2004)",
+              "minimum": 2004,
+              "maximum": 2031
+            },
+            "yearTo": {
+              "type": "number",
+              "description": "End year for filtering (default: 2026)",
+              "minimum": 2004,
+              "maximum": 2031
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "all",
+                "plenary_sessions",
+                "legislative_acts",
+                "roll_call_votes",
+                "committee_meetings",
+                "parliamentary_questions",
+                "resolutions",
+                "speeches",
+                "adopted_texts",
+                "political_groups",
+                "procedures",
+                "events",
+                "documents",
+                "mep_turnover",
+                "declarations"
+              ],
+              "description": "Activity category to focus on (default: all)",
+              "default": "all"
+            },
+            "includePredictions": {
+              "type": "boolean",
+              "description": "Include trend-based predictions for 2027-2031 (default: true)",
+              "default": true
+            },
+            "includeMonthlyBreakdown": {
+              "type": "boolean",
+              "description": "Include month-by-month activity data (default: false)",
+              "default": false
+            },
+            "includeRankings": {
+              "type": "boolean",
+              "description": "Include percentile rankings and statistics (default: true)",
+              "default": true
+            }
+          }
+        }
+      },
+      {
+        "name": "get_meps_feed",
+        "description": "Get recently updated MEPs from the European Parliament feed. Returns MEPs published or updated during the specified timeframe. Data source: European Parliament Open Data Portal. NOTE: when the upstream returns more than 200 items (a known failure mode where delta-pagination falls back to a full-census dump) the response surfaces an OVERSIZED_PAYLOAD entry in dataQualityWarnings so consumers can detect the regression mechanically.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            }
+          }
+        }
+      },
+      {
+        "name": "get_events_feed",
+        "description": "Get recently updated European Parliament events from the feed. Returns events published or updated during the specified timeframe. Data source: European Parliament Open Data Portal. NOTE: The EP API events/feed endpoint is significantly slower than other feeds, so this tool uses the global EP request timeout (default 60 seconds) and normalizes timeout/rate-limit/upstream failures into the feed envelope. For faster fallback browsing, use get_events with limit/offset.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            },
+            "activityType": {
+              "type": "string",
+              "description": "Activity type filter"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_procedures_feed",
+        "description": "Get recently updated European Parliament procedures from the feed. Returns procedures published or updated during the specified timeframe. Data source: European Parliament Open Data Portal. NOTE: The EP API procedures/feed endpoint is significantly slower than other feeds — \"one-month\" queries may take around 120 seconds and can still time out. If you see timeouts, increase the global timeout with --timeout or EP_REQUEST_TIMEOUT_MS. When no procedures were updated in the requested timeframe (common during parliamentary recess or low-activity periods), the response will have status:\"unavailable\" and empty items — this is expected behaviour, not an error. In that case, use get_procedures (with limit/offset) to browse a paginated list of procedures as a reliable fallback. ORDERING: Results are normalized before delivery — current-year procedures are promoted first, then items are sorted by dateLastActivity descending; ties preserve the original upstream order. This compensates for a known upstream pattern where the EP API returns historical-tail ordering instead of newest-first. The response also surfaces a STALENESS_WARNING entry in dataQualityWarnings whenever the upstream returns historical-tail ordering with no current-year items (a known degraded-upstream pattern), so consumers can detect the regression programmatically.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            },
+            "processType": {
+              "type": "string",
+              "description": "Process type filter"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_adopted_texts_feed",
+        "description": "Get recently updated European Parliament adopted texts from the feed. Returns adopted texts published or updated during the specified timeframe. Data source: European Parliament Open Data Portal. NOTE: When the EP /adopted-texts/feed endpoint returns no items from the current calendar year (a known degraded-upstream pattern), the response is automatically augmented with /adopted-texts?year={currentYear} so callers can still discover recent documents — a FRESHNESS_FALLBACK warning is surfaced in dataQualityWarnings whenever this happens.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            },
+            "workType": {
+              "type": "string",
+              "description": "Work type filter"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_mep_declarations_feed",
+        "description": "Get recently updated MEP declarations from the feed. Returns declarations published or updated during the specified timeframe. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            },
+            "workType": {
+              "type": "string",
+              "description": "Work type filter"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_documents_feed",
+        "description": "Get recently updated documents from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_plenary_documents_feed",
+        "description": "Get recently updated plenary documents from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_committee_documents_feed",
+        "description": "Get recently updated committee documents from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_plenary_session_documents_feed",
+        "description": "Get recently updated plenary session documents from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_external_documents_feed",
+        "description": "Get recently updated external documents (non-EP documents) from the feed. Returns external documents published or updated during the specified timeframe. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Timeframe for the feed (today, one-day, one-week, one-month, custom)",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ],
+              "default": "one-week"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD) — required when timeframe is \"custom\""
+            },
+            "workType": {
+              "type": "string",
+              "description": "Work type filter"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_parliamentary_questions_feed",
+        "description": "Get recently updated parliamentary questions from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_corporate_bodies_feed",
+        "description": "Get recently updated corporate bodies from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_controlled_vocabularies_feed",
+        "description": "Get recently updated controlled vocabularies from the EP Open Data Portal feed. This is a fixed-window feed — the upstream EP API always returns items updated within a server-defined default window (typically one month). For contract uniformity with sliding-window feed tools, the common feed parameters (timeframe, startDate, limit, offset) are accepted but informational-only — they are silently ignored. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timeframe": {
+              "type": "string",
+              "description": "Informational-only — this feed uses a server-defined default window (typically one month) and ignores this parameter. Accepted for contract uniformity with sliding-window feed tools.",
+              "enum": [
+                "today",
+                "one-day",
+                "one-week",
+                "one-month",
+                "custom"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Informational-only — ignored by this fixed-window feed. Accepted for contract uniformity with sliding-window feed tools."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Informational-only — the upstream EP API does not paginate this fixed-window feed. Accepted for contract uniformity.",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "get_procedure_event_by_id",
+        "description": "Get a specific event linked to a legislative procedure. Returns a single event for the specified procedure and event identifiers. Data source: European Parliament Open Data Portal.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "processId": {
+              "type": "string",
+              "description": "Procedure process ID"
+            },
+            "eventId": {
+              "type": "string",
+              "description": "Event identifier"
+            }
+          },
+          "required": [
+            "processId",
+            "eventId"
+          ]
+        }
+      },
+      {
+        "name": "get_latest_votes",
+        "description": "Retrieve the latest plenary votes from EP DOCEO XML documents. Provides near-real-time access to roll-call votes (individual MEP positions by political group) and vote results (aggregate tallies). This data source is fresher than the EP Open Data API which has a multi-week publication delay. Use for up-to-date political intelligence on voting patterns, coalition analysis, and group cohesion tracking.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "Specific date to fetch votes for (YYYY-MM-DD). Mutually exclusive with weekStart. If omitted, fetches the requested or most recent plenary week (Mon-Thu).",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "weekStart": {
+              "type": "string",
+              "description": "Monday of a specific plenary week (YYYY-MM-DD). Mutually exclusive with date. Fetches Mon-Thu of that week.",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "term": {
+              "type": "number",
+              "description": "Parliamentary term number (defaults to 10 for current 2024-2029 term)",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "includeIndividualVotes": {
+              "type": "boolean",
+              "description": "Include individual MEP vote positions from roll-call data (default: true). Set to false for aggregate-only results.",
+              "default": true
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of vote records to return (1-100)",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": [
+      {
+        "name": "mep_briefing",
+        "description": "Generate a comprehensive MEP intelligence briefing covering voting record, committee roles, legislative activity, and influence assessment.",
+        "arguments": [
+          {
+            "name": "mepId",
+            "description": "MEP identifier",
+            "required": true
+          },
+          {
+            "name": "period",
+            "description": "Analysis period (e.g., \"2024\", \"last-6-months\")",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "coalition_analysis",
+        "description": "Analyze coalition dynamics and voting blocs in the European Parliament, identifying cross-party alliances and emerging political alignments.",
+        "arguments": [
+          {
+            "name": "policyArea",
+            "description": "Policy area to focus on (e.g., \"environment\", \"digital\", \"trade\")",
+            "required": false
+          },
+          {
+            "name": "period",
+            "description": "Analysis period",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "legislative_tracking",
+        "description": "Track and analyze the progress of legislative procedures through the European Parliament, including committee stages, amendments, and voting outcomes.",
+        "arguments": [
+          {
+            "name": "procedureId",
+            "description": "Legislative procedure identifier",
+            "required": false
+          },
+          {
+            "name": "committee",
+            "description": "Committee abbreviation to filter by",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "political_group_comparison",
+        "description": "Compare political groups across voting discipline, legislative output, attendance, and cohesion metrics.",
+        "arguments": [
+          {
+            "name": "groups",
+            "description": "Comma-separated political group names (e.g., \"EPP,S&D,Renew\")",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "committee_activity_report",
+        "description": "Generate an activity report for a European Parliament committee, covering meetings, documents produced, legislative opinions, and member engagement.",
+        "arguments": [
+          {
+            "name": "committeeId",
+            "description": "Committee abbreviation (e.g., \"ENVI\", \"ITRE\", \"LIBE\")",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "voting_pattern_analysis",
+        "description": "Analyze voting patterns to identify trends, anomalies, and cross-party alignments on specific policy topics.",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "Policy topic or keyword",
+            "required": false
+          },
+          {
+            "name": "mepId",
+            "description": "Focus on specific MEP",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "country_delegation_analysis",
+        "description": "Analyse the MEP delegation from a specific EU member state, including voting cohesion, committee presence, legislative contribution, and cross-party dynamics.",
+        "arguments": [
+          {
+            "name": "country",
+            "description": "EU member state name or ISO country code",
+            "required": true
+          },
+          {
+            "name": "period",
+            "description": "Analysis period (e.g., \"2024\", \"current-term\")",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'sentiment_tracker'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "sentiment_tracker",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'get_procedures_feed'",
+      "description": "Description is 1344 chars (limit 1000). May contain hidden content.",
+      "tool_name": "get_procedures_feed",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'analyze_coalition_dynamics' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "analyze_coalition_dynamics",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'detect_voting_anomalies' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "detect_voting_anomalies",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'monitor_legislative_pipeline' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "monitor_legislative_pipeline",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'network_analysis' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "network_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'sentiment_tracker' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "sentiment_tracker",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'early_warning_system' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "early_warning_system",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'get_server_health' directs LLM to call monitor_legislative_pipeline",
+      "description": "Tool 'get_server_health' description references tool(s) 'monitor_legislative_pipeline' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "get_server_health",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Check server health and feed availability status. Returns server version, uptime, per-feed health status (ok/error/unknown), overall availability level (Full/Degraded/Sparse/Unavailable/Unknown), and a `lifecycleCache` block ({state: WARM|STALE|COLD, ageMs, corpusSize, lastRefreshErrorAt}) reporting",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 65.09400000000096,
+  "exchanges": []
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP04",
+              "name": "MCP04",
+              "shortDescription": {
+                "text": "MCP04"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP04",
+          "level": "warning",
+          "message": {
+            "text": "Supply Chain \u2014 '@sigstore/core' has moderate vulnerability (no CVE assigned). Package '@sigstore/core' (dependency of '@ui5/mcp-server') has a known moderate vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        },
+        {
+          "ruleId": "CORVUS-MCP04",
+          "level": "error",
+          "message": {
+            "text": "Supply Chain \u2014 'sigstore' has high vulnerability (no CVE assigned). Package 'sigstore' (dependency of '@ui5/mcp-server') has a known high vulnerability. Solo aplicable a servidores npm v\u00eda stdio. HTTP transport: no analizable."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "error",
+          "message": {
+            "text": "Protocol crash \u2014 oversized method name caused transport failure. The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Protocol crash \u2014 deeply nested params caused server disconnect. Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

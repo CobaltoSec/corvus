@@ -1,0 +1,1258 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP02",
+              "name": "MCP02",
+              "shortDescription": {
+                "text": "MCP02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT03",
+              "name": "EXT03",
+              "shortDescription": {
+                "text": "EXT03"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP07",
+              "name": "MCP07",
+              "shortDescription": {
+                "text": "MCP07"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'save' accepts write-path param (path traversal risk). Tool 'save' accepts a file path parameter (file_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "save",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'export' accepts write-path param (path traversal risk). Tool 'export' accepts a file path parameter (file_path, output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "export",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'convert_to_odt' accepts write-path param (path traversal risk). Tool 'convert_to_odt' accepts a file path parameter (file_path, output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "convert_to_odt",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'grep' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "grep",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'export' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "export",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'convert_to_odt' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "convert_to_odt",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'format_layout' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "format_layout",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'close_file' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "close_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'read_file' conflicts with a high-value built-in name. Tool 'read_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "read_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "error",
+          "message": {
+            "text": "Shadow Tool \u2014 'batch_edit' description reveals arbitrary execution intent. Tool 'batch_edit' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "batch_edit",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'export.format'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: generic_string)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "export",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'read_file' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "read_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'grep' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "grep",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'batch_edit' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "batch_edit",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'batch_edit.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "batch_edit",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'batch_edit' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "batch_edit",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'replace_text' accepts missing required fields. Tool succeeded with empty arguments despite required: ['target_paragraph_id', 'old_string', 'new_string', 'instruction']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "replace_text",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'replace_text.target_paragraph_id' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "replace_text",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'replace_text' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "replace_text",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'insert_paragraph' accepts missing required fields. Tool succeeded with empty arguments despite required: ['positional_anchor_node_id', 'new_string', 'instruction']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "insert_paragraph",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'insert_paragraph.positional_anchor_node_id' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "insert_paragraph",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'insert_paragraph' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "insert_paragraph",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'save' accepts missing required fields. Tool succeeded with empty arguments despite required: ['save_to_local_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "save",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'save.save_to_local_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "save",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'save' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "save",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'export' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "export",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'convert_to_odt' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "convert_to_odt",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'format_layout' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "format_layout",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'accept_changes' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "accept_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'accept_changes.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "accept_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'accept_changes' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "accept_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'has_tracked_changes' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "has_tracked_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'has_tracked_changes.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "has_tracked_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'has_tracked_changes' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "has_tracked_changes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'get_file_status' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_file_status",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'close_file' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "close_file",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'add_comment' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path', 'author', 'text']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'add_comment.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'add_comment' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'get_comments' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_comments",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'get_comments.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_comments",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'get_comments' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_comments",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'delete_comment' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path', 'comment_id']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'delete_comment.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'delete_comment' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_comment",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'compare_documents' accepts missing required fields. Tool succeeded with empty arguments despite required: ['save_to_local_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "compare_documents",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'compare_documents.save_to_local_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "compare_documents",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'compare_documents' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "compare_documents",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'get_footnotes' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_footnotes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'get_footnotes.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_footnotes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'get_footnotes' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "get_footnotes",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'add_footnote' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path', 'target_paragraph_id', 'text']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'add_footnote.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'add_footnote' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "add_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'update_footnote' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path', 'note_id', 'new_text']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "update_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'update_footnote.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "update_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'update_footnote' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "update_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'delete_footnote' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path', 'note_id']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'delete_footnote.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'delete_footnote' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "delete_footnote",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'clear_formatting' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "clear_formatting",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'clear_formatting.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "clear_formatting",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'clear_formatting' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "clear_formatting",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "'extract_revisions' accepts missing required fields. Tool succeeded with empty arguments despite required: ['file_path']"
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "extract_revisions",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'extract_revisions.file_path' silently accepts wrong type. Expected type 'string', sent NoneType value 'None' \u2014 no error returned."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "extract_revisions",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'extract_revisions' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "extract_revisions",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP07",
+          "level": "warning",
+          "message": {
+            "text": "initialize accepts protocol version downgrade. The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Null request ID accepted \u2014 JSON-RPC spec violation. The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,459 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP05",
+              "name": "MCP05",
+              "shortDescription": {
+                "text": "MCP05"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP01",
+              "name": "MCP01",
+              "shortDescription": {
+                "text": "MCP01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP10",
+              "name": "MCP10",
+              "shortDescription": {
+                "text": "MCP10"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-MCP07",
+              "name": "MCP07",
+              "shortDescription": {
+                "text": "MCP07"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-list-documentation' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-documentation' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-usage-guide' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-usage-guide",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-vuelidate-migration-guide' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-vuelidate-migration-guide",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-search-documentation' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-search-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-list-rules' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-rules",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-rule-reference' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-rule-reference",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-list-validation-properties' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-validation-properties",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-list-helpers' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-helpers",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-helper-reference' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-helper-reference",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "note",
+          "message": {
+            "text": "'regle-get-api-reference' has no description. Tools without descriptions cannot be audited for hidden intent."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-get-api-reference",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'regle-list-documentation.category'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: sql)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP05",
+          "level": "note",
+          "message": {
+            "text": "Injection reflected \u2014 'regle-search-documentation.query'. Payload was echoed back as a named JSON field \u2014 likely input logging, not a vulnerability (field: sql)."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-search-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP01",
+          "level": "error",
+          "message": {
+            "text": "Token Exposure \u2014 credential in response in 'regle-list-rules'. Tool response contains credential in response."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-rules",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'regle-list-documentation' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "'regle-search-documentation' accepts undeclared extra fields. Tool accepted arguments containing '__proto__' without error."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-search-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "warning",
+          "message": {
+            "text": "Response Flooding \u2014 'regle-list-documentation' returns highly repetitive content. Tool 'regle-list-documentation' response contains a phrase repeated \u226515 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-documentation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "warning",
+          "message": {
+            "text": "Response Flooding \u2014 'regle-list-rules' returns highly repetitive content. Tool 'regle-list-rules' response contains a phrase repeated \u226515 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-rules",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP10",
+          "level": "error",
+          "message": {
+            "text": "Response Flooding \u2014 'regle-list-validation-properties' returns oversized response. Tool 'regle-list-validation-properties' returned 9,318 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "regle-list-validation-properties",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-MCP07",
+          "level": "warning",
+          "message": {
+            "text": "initialize accepts protocol version downgrade. The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Null request ID accepted \u2014 JSON-RPC spec violation. The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

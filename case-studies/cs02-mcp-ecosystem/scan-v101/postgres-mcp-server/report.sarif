@@ -1,0 +1,208 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "corvus",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/CobaltoSec/corvus",
+          "rules": [
+            {
+              "id": "CORVUS-MCP02",
+              "name": "MCP02",
+              "shortDescription": {
+                "text": "MCP02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT02",
+              "name": "EXT02",
+              "shortDescription": {
+                "text": "EXT02"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT03",
+              "name": "EXT03",
+              "shortDescription": {
+                "text": "EXT03"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            },
+            {
+              "id": "CORVUS-EXT01",
+              "name": "EXT01",
+              "shortDescription": {
+                "text": "EXT01"
+              },
+              "helpUri": "https://github.com/CobaltoSec/corvus",
+              "properties": {
+                "tags": [
+                  "security",
+                  "mcp",
+                  "owasp"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CORVUS-MCP02",
+          "level": "error",
+          "message": {
+            "text": "Scope Creep \u2014 'pg_manage_users' inputSchema requests credential fields. Tool 'pg_manage_users' inputSchema declares field(s) associated with credentials or secrets: password. This may indicate the tool harvests authentication material from the LLM caller."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_manage_users",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'pg_analyze_database' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_analyze_database",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT02",
+          "level": "none",
+          "message": {
+            "text": "'pg_monitor_database' defines no required fields. All parameters are implicitly optional. Verify this is intentional."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_monitor_database",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "warning",
+          "message": {
+            "text": "Shadow Tool \u2014 'pg_execute_query' (DB tool) description reveals execution intent. Tool 'pg_execute_query' description contains execution keywords. DB-prefixed tools legitimately execute queries, but verify the scope is restricted to the intended database context."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_execute_query",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "warning",
+          "message": {
+            "text": "Shadow Tool \u2014 'pg_execute_mutation' (DB tool) description reveals execution intent. Tool 'pg_execute_mutation' description contains execution keywords. DB-prefixed tools legitimately execute queries, but verify the scope is restricted to the intended database context."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_execute_mutation",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT03",
+          "level": "warning",
+          "message": {
+            "text": "Shadow Tool \u2014 'pg_execute_sql' (DB tool) description reveals execution intent. Tool 'pg_execute_sql' description contains execution keywords. DB-prefixed tools legitimately execute queries, but verify the scope is restricted to the intended database context."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "name": "pg_execute_sql",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "error",
+          "message": {
+            "text": "Protocol crash \u2014 oversized method name caused transport failure. The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "warning",
+          "message": {
+            "text": "Protocol crash \u2014 deeply nested params caused server disconnect. Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers."
+          }
+        },
+        {
+          "ruleId": "CORVUS-EXT01",
+          "level": "note",
+          "message": {
+            "text": "Protocol crash \u2014 string params caused server disconnect. Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object."
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "commandLine": "corvus scan --transport stdio"
+        }
+      ]
+    }
+  ]
+}

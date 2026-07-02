@@ -1,0 +1,36 @@
+meta:
+  case_study: CS02
+  description: CS02 re-scan v1.0.1 — retry 4 failed targets
+  corvus_version: 1.0.1
+targets:
+- name: musea-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vizejs/musea-mcp-server'
+
+- name: mysql-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mysql-mcp-server
+
+- name: myclaw-toolkit
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - myclaw-toolkit
+
+- name: openapi-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - openapi-mcp-server

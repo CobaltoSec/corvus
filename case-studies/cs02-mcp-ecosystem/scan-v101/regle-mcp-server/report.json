@@ -1,0 +1,530 @@
+{
+  "target": "npx -y @regle/mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "regle-mcp-server",
+    "server_version": "1.28.3",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "regle-list-documentation",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "category": {
+              "description": "Filter by category (e.g., \"rules\", \"core-concepts\", \"introduction\")",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "regle-get-documentation",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The documentation page ID (e.g., \"core-concepts-rules-built-in-rules\")"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      },
+      {
+        "name": "regle-get-usage-guide",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "regle-get-vuelidate-migration-guide",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "regle-search-documentation",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query (e.g., \"required\", \"async validation\", \"useRegle\")"
+            },
+            "limit": {
+              "default": 5,
+              "description": "Maximum number of results to return",
+              "type": "number"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "regle-list-rules",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "regle-get-rule-reference",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The rule name (e.g., \"required\", \"email\", \"minLength\")"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "regle-list-validation-properties",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "regle-list-helpers",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "regle-get-helper-reference",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The helper name (e.g., \"isFilled\", \"getSize\", \"toNumber\")"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "regle-get-api-reference",
+        "description": "",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "package": {
+              "description": "Package name (e.g., \"@regle/core\", \"@regle/rules\", \"@regle/schemas\", \"@regle/nuxt\")",
+              "type": "string"
+            },
+            "name": {
+              "description": "Specific function/export name to look up (e.g., \"useRegle\", \"required\")",
+              "type": "string"
+            },
+            "search": {
+              "description": "Search query to find exports by name or description",
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-list-documentation' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-list-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-documentation' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-usage-guide' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-usage-guide",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-vuelidate-migration-guide' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-vuelidate-migration-guide",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-search-documentation' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-search-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-list-rules' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-list-rules",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-rule-reference' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-rule-reference",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-list-validation-properties' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-list-validation-properties",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-list-helpers' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-list-helpers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-helper-reference' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-helper-reference",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "'regle-get-api-reference' has no description",
+      "description": "Tools without descriptions cannot be audited for hidden intent.",
+      "tool_name": "regle-get-api-reference",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add a clear, concise description to every tool.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'regle-list-documentation.category'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "regle-list-documentation",
+      "parameter": "category",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"message\": \"Available Regle documentation pages\",\n  \"category\": \"' OR '1'='1\",\n  \"count\": 0,\n  \"docs\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'regle-search-documentation.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "regle-search-documentation",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"query\": \"' OR '1'='1\",\n  \"resultCount\": 0,\n  \"results\": [],\n  \"suggestions\": [\n    \"advanced-usage\",\n    \"general\",\n    \"common-usage\",\n    \"core-concepts\",\n    \"rules\",\n    \"examples\",\n    \"integrations\",\n    \"introduction\",\n    \"troubleshooting\",\n    \"typescript\"\n  ]\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "MCP01",
+      "severity": "critical",
+      "title": "Token Exposure — credential in response in 'regle-list-rules'",
+      "description": "Tool response contains credential in response.",
+      "tool_name": "regle-list-rules",
+      "parameter": null,
+      "payload": null,
+      "evidence": "{\n  \"title\": \"Built-in Rules\",\n  \"package\": \"@regle/rules\",\n  \"count\": 51,\n  \"rules\": [\n    {\n      \"name\": \"alpha\",\n      \"description\": \"-  \"\n    },\n    {\n      \"name\": \"alphaNum\",\n      \"description\": \"-  \"\n    },\n    {\n      \"name\": \"atLeastOne\",\n      \"description\": \"-   - Optional list of keys to check. If not provided, checks if the object has at least one filled property.\"\n    },\n    {\n   ",
+      "remediation": "Strip sensitive data from tool responses. Never return raw environment variables, credentials, or internal paths.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'regle-list-documentation' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "regle-list-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'regle-search-documentation' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "regle-search-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'regle-list-documentation' returns highly repetitive content",
+      "description": "Tool 'regle-list-documentation' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "regle-list-documentation",
+      "parameter": null,
+      "payload": null,
+      "evidence": "{\n  \"message\": \"Available Regle documentation pages\",\n  \"category\": \"all\",\n  \"count\": 47,\n  \"docs\": [\n    {\n      \"id\": \"advanced-usage-extend-properties\",\n      \"title\": \"Extend properties\"\n    },\n    {\n      \"id\": \"advanced-usage-global-config\",\n      \"title\": \"Global configuration\"\n    },\n    {\n ",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'regle-list-rules' returns highly repetitive content",
+      "description": "Tool 'regle-list-rules' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "regle-list-rules",
+      "parameter": null,
+      "payload": null,
+      "evidence": "{\n  \"title\": \"Built-in Rules\",\n  \"package\": \"@regle/rules\",\n  \"count\": 51,\n  \"rules\": [\n    {\n      \"name\": \"alpha\",\n      \"description\": \"- `allowSymbols?: MaybeRefOrGetter<boolean>`\"\n    },\n    {\n      \"name\": \"alphaNum\",\n      \"description\": \"- `allowSymbols?: MaybeRefOrGetter<boolean>`\"\n    },\n ",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "MCP10",
+      "severity": "high",
+      "title": "Response Flooding — 'regle-list-validation-properties' returns oversized response",
+      "description": "Tool 'regle-list-validation-properties' returned 9,318 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines.",
+      "tool_name": "regle-list-validation-properties",
+      "parameter": null,
+      "payload": null,
+      "evidence": "9,318 bytes — preview: {\n  \"id\": \"core-concepts-validation-properties\",\n  \"title\": \"Validation properties\",\n  \"category\": \"core-concepts\",\n  \"content\": \"# Validation properties\\n\\nValidation properties are computed values o",
+      "remediation": "Paginate or cap tool responses. Never return unbounded data. Aim for responses under 4 KB to preserve LLM context budget.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 64.81300000000192,
+  "exchanges": []
+}

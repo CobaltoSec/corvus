@@ -1,0 +1,238 @@
+meta:
+  case_study: CS02
+  description: OWASP MCP Ecosystem Audit — CS02 re-scan v1.0.1 (2026-07-02)
+  corvus_version: 1.0.1
+  notes: Re-scan con 34 módulos (incluye V27+V28+V29+V30). Excluye ssh-mcp-server (VM 301 off) y korean-law-mcp (external API).
+targets:
+- name: ui5-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ui5/mcp-server'
+
+- name: mcp-server-nationalparks
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-nationalparks
+
+- name: lsp-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - lsp-mcp-server
+
+- name: postgres-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@henkey/postgres-mcp-server'
+
+- name: duckduckgo-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ericthered926/duckduckgo-mcp-server'
+
+- name: malicious-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - malicious-mcp-server
+
+- name: musea-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vizejs/musea-mcp-server'
+
+- name: flightradar-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - flightradar-mcp-server
+
+- name: element-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@siemens/element-mcp'
+
+- name: pubmed-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/pubmed-mcp-server'
+
+- name: shadcn-ui-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@jpisnice/shadcn-ui-mcp-server'
+
+- name: mcp-server-hotnews
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@wopal/mcp-server-hotnews'
+
+- name: mantine-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mantine/mcp-server'
+
+- name: remnux-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@remnux/mcp-server'
+
+- name: mcp-javadc
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@idachev/mcp-javadc'
+
+- name: mcp-fetch
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@kazuph/mcp-fetch'
+
+- name: docx-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@usejunior/docx-mcp'
+
+- name: spartan-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@spartan-ng/mcp'
+
+- name: mcp-read-website-fast
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@just-every/mcp-read-website-fast'
+
+- name: mysql-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mysql-mcp-server
+
+- name: regle-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@regle/mcp-server'
+
+- name: jamf-docs-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@get-technology-inc/jamf-docs-mcp-server'
+
+- name: european-parliament-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - european-parliament-mcp-server
+
+- name: myclaw-toolkit
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - myclaw-toolkit
+
+- name: mcp-server-docker
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-docker
+
+- name: upg-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@unified-product-graph/mcp-server'
+
+- name: mcp-mysql-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@berthojoris/mcp-mysql-server'
+  - mysql://root:root@localhost:3306/test
+
+- name: codeloop-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - codeloop-mcp-server
+
+- name: openapi-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - openapi-mcp-server

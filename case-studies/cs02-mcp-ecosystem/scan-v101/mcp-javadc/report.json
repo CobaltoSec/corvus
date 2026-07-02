@@ -1,0 +1,331 @@
+{
+  "target": "npx -y @idachev/mcp-javadc",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "javadc",
+    "server_version": "1.2.4",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "decompile-from-path",
+        "description": "Decompiles a Java .class file from a given file path",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "classFilePath": {
+              "type": "string",
+              "description": "The absolute path to the .class file"
+            }
+          },
+          "required": [
+            "classFilePath"
+          ]
+        }
+      },
+      {
+        "name": "decompile-from-package",
+        "description": "Decompiles a Java class from a package name",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string",
+              "description": "Fully qualified Java package and class name"
+            },
+            "classpath": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of classpath directories to search"
+            }
+          },
+          "required": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "name": "decompile-from-jar",
+        "description": "Decompiles a Java class from a JAR file\n\n# Using mcp_javadc with Maven Repository\n\nWhen you need to decompile Java classes from dependencies in the M2 repository, follow these steps:\n\n## Step 1: Find the JAR file location\n\nFirst, search for the dependency JAR in the local Maven repository:\n\n```bash\nfind ~/.m2 -name \"*dependency-name*jar\" | grep -v source | grep -v javadoc\n```\n\nNotes:\n- Replace dependency-name with the artifact name\n- Filter out source and javadoc JARs using grep\n- Look for the correct version based on the project's POM file\n\n## Step 2: Use the correct mcp_javadc function\n\nOnce you have the JAR path, use this function:\n\nFor specific class decompilation:\n- jarFilePath: The absolute path to the JAR (from Step 1)\n- className: Fully qualified class name to decompile\n\nFor contextual exploration:\nIf needed, first try to find all available classes in the JAR:\n`jar tf /path/to/the.jar | grep .class | sort`\n\nExample workflow:\n1. Read the POM file to identify dependency version\n2. Search the M2 repository for the JAR\n3. Use mcp_javadc to decompile relevant classes\n4. If multiple versions exist, select the one matching the project's version requirement",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "jarFilePath": {
+              "type": "string",
+              "description": "The absolute path to the JAR file"
+            },
+            "className": {
+              "type": "string",
+              "description": "Fully qualified class name to decompile from the JAR (e.g., \"com.example.MyClass\")"
+            }
+          },
+          "required": [
+            "jarFilePath",
+            "className"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'decompile-from-jar'",
+      "description": "Description is 1175 chars (limit 1000). May contain hidden content.",
+      "tool_name": "decompile-from-jar",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'decompile-from-path.classFilePath'",
+      "description": "OS error response to traversal payload — the path was passed to the filesystem (field: path). File content not leaked, but path traversal is confirmed.",
+      "tool_name": "decompile-from-path",
+      "parameter": "classFilePath",
+      "payload": "../../../etc/shadow",
+      "evidence": "Error: Failed to decompile class file: ENOENT: no such file or directory, access 'C:\\Proyectos\\CobaltoSec\\etc\\shadow'",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": true,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'decompile-from-package.packageName'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "decompile-from-package",
+      "parameter": "packageName",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Error: Failed to decompile package: Could not find class file for package: <script>alert(1)</script>",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'decompile-from-path' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['classFilePath']",
+      "tool_name": "decompile-from-path",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-path.classFilePath' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "decompile-from-path",
+      "parameter": "classFilePath",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-path' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "decompile-from-path",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'decompile-from-package' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['packageName']",
+      "tool_name": "decompile-from-package",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-package.packageName' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "decompile-from-package",
+      "parameter": "packageName",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-package' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "decompile-from-package",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'decompile-from-jar' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['jarFilePath', 'className']",
+      "tool_name": "decompile-from-jar",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-jar.jarFilePath' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "decompile-from-jar",
+      "parameter": "jarFilePath",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'decompile-from-jar' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "decompile-from-jar",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe"
+  ],
+  "duration_seconds": 70.21899999999732,
+  "exchanges": []
+}
