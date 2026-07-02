@@ -38,8 +38,8 @@ gh api user --include 2>&1 | Select-String "X-Oauth-Scopes"
 |--------|----------------|
 | Crear / actualizar / publicar GHSA | ✅ |
 | Listar advisories + estado | ✅ |
-| Invitar collaborator (solo draft, mismo repo) | ✅ |
-| Invitar collaborator cross-repo | ❌ 404 siempre |
+| Invitar collaborator via PATCH collaborating_users | ✅ (funciona cross-repo) |
+| Invitar collaborator via PUT /collaborators | ❌ 404 siempre — endpoint incorrecto |
 | Comentar en un advisory | ❌ No existe endpoint |
 | Detectar respuestas de maintainers via notificaciones | ❌ Advisory comments no generan notificaciones API |
 
@@ -75,17 +75,18 @@ Remove-Item $tmp
 
 ### 2. Invitar al maintainer como colaborador (solo en draft)
 
-> **Nota:** el invite solo funciona mientras el advisory está en `draft`. Una vez publicado, devuelve 404.
-> Para advisories cross-repo (paquete en repo ajeno a `CobaltoSec/advisories`) el invite también devuelve 404 — es comportamiento esperado. El advisory publicado es visible públicamente para cualquier maintainer.
+> **Usar `PATCH` con `collaborating_users` — NO el endpoint `/collaborators` (ese siempre da 404 cross-repo).**
+> El campo `collaborating_users` es parte del objeto advisory y se setea via el mismo PATCH de actualización.
 
-```powershell
-$ghsa = "GHSA-xxxx-xxxx-xxxx"
-$collaborator = @{ login = "username" } | ConvertTo-Json
-$tmp = [System.IO.Path]::GetTempFileName()
-$collaborator | Out-File $tmp -Encoding utf8
-gh api repos/CobaltoSec/advisories/security-advisories/$ghsa/collaborators -X PUT -H "Content-Type: application/json" --input $tmp
-Remove-Item $tmp
+```bash
+# Bash (recomendado — PowerShell tiene problemas con el endpoint /collaborators)
+echo '{"collaborating_users": ["github-username"]}' | \
+  gh api repos/CobaltoSec/advisories/security-advisories/GHSA-xxxx-xxxx-xxxx \
+  -X PATCH -H "Content-Type: application/json" --input -
 ```
+
+El response incluye `collaborating_users: [{login: "..."}]` si el invite fue exitoso.
+GitHub envía email al maintainer invitándolo al advisory draft.
 
 ### 3. Publicar
 
