@@ -40,8 +40,13 @@ from .core.session import ScanSession
 from .scoring import compute_risk_score
 from .discovery.enumerator import MCPEnumerator
 from .modules.dynamic.batch_dos import BatchDosModule
+from .modules.dynamic.cancellation_probe import CancellationProbeModule
+from .modules.dynamic.completion_probe import CompletionProbeModule
+from .modules.dynamic.cursor_probe import CursorProbeModule
 from .modules.dynamic.elicitation_probe import ElicitationProbeModule
+from .modules.dynamic.logging_probe import LoggingProbeModule
 from .modules.dynamic.oauth_bypass import OAuthBypassModule
+from .modules.dynamic.prompts_injection import PromptsInjectionModule
 from .modules.dynamic.sampling_probe import SamplingProbeModule
 from .modules.dynamic.token_exposure import TokenExposureModule
 from .modules.dynamic.cmd_injection import CmdInjectionModule
@@ -56,7 +61,9 @@ from .modules.dynamic.proto_fuzz import ProtoFuzzModule
 from .modules.dynamic.output_encoding import OutputEncodingModule
 from .modules.dynamic.response_injection import ResponseInjectionModule
 from .modules.static.auth_audit import AuthAuditModule
+from .modules.static.github_advisory import GitHubAdvisoryModule
 from .modules.static.log_audit import LogAuditModule
+from .modules.static.npm_behavior import NpmBehaviorModule
 from .modules.static.osv_supply_chain import OsvSupplyChainModule
 from .modules.static.resource_uri import ResourceUriModule
 from .modules.static.schema_audit import SchemaAuditModule
@@ -72,6 +79,7 @@ from .transport.stdio import StdioTransport
 
 _ALL_MODULES = [
     ScopeAuditModule, SupplyChainModule, SupplyChainPythonModule, OsvSupplyChainModule,
+    GitHubAdvisoryModule, NpmBehaviorModule,
     ToolPoisoningModule, SchemaAuditModule, ShadowToolModule,
     AuthAuditModule, LogAuditModule, ResourceUriModule, ToolChainingModule,
     BatchDosModule, CmdInjectionModule, TokenExposureModule, SchemaBypassModule,
@@ -79,6 +87,8 @@ _ALL_MODULES = [
     ParamSmugglingModule, InitAuditModule, ProtoFuzzModule,
     OutputEncodingModule, ResponseInjectionModule, OAuthBypassModule,
     SamplingProbeModule, ElicitationProbeModule,
+    CompletionProbeModule, LoggingProbeModule, PromptsInjectionModule,
+    CursorProbeModule, CancellationProbeModule,
 ]
 
 # Max number of targets scanned concurrently.
