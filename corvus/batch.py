@@ -198,6 +198,24 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
 _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-request timeouts
 
 
+def _resolve_batch_modules(modules: list[str] | None) -> list[type]:
+    """Return the subset of _ALL_MODULES matching the given names (or all if None)."""
+    if not modules:
+        return _ALL_MODULES
+    registry = {cls().name: cls for cls in _ALL_MODULES}
+    result: list[type] = []
+    for name in modules:
+        if name == "all":
+            return _ALL_MODULES
+        if name == "static":
+            return [cls for cls in _ALL_MODULES if cls().is_static]
+        if name == "dynamic":
+            return [cls for cls in _ALL_MODULES if not cls().is_static]
+        if name in registry:
+            result.append(registry[name])
+    return result or _ALL_MODULES
+
+
 async def _scan_one(
     target: BatchTarget,
     output_dir: Path,
@@ -208,6 +226,7 @@ async def _scan_one(
     sarif: bool,
     sem: asyncio.Semaphore,
     skip_existing: bool,
+    modules: list[str] | None = None,
 ) -> tuple[str, str, dict, int | None, ScanResult | None]:
     """Scan one target. Returns (name, transport, finding_count, risk_score, scan_result)."""
     target_dir = output_dir / target.name
@@ -222,6 +241,8 @@ async def _scan_one(
     else:
         xport = HttpTransport(target.url or "", timeout=timeout)
 
+    active_modules = _resolve_batch_modules(modules)
+
     async with sem:
         try:
             async with asyncio.timeout(target_timeout):
@@ -233,7 +254,7 @@ async def _scan_one(
                     )
                     surface = await MCPEnumerator(xport).enumerate()
 
-                    for mod_cls in _ALL_MODULES:
+                    for mod_cls in active_modules:
                         mod = mod_cls()
                         findings = await mod.run(surface, xport, session)
                         for f in findings:
@@ -242,7 +263,7 @@ async def _scan_one(
                     if min_confidence is not None:
                         session.findings = [f for f in session.findings if f.confidence >= min_confidence]
 
-                    scan_result = session.to_result(surface, [m().name for m in _ALL_MODULES])
+                    scan_result = session.to_result(surface, [m().name for m in active_modules])
                     gen = ReportGenerator(target_dir)
                     gen.write(scan_result)
                     if sarif:
@@ -263,6 +284,7 @@ async def run_batch(
     min_confidence: int | None = None,
     sarif: bool = False,
     skip_existing: bool = False,
+    modules: list[str] | None = None,
 ) -> BatchResult:
     if sys.platform == "win32":
         sys.unraisablehook = _filtered_unraisablehook
@@ -279,6 +301,7 @@ async def run_batch(
             sarif=sarif,
             sem=sem,
             skip_existing=skip_existing,
+            modules=modules,
         )
         for target in targets
     ]

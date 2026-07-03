@@ -5,7 +5,7 @@ import datetime
 import shlex
 import sys
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 
 import typer
 from rich.console import Console
@@ -405,9 +405,12 @@ def batch(
     sarif: Annotated[bool, typer.Option("--sarif", help="Also write SARIF for each target")] = False,
     min_confidence: Annotated[Optional[int], typer.Option(
         "--min-confidence", help="Exclude findings below this confidence score (0-100)")] = None,
+    module: Annotated[Optional[List[str]], typer.Option(
+        "--module", "-m",
+        help="all | static | dynamic | <module-name> (repeatable)")] = None,
 ):
     """Scan multiple MCP servers from a targets YAML file."""
-    asyncio.run(_batch(config, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence))
+    asyncio.run(_batch(config, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module))
 
 
 async def _batch(
@@ -418,6 +421,7 @@ async def _batch(
     target_timeout: int | None,
     sarif: bool,
     min_confidence: int | None,
+    modules: list[str] | None = None,
 ) -> None:
     from .batch import load_batch_targets, run_batch
 
@@ -443,6 +447,7 @@ async def _batch(
         target_timeout=target_timeout or 600,
         min_confidence=min_confidence,
         sarif=sarif,
+        modules=modules,
     )
 
     summary_path = output_dir / "summary.md"
