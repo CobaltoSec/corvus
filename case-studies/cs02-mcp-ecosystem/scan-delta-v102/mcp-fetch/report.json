@@ -1,0 +1,352 @@
+{
+  "target": "npx -y @kazuph/mcp-fetch",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-fetch",
+    "server_version": "1.6.2",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "imageFetch",
+        "description": "\n画像取得に強いMCPフェッチツール。記事本文をMarkdown化し、ページ内の画像を抽出・最適化して返します。\n\n新APIの既定（imagesを指定した場合）\n- 画像: 取得してBASE64で返却（最大3枚を縦結合した1枚JPEG）\n- 保存: しない（オプトイン）\n- クロスオリジン: 許可（CDN想定）\n\nパラメータ（新API）\n- url: 取得先URL（必須）\n- images: true | { output, layout, maxCount, startIndex, size, originPolicy, saveDir }\n  - output: \"base64\" | \"file\" | \"both\"（既定: base64）\n  - layout: \"merged\" | \"individual\" | \"both\"（既定: merged）\n  - maxCount/startIndex（既定: 3 / 0）\n  - size: { maxWidth, maxHeight, quality }（既定: 1000/1600/80）\n  - originPolicy: \"cross-origin\" | \"same-origin\"（既定: cross-origin）\n- text: { maxLength, startIndex, raw }（既定: 20000/0/false）\n- security: { ignoreRobotsTxt }（既定: false）\n\n旧APIキー（enableFetchImages, returnBase64, saveImages, imageMax*, imageStartIndex 等）は後方互換のため引き続き受け付けます（非推奨）。\n\nExamples（新API）\n{\n  \"url\": \"https://example.com\",\n  \"images\": true\n}\n\n{\n  \"url\": \"https://example.com\",\n  \"images\": { \"output\": \"both\", \"layout\": \"both\", \"maxCount\": 4 }\n}\n\nExamples（旧API互換）\n{\n  \"url\": \"https://example.com\",\n  \"enableFetchImages\": true,\n  \"returnBase64\": true,\n  \"imageMaxCount\": 2\n}",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "maxLength": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1000000
+                }
+              ],
+              "default": 20000
+            },
+            "startIndex": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0
+                }
+              ],
+              "default": 0
+            },
+            "imageStartIndex": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0
+                }
+              ],
+              "default": 0
+            },
+            "raw": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "imageMaxCount": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              ],
+              "default": 3
+            },
+            "imageMaxHeight": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 100,
+                  "maximum": 10000
+                }
+              ],
+              "default": 4000
+            },
+            "imageMaxWidth": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 100,
+                  "maximum": 10000
+                }
+              ],
+              "default": 1000
+            },
+            "imageQuality": {
+              "allOf": [
+                {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              ],
+              "default": 80
+            },
+            "enableFetchImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "allowCrossOriginImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": true
+            },
+            "ignoreRobotsTxt": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "saveImages": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": true
+            },
+            "returnBase64": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "default": false
+            },
+            "images": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "output": {
+                      "type": "string",
+                      "enum": [
+                        "base64",
+                        "file",
+                        "both"
+                      ]
+                    },
+                    "layout": {
+                      "type": "string",
+                      "enum": [
+                        "merged",
+                        "individual",
+                        "both"
+                      ]
+                    },
+                    "maxCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "startIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "size": {
+                      "type": "object",
+                      "properties": {
+                        "maxWidth": {
+                          "type": "integer",
+                          "minimum": 100,
+                          "maximum": 10000
+                        },
+                        "maxHeight": {
+                          "type": "integer",
+                          "minimum": 100,
+                          "maximum": 10000
+                        },
+                        "quality": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 100
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "originPolicy": {
+                      "type": "string",
+                      "enum": [
+                        "cross-origin",
+                        "same-origin"
+                      ]
+                    },
+                    "saveDir": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "text": {
+              "type": "object",
+              "properties": {
+                "maxLength": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1000000
+                },
+                "startIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "raw": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "ignoreRobotsTxt": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "1 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Race condition between request and cancellation causes server hang",
+      "description": "Sending a tools/list request immediately followed by notifications/cancelled with the same requestId caused the server to hang.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/list id='cancel-race-test-1' then notifications/cancelled requestId='cancel-race-test-1'",
+      "evidence": null,
+      "remediation": "Implement thread-safe request cancellation with proper state cleanup.",
+      "exploitation_confirmed": false,
+      "confidence": 72,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 17.764999999999418,
+  "exchanges": []
+}

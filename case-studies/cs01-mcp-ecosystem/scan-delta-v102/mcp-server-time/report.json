@@ -1,0 +1,128 @@
+{
+  "target": "uvx mcp-server-time",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-time",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_current_time",
+        "description": "Get current time in a specific timezone",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "timezone": {
+              "type": "string",
+              "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Use 'America/Buenos_Aires' as local timezone if no timezone provided by the user."
+            }
+          },
+          "required": [
+            "timezone"
+          ]
+        }
+      },
+      {
+        "name": "convert_time",
+        "description": "Convert time between timezones",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "source_timezone": {
+              "type": "string",
+              "description": "Source IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Use 'America/Buenos_Aires' as local timezone if no source timezone provided by the user."
+            },
+            "time": {
+              "type": "string",
+              "description": "Time to convert in 24-hour format (HH:MM)"
+            },
+            "target_timezone": {
+              "type": "string",
+              "description": "Target IANA timezone name (e.g., 'Asia/Tokyo', 'America/San_Francisco'). Use 'America/Buenos_Aires' as local timezone if no target timezone provided by the user."
+            }
+          },
+          "required": [
+            "source_timezone",
+            "time",
+            "target_timezone"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "2 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 0.6090000000040163,
+  "exchanges": []
+}

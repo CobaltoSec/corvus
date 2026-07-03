@@ -1,0 +1,1594 @@
+{
+  "target": "npx -y drawio-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "drawio-mcp-server",
+    "server_version": "2.2.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get-selected-cell",
+        "description": "This tool retrieves the selected cell on the target page of the current Draw.io document. If the target page is not currently visible, Draw.io may switch the visible page first because selection is UI-bound.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page"
+          ]
+        }
+      },
+      {
+        "name": "add-rectangle",
+        "description": "This tool allows you to add a new Rectangle vertex cell on the target page of the current Draw.io document.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "x": {
+              "default": 100,
+              "description": "X-axis position of the Rectangle vertex cell",
+              "type": "number"
+            },
+            "y": {
+              "default": 100,
+              "description": "Y-axis position of the Rectangle vertex cell",
+              "type": "number"
+            },
+            "width": {
+              "default": 200,
+              "description": "Width of the Rectangle vertex cell",
+              "type": "number"
+            },
+            "height": {
+              "default": 100,
+              "description": "Height of the Rectangle vertex cell",
+              "type": "number"
+            },
+            "text": {
+              "default": "New Cell",
+              "description": "Text content placed inside of the Rectangle vertex cell",
+              "type": "string"
+            },
+            "style": {
+              "default": "whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+              "description": "Semi-colon separated list of Draw.io visual styles, in the form of `key=value`. Example: `whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;`",
+              "type": "string"
+            },
+            "parent_id": {
+              "description": "ID of the parent cell. If provided, the new rectangle will be created as a child of this cell. If omitted, the rectangle is created at the diagram root level.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page"
+          ]
+        }
+      },
+      {
+        "name": "add-edge",
+        "description": "This tool creates an edge, sometimes called also a relation, between two vertexes (cells). When source and target are the same shape (self-connector), a loop edge style is automatically applied if no custom style is provided.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "source_id": {
+              "description": "Source ID of a cell. It is represented by `id` attribute.",
+              "type": "string"
+            },
+            "target_id": {
+              "description": "Target ID of a cell. It is represented by `id` attribute.",
+              "type": "string"
+            },
+            "text": {
+              "description": "Text content placed over the edge cell",
+              "type": "string"
+            },
+            "style": {
+              "default": "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+              "description": "Semi-colon separated list of Draw.io visual styles, in the form of `key=value`. Example: `edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;`",
+              "type": "string"
+            },
+            "points": {
+              "description": "Array of {x, y} waypoints to control edge routing. Useful for custom paths or self-connectors where straight lines are barely visible.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "description": "X coordinate of the waypoint",
+                    "type": "number"
+                  },
+                  "y": {
+                    "description": "Y coordinate of the waypoint",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            "parent_id": {
+              "description": "ID of the parent cell. If provided, the new edge will be created as a child of this cell. If omitted, the edge is created at the diagram root level.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "source_id",
+            "target_id"
+          ]
+        }
+      },
+      {
+        "name": "delete-cell-by-id",
+        "description": "Deletes a cell from the target page, whether it is a vertex or edge.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "The ID of a cell to delete. The cell can be either vertex or edge. The ID is located in `id` attribute.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id"
+          ]
+        }
+      },
+      {
+        "name": "get-shape-categories",
+        "description": "Retrieves available shape categories from the diagram's library. Library is split into multiple categories.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "get-shapes-in-category",
+        "description": "Retrieve all shapes in the provided category from the diagram's library. A shape primarily contains `style` based on which you can create new vertex cells.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "category_id": {
+              "description": "Identifier (ID / key) of the category from which all the shapes should be retrieved.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "category_id"
+          ]
+        }
+      },
+      {
+        "name": "get-shape-by-name",
+        "description": "Retrieve a specific shape by its name from all available shapes in the diagram's library. It returns the shape and also the category it belongs.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "shape_name": {
+              "description": "Name of the shape to retrieve from the shape library of the current diagram.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "shape_name"
+          ]
+        }
+      },
+      {
+        "name": "add-cell-of-shape",
+        "description": "This tool allows you to add a new vertex cell on the target page of the current Draw.io document by its shape name.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "shape_name": {
+              "description": "Name of the shape to retrieved from the shape library of the current diagram.",
+              "type": "string"
+            },
+            "x": {
+              "default": 100,
+              "description": "X-axis position of the vertex cell of the shape",
+              "type": "number"
+            },
+            "y": {
+              "default": 100,
+              "description": "Y-axis position of the vertex cell of the shape",
+              "type": "number"
+            },
+            "width": {
+              "default": 200,
+              "description": "Width of the vertex cell of the shape",
+              "type": "number"
+            },
+            "height": {
+              "default": 100,
+              "description": "Height of the vertex cell of the shape",
+              "type": "number"
+            },
+            "text": {
+              "description": "Text content placed inside of the vertex cell of the shape",
+              "type": "string"
+            },
+            "style": {
+              "description": "Semi-colon separated list of Draw.io visual styles, in the form of `key=value`. Example: `whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;`",
+              "type": "string"
+            },
+            "parent_id": {
+              "description": "ID of the parent cell. If provided, the new cell will be created as a child of this cell. If omitted, the cell is created at the diagram root level.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "shape_name"
+          ]
+        }
+      },
+      {
+        "name": "set-cell-shape",
+        "description": "Updates the visual style of an existing vertex cell to match a library shape by name.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "Identifier (`id` attribute) of the cell whose shape should change.",
+              "type": "string"
+            },
+            "shape_name": {
+              "description": "Name of the library shape whose style should be applied to the existing cell.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id",
+            "shape_name"
+          ]
+        }
+      },
+      {
+        "name": "set-cell-data",
+        "description": "Sets or updates a custom attribute on an existing cell.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "Identifier (`id` attribute) of the cell to update with custom data.",
+              "type": "string"
+            },
+            "key": {
+              "description": "Name of the attribute to set on the cell.",
+              "type": "string"
+            },
+            "value": {
+              "description": "Value to store for the attribute. Non-string values are stringified before storage.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id",
+            "key",
+            "value"
+          ]
+        }
+      },
+      {
+        "name": "edit-cell",
+        "description": "Update properties of an existing vertex/shape cell by its ID. Only provided fields are modified; unspecified properties remain unchanged.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "Identifier (`id` attribute) of the cell to update. Applies to vertex/shape cells.",
+              "type": "string"
+            },
+            "text": {
+              "description": "Replace the cell's text/label content.",
+              "type": "string"
+            },
+            "x": {
+              "description": "Set a new X-axis position for the cell.",
+              "type": "number"
+            },
+            "y": {
+              "description": "Set a new Y-axis position for the cell.",
+              "type": "number"
+            },
+            "width": {
+              "description": "Set a new width for the cell.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Set a new height for the cell.",
+              "type": "number"
+            },
+            "style": {
+              "description": "Replace the cell's style string (semi-colon separated `key=value` pairs).",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id"
+          ]
+        }
+      },
+      {
+        "name": "edit-edge",
+        "description": "Update properties of an existing edge by its ID. Only provided fields are modified; unspecified properties remain unchanged. Supports setting waypoints for edge geometry control.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "Identifier (`id` attribute) of the edge cell to update. The ID must reference an edge.",
+              "type": "string"
+            },
+            "text": {
+              "description": "Replace the edge's label text.",
+              "type": "string"
+            },
+            "source_id": {
+              "description": "Reassign the edge's source terminal to a different cell ID.",
+              "type": "string"
+            },
+            "target_id": {
+              "description": "Reassign the edge's target terminal to a different cell ID.",
+              "type": "string"
+            },
+            "style": {
+              "description": "Replace the edge's style string (semi-colon separated `key=value` pairs).",
+              "type": "string"
+            },
+            "points": {
+              "description": "Array of {x, y} waypoints to set as edge geometry control points. Replaces existing waypoints. Use an empty array to clear waypoints.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "description": "X coordinate of the waypoint",
+                    "type": "number"
+                  },
+                  "y": {
+                    "description": "Y coordinate of the waypoint",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id"
+          ]
+        }
+      },
+      {
+        "name": "list-paged-model",
+        "description": "Retrieves a paginated view of all cells (vertices and edges) on the target page. This tool provides access to the complete model data with essential fields only, sanitized to remove circular dependencies and excessive data.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "page": {
+              "default": 0,
+              "description": "Zero-based page number for pagination. Page 0 returns the first batch of cells, page 1 returns the next batch, etc. Default is 0.",
+              "type": "number"
+            },
+            "page_size": {
+              "default": 50,
+              "description": "Maximum number of cells to return in a single page. Controls response size and performance. Must be between 1 and 1000. Default is 50.",
+              "type": "number"
+            },
+            "filter": {
+              "default": {},
+              "description": "Optional filter criteria to apply to cells before pagination",
+              "type": "object",
+              "properties": {
+                "cell_type": {
+                  "description": "Filter by cell type: 'edge' for connection lines, 'vertex' for vertices/shapes, 'object' for any cell type, 'layer' for layer cells, 'group' for grouped cells",
+                  "type": "string",
+                  "enum": [
+                    "edge",
+                    "vertex",
+                    "object",
+                    "layer",
+                    "group"
+                  ]
+                },
+                "parent_ids": {
+                  "description": "Filter cells to only those whose parent is one of the specified parent IDs.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "layer_ids": {
+                  "description": "Filter cells to only those whose parent is one of the specified layer IDs. Alias for parent_ids.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ids": {
+                  "description": "Filter cells to only those whose ID is one of the specified IDs.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "attributes": {
+                  "description": "Boolean logic array expressions for filtering cell attributes. Format: [\"and\" | \"or\", ...expressions] or [\"equal\", key, value]. Matches against cell attributes and parsed style properties.",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/__schema0"
+                    }
+                  ]
+                }
+              }
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page"
+          ],
+          "definitions": {
+            "__schema0": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/__schema0"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "list-layers",
+        "description": "Lists all available layers on the target page with their IDs and names.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page"
+          ]
+        }
+      },
+      {
+        "name": "set-active-layer",
+        "description": "Sets the active layer for creating new elements. All subsequent element creation will happen in this layer. If the target page is not currently visible, Draw.io may switch the visible page first because active-layer state is UI-bound.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "layer_id": {
+              "description": "ID of the layer to set as active",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "layer_id"
+          ]
+        }
+      },
+      {
+        "name": "move-cell-to-layer",
+        "description": "Moves a cell from its current layer to a target layer.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "ID of the cell to move",
+              "type": "string"
+            },
+            "target_layer_id": {
+              "description": "ID of the target layer where the cell will be moved",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id",
+            "target_layer_id"
+          ]
+        }
+      },
+      {
+        "name": "set-cell-parent",
+        "description": "Sets the parent of a cell, making it a child of the specified parent cell. This allows creating hierarchical relationships where moving the parent also moves its children.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "cell_id": {
+              "description": "ID of the cell to reparent",
+              "type": "string"
+            },
+            "parent_id": {
+              "description": "ID of the new parent cell",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "cell_id",
+            "parent_id"
+          ]
+        }
+      },
+      {
+        "name": "get-active-layer",
+        "description": "Gets the currently active layer information for the target page. If the target page is not currently visible, Draw.io may switch the visible page first because active-layer state is UI-bound.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page"
+          ]
+        }
+      },
+      {
+        "name": "create-layer",
+        "description": "Creates a new layer on the target page.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "name": {
+              "description": "Name for the new layer",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "export-diagram",
+        "description": "Export the target page or current diagram as SVG, PNG, or XML. Returns the diagram data as base64 (PNG) or text (SVG/XML). Optionally saves to a file.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "format": {
+              "description": "Export format: svg for vector graphics, png for raster image, xml for raw diagram data",
+              "type": "string",
+              "enum": [
+                "svg",
+                "png",
+                "xml"
+              ]
+            },
+            "scale": {
+              "description": "Zoom factor for the export (1 = 100%)",
+              "default": 1,
+              "type": "number"
+            },
+            "border": {
+              "description": "Border width in pixels around the diagram",
+              "default": 0,
+              "type": "number"
+            },
+            "background": {
+              "description": "Background color in hex format (e.g., #ffffff)",
+              "default": "#ffffff",
+              "type": "string"
+            },
+            "shadow": {
+              "description": "Include shadow effects in the export",
+              "default": false,
+              "type": "boolean"
+            },
+            "crop": {
+              "description": "Crop the export to diagram bounds (true) or full page (false)",
+              "default": true,
+              "type": "boolean"
+            },
+            "selection_only": {
+              "description": "Export only the currently selected cells",
+              "default": false,
+              "type": "boolean"
+            },
+            "transparent": {
+              "description": "Use transparent background (overrides background color)",
+              "default": false,
+              "type": "boolean"
+            },
+            "dpi": {
+              "description": "DPI for PNG export (affects quality)",
+              "default": 96,
+              "type": "number"
+            },
+            "embed_xml": {
+              "description": "Embed the diagram XML data in SVG/PNG so it can be reopened in draw.io",
+              "default": false,
+              "type": "boolean"
+            },
+            "size": {
+              "description": "What to export: 'selection' for selected cells only, 'page' for the target page, 'diagram' for the entire model",
+              "default": "diagram",
+              "type": "string",
+              "enum": [
+                "selection",
+                "page",
+                "diagram"
+              ]
+            },
+            "output_path": {
+              "description": "Absolute file path to save the exported file (must be an absolute path)",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "target_page",
+            "format"
+          ]
+        }
+      },
+      {
+        "name": "import-diagram",
+        "description": "Import a diagram from XML, SVG with embedded XML, or PNG with embedded XML into the current Draw.io instance. `target_page` is required for `replace` and `add`, and optional for `new-page`.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "data": {
+              "description": "The diagram data: raw XML string, or base64-encoded SVG/PNG with embedded XML",
+              "type": "string"
+            },
+            "format": {
+              "description": "Input format: xml for raw Draw.io XML, svg for SVG with embedded XML, png for PNG with embedded XML",
+              "type": "string",
+              "enum": [
+                "xml",
+                "svg",
+                "png"
+              ]
+            },
+            "mode": {
+              "description": "Import mode: replace clears current diagram and loads new one, add merges imported cells into current diagram, new-page creates a new page with imported diagram",
+              "default": "replace",
+              "type": "string",
+              "enum": [
+                "replace",
+                "add",
+                "new-page"
+              ]
+            },
+            "filename": {
+              "description": "Optional original filename for context",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "data",
+            "format"
+          ]
+        }
+      },
+      {
+        "name": "import-mermaid",
+        "description": "Insert a Mermaid diagram into the target Draw.io page. Conversion runs inside the Draw.io editor via its bundled Mermaid pipeline (EditorUi.parseMermaidDiagram). mode='native' converts supported Mermaid types into native mxGraph cells; unsupported types fall back to an embedded image cell. mode='embed' always emits a single image cell that preserves the Mermaid source for re-editing inside Draw.io. `target_page` is required for `replace` and `add`, and optional for `new-page`.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_page": {
+              "description": "Target page selector. Provide exactly one of `{ index }` or `{ id }` from `list-pages`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "mermaid_source": {
+              "description": "Raw Mermaid syntax. Examples: 'graph TD; A-->B;', 'sequenceDiagram\\nA->>B: hi'.",
+              "type": "string",
+              "minLength": 1
+            },
+            "mode": {
+              "description": "native = convert to native mxGraph cells when the diagram type is supported (best editability). embed = single image cell with mermaidData attribute for round-trip Mermaid editing in Draw.io.",
+              "default": "native",
+              "type": "string",
+              "enum": [
+                "native",
+                "embed"
+              ]
+            },
+            "insert_mode": {
+              "description": "How the resulting XML is merged into the diagram: replace, add, or new-page.",
+              "default": "add",
+              "type": "string",
+              "enum": [
+                "replace",
+                "add",
+                "new-page"
+              ]
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "mermaid_source"
+          ]
+        }
+      },
+      {
+        "name": "list-documents",
+        "description": "Lists all connected Draw.io document instances with their stable instance IDs and basic metadata.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "list-pages",
+        "description": "Lists all pages in the current Draw.io document with their index, id, name, and current-page flag.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "get-current-page",
+        "description": "Gets the currently visible page metadata, including index, id, name, and whether it is active.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "create-page",
+        "description": "Appends a new blank page to the current Draw.io document without changing the visible page when the runtime supports background page insertion.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name for the new page",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "copy-page",
+        "description": "Creates a copy of an existing page in the target/current Draw.io document, appends the copy to the end of the page list, and returns the copied page metadata. When possible, the previously visible page is restored after the copy is created.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "description": "Source page selector for the page to copy. Provide exactly one of `{ index }` or `{ id }`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "name": {
+              "description": "Optional name for the copied page.",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "page"
+          ]
+        }
+      },
+      {
+        "name": "rename-page",
+        "description": "Renames the selected page without changing the visible page.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "description": "Page selector for the page to rename. Provide exactly one of `{ index }` or `{ id }`.",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Zero-based page index in the current Draw.io document.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "description": "Stable Draw.io page identifier from `list-pages`.",
+                  "type": "string"
+                }
+              }
+            },
+            "name": {
+              "description": "New page name",
+              "type": "string"
+            },
+            "target_document": {
+              "description": "Target document selector. Provide `{ id }` from `list-documents`.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Stable Draw.io document instance identifier from `list-documents`.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "page",
+            "name"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "27 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Race condition between request and cancellation causes server hang",
+      "description": "Sending a tools/list request immediately followed by notifications/cancelled with the same requestId caused the server to hang.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/list id='cancel-race-test-1' then notifications/cancelled requestId='cancel-race-test-1'",
+      "evidence": null,
+      "remediation": "Implement thread-safe request cancellation with proper state cleanup.",
+      "exploitation_confirmed": false,
+      "confidence": 72,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 26.156000000002678,
+  "exchanges": []
+}

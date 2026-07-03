@@ -1,0 +1,39 @@
+# Corvus Batch Scan Summary
+
+| Target | CRITICAL | HIGH | MEDIUM | LOW | INFO | Total | Score |
+|--------|----------|------|--------|-----|------|-------|-------|
+| server-filesystem | 0 | 1 | 1 | 0 | 2 | 4 | 14/100 |
+| server-memory | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-sequential-thinking | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-everything | 0 | 3 | 1 | 0 | 3 | 7 | 42/100 |
+| server-github | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-pdf | ERROR | — | — | — | — | — | — |
+| server-git | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-postgres | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-sqlite | 0 | 1 | 1 | 0 | 3 | 5 | 16/100 |
+| server-brave-search | ERROR | — | — | — | — | — | — |
+| mcp-server-puppeteer | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| mcp-server-fetch | 0 | 1 | 1 | 0 | 3 | 5 | 16/100 |
+| mcp-server-aws-kb-retrieval | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| mcp-server-slack | ERROR | — | — | — | — | — | — |
+| filesystem-mcp-server | ERROR | — | — | — | — | — | — |
+| agent-infra-mcp-filesystem | ERROR | — | — | — | — | — | — |
+| mcp-fetch-server | 0 | 1 | 1 | 0 | 2 | 4 | 14/100 |
+| playwright-mcp | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| npm-search-mcp-server | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| n8n-mcp | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| shell-command-mcp | 0 | 1 | 1 | 0 | 3 | 5 | 16/100 |
+| mcp-cli-exec | ERROR | — | — | — | — | — | — |
+| notion-mcp-server | 0 | 1 | 0 | 0 | 0 | 1 | 13/100 |
+| tavily-mcp | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| exa-mcp-server | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| server-gitlab | ERROR | — | — | — | — | — | — |
+| mcp-server-commands | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| super-shell-mcp | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| mcp-shell-server | 0 | 1 | 1 | 0 | 3 | 5 | 16/100 |
+| mcp-server-time | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| mcp-scan | ERROR | — | — | — | — | — | — |
+| mcp-homescan | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| docker-mcp-server | ERROR | — | — | — | — | — | — |
+| database-server-executeautomation | 0 | 0 | 1 | 0 | 3 | 4 | 3/100 |
+| mcp-server-mysql | 0 | 1 | 0 | 0 | 0 | 1 | 13/100 |

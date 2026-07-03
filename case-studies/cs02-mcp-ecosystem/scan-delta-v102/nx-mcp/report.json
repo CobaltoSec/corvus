@@ -1,0 +1,118 @@
+{
+  "target": "npx -y nx-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "Nx MCP",
+    "server_version": "0.0.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "nx_docs",
+        "description": "Returns a list of documentation sections that could be relevant to the user query. IMPORTANT: ALWAYS USE THIS IF YOU ARE ANSWERING QUESTIONS ABOUT NX. NEVER ASSUME KNOWLEDGE ABOUT NX BECAUSE IT WILL PROBABLY BE OUTDATED. Use it to learn about nx, its configuration and options instead of assuming knowledge about it.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "userQuery": {
+              "description": "The user query to get docs for. You can pass the original user query verbatim or summarize it.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "userQuery"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "1 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT11",
+      "severity": "high",
+      "title": "Server allows external log level escalation to DEBUG",
+      "description": "The MCP server accepted an unauthenticated logging/setLevel request with level='debug'. This may expose tokens, internal paths, and sensitive state in log streams accessible to the operator.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='debug' and level='emergency' both returned success",
+      "remediation": "Restrict logging/setLevel to admin contexts or disable it entirely.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Race condition between request and cancellation causes server hang",
+      "description": "Sending a tools/list request immediately followed by notifications/cancelled with the same requestId caused the server to hang.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/list id='cancel-race-test-1' then notifications/cancelled requestId='cancel-race-test-1'",
+      "evidence": null,
+      "remediation": "Implement thread-safe request cancellation with proper state cleanup.",
+      "exploitation_confirmed": false,
+      "confidence": 72,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 7.860000000000582,
+  "exchanges": []
+}

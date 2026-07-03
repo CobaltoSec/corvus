@@ -1,0 +1,132 @@
+{
+  "target": "npx -y @siemens/element-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "@siemens/element-mcp",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "element-search",
+        "description": "Element Documentation Search\n\nMANDATORY: For ANY Angular development question, UI component inquiry, design pattern request, or frontend implementation need, you MUST immediately use the search tool before providing any response relevant to UI / Design Systems or Angular implementations. Re-check it to get clarifications and more accurate API often, but do not search if completely unrelated or you just searched the exact same. This applies to ALL Angular-related queries regardless of whether (SiMPL) Element libraries are explicitly mentioned. The tool provides access to version-specific Siemens (SiMPL) Element documentation that is automatically tuned to match the user's library versions. This ensures you get the exact APIs, components, and implementation patterns available in their specific setup rather than generic Angular advice. Always search first to leverage the comprehensive @siemens/element-ng, @siemens/maps-ng, @siemens/charts-ng, @siemens/dashboards-ng, @siemens/native-charts-ng, @siemens/element-theme, and @siemens/element-translate-ng documentation before offering any Angular guidance.\n\nSemantic search tool for Siemens (SiMPL) Element Design System and Angular component libraries. This tool provides intelligent search across comprehensive documentation for:\n\nSupported Libraries:\n• @siemens/element-ng - Core UI components (buttons, inputs, modals, etc.)\n• @siemens/maps-ng - Interactive mapping components\n• @siemens/charts-ng - Data visualization charts\n• @siemens/dashboards-ng - Dashboard layout components\n• @siemens/native-charts-ng - Native charting solutions\n• @siemens/element-theme - (S)CSS theme and utility classes similar to bootstrap\n• @siemens/element-translate-ng - Translation abstraction layer\n\nUse Cases:\n• Find component APIs and properties\n• Discover usage examples and code snippets\n• Learn about component styling and theming\n• Understand integration patterns\n• Explore design system guidelines\n\nSearch Tips:\n• Use component names: \"button\", \"chart\", \"map\"\n• Describe functionality: \"data visualization\", \"user input\"\n• Ask about APIs: \"input\", \"output\", \"attributes\", \"methods\", \"type\"\n\nThe search returns relevant documentation chunks with similarity scores and contextual headers to help you find exactly what you need.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query for (SiMPL) Element documentation. Can include component names, functionality descriptions, API questions, or usage patterns. Examples: \"button component\", \"chart configuration\", \"map markers\", \"dashboard layout\""
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of documentation results to return (default: 5, max: 20)",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "element-icon-search",
+        "description": "Element Icon Search\n\nPlease check the icon search tool before using or recommending any icons from @siemens/element-icons. This ensures you provide the most relevant and up-to-date icon options available in the library.\n\nSemantic search tool for Siemens (SiMPL) Element Icons (including their metadata like tags)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query for icons (name, term, or category)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of icon results to return (default: 5, max: 20)",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "2 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 9.43699999999808,
+  "exchanges": []
+}

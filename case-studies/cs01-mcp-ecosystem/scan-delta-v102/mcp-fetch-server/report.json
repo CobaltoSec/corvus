@@ -1,0 +1,282 @@
+{
+  "target": "npx -y mcp-fetch-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "zcaceres/fetch",
+    "server_version": "1.1.2",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "fetch_html",
+        "description": "Fetch a website and return its unmodified contents as HTML",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the website to fetch"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "fetch_markdown",
+        "description": "Fetch a website and return its contents converted to Markdown",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the website to fetch"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "fetch_txt",
+        "description": "Fetch a website, convert the content to plain text (no HTML)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the website to fetch"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "fetch_json",
+        "description": "Fetch a JSON file from a URL",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the JSON to fetch"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "fetch_readable",
+        "description": "Fetch a website and return its main content parsed by Mozilla Readability, converted to Markdown. Strips away navigation, ads, and boilerplate. Ideal for articles and blog posts.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the website to fetch"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "fetch_youtube_transcript",
+        "description": "Fetch a YouTube video page and extract its captions/transcript",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL of the YouTube video"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Optional headers to include in the request"
+            },
+            "max_length": {
+              "type": "number",
+              "description": "Maximum number of characters to return (default: 5000)"
+            },
+            "start_index": {
+              "type": "number",
+              "description": "Start content from this character index (default: 0)"
+            },
+            "proxy": {
+              "type": "string",
+              "description": "Optional proxy URL (e.g. 'http://proxy:8080')"
+            },
+            "lang": {
+              "type": "string",
+              "description": "Language code for captions (default: 'en')"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "6 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Race condition between request and cancellation causes server hang",
+      "description": "Sending a tools/list request immediately followed by notifications/cancelled with the same requestId caused the server to hang.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/list id='cancel-race-test-1' then notifications/cancelled requestId='cancel-race-test-1'",
+      "evidence": null,
+      "remediation": "Implement thread-safe request cancellation with proper state cleanup.",
+      "exploitation_confirmed": false,
+      "confidence": 72,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 10.359000000004016,
+  "exchanges": []
+}

@@ -1,0 +1,187 @@
+{
+  "target": "npx -y flightradar-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "flightradar-mcp-server",
+    "server_version": "0.1.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_flight_data",
+        "description": "Get real-time data for a specific flight by flight number",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "flight_iata": {
+              "type": "string",
+              "description": "IATA flight code (e.g., 'BA123')"
+            },
+            "flight_icao": {
+              "type": "string",
+              "description": "ICAO flight code (e.g., 'BAW123')"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "flight_iata"
+              ]
+            },
+            {
+              "required": [
+                "flight_icao"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "search_flights",
+        "description": "Search for flights by various criteria",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "airline_iata": {
+              "type": "string",
+              "description": "IATA airline code (e.g., 'BA' for British Airways)"
+            },
+            "airline_icao": {
+              "type": "string",
+              "description": "ICAO airline code (e.g., 'BAW' for British Airways)"
+            },
+            "dep_iata": {
+              "type": "string",
+              "description": "IATA code of departure airport (e.g., 'LHR')"
+            },
+            "arr_iata": {
+              "type": "string",
+              "description": "IATA code of arrival airport (e.g., 'JFK')"
+            },
+            "flight_status": {
+              "type": "string",
+              "description": "Flight status (e.g., 'scheduled', 'active', 'landed', 'cancelled')",
+              "enum": [
+                "scheduled",
+                "active",
+                "landed",
+                "cancelled",
+                "incident",
+                "diverted"
+              ]
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results to return (default: 10, max: 100)",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        }
+      },
+      {
+        "name": "get_flight_status",
+        "description": "Get the current status of a flight by flight number",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "flight_iata": {
+              "type": "string",
+              "description": "IATA flight code (e.g., 'BA123')"
+            },
+            "flight_icao": {
+              "type": "string",
+              "description": "ICAO flight code (e.g., 'BAW123')"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "flight_iata"
+              ]
+            },
+            {
+              "required": [
+                "flight_icao"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Race condition between request and cancellation causes server hang",
+      "description": "Sending a tools/list request immediately followed by notifications/cancelled with the same requestId caused the server to hang.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/list id='cancel-race-test-1' then notifications/cancelled requestId='cancel-race-test-1'",
+      "evidence": null,
+      "remediation": "Implement thread-safe request cancellation with proper state cleanup.",
+      "exploitation_confirmed": false,
+      "confidence": 72,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 11.23399999999674,
+  "exchanges": []
+}

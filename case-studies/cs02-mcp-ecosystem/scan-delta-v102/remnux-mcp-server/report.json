@@ -1,0 +1,1450 @@
+{
+  "target": "npx -y @remnux/mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "remnux-mcp-server",
+    "server_version": "0.1.61",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "run_tool",
+        "description": "Execute a command in REMnux. Supports piped commands (e.g., 'oledump.py sample.doc | grep VBA'). String extraction: For PE files use 'pestr'; for non-PE use 'strings' (ASCII) and 'strings -el' (Unicode). Note: capa matches under namespaces like collection/* or data-manipulation/* can be artifact-level (matched on strings/data) rather than behavioral; a behavioral capability requires the corresponding APIs to be imported or dynamically resolved. analyze_file tags capa findings with evidence_types to make this explicit.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "Command to execute (can include pipes, e.g., 'strings sample.exe | grep -i password')"
+            },
+            "input_file": {
+              "type": "string",
+              "description": "Input file path (relative to samples dir, or absolute path in local mode) - appended to command"
+            },
+            "timeout": {
+              "type": "number",
+              "description": "Timeout in seconds (default: 300)"
+            }
+          },
+          "required": [
+            "command"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_file_info",
+        "description": "Get file type, hashes, and basic metadata",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "File path relative to samples directory, or absolute path in local mode"
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "list_files",
+        "description": "List files in samples or output directory",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "directory": {
+              "type": "string",
+              "enum": [
+                "samples",
+                "output"
+              ],
+              "default": "samples",
+              "description": "Which directory to list"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "extract_archive",
+        "description": "Extract files from a compressed archive (.zip, .7z, .rar), including WinZip AES-256 .zip and header-encrypted .7z (-mhe=on) — these route through 7z automatically. Tries a supplied password first, then common malware passwords (infected, malware, virus) if the archive is password-protected. Returns list of extracted files.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "archive_file": {
+              "type": "string",
+              "description": "Path to archive file relative to samples directory (e.g., 'sample.zip')"
+            },
+            "password": {
+              "type": "string",
+              "description": "Optional password to try first. If not provided, tries common passwords from built-in list."
+            },
+            "output_subdir": {
+              "type": "string",
+              "description": "Optional subdirectory name for extracted files. Defaults to archive filename without extension."
+            }
+          },
+          "required": [
+            "archive_file"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "upload_from_host",
+        "description": "Upload a file from the host filesystem to the samples directory for analysis. Accepts an absolute host path — the MCP server reads the file locally and transfers it. Maximum file size: 200MB. Files can also be referenced by absolute path in analysis tools, bypassing the need to upload. For files outside the samples directory, pass the full path to get_file_info, analyze_file, or run_tool.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "host_path": {
+              "type": "string",
+              "description": "Absolute path to the file on the machine where the MCP server runs (not the remote client in HTTP deployments). When the server is started with --sandbox, the resolved path must reside inside the configured --ingest-root (defaults to the samples directory)."
+            },
+            "filename": {
+              "type": "string",
+              "description": "Override filename in samples dir (defaults to basename of host_path)"
+            },
+            "overwrite": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to overwrite if file exists. Default: false"
+            }
+          },
+          "required": [
+            "host_path"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "download_from_url",
+        "description": "Download a file from a URL into the samples directory for analysis. Returns file metadata (hashes, type, size). Supports custom HTTP headers and an optional thug mode for sites requiring JavaScript execution.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL to download (http or https only)"
+            },
+            "filename": {
+              "type": "string",
+              "description": "Override filename in samples dir. If omitted, derived from URL path."
+            },
+            "headers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Custom HTTP headers as 'Name: value' strings. Example: ['User-Agent: Mozilla/5.0', 'X-Auth-Token: abc123']"
+            },
+            "method": {
+              "type": "string",
+              "enum": [
+                "curl",
+                "thug"
+              ],
+              "default": "curl",
+              "description": "Download method. 'curl' (default) for direct HTTP download. 'thug' for sites requiring JavaScript execution (uses thug honeyclient)."
+            },
+            "overwrite": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to overwrite if file exists. Default: false"
+            },
+            "timeout": {
+              "type": "number",
+              "description": "Download timeout in seconds (default: server timeout)"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "download_file",
+        "description": "Download a file from the output directory (returns base64-encoded content). Use this to retrieve analysis results. Files are wrapped in a password-protected archive by default to prevent AV/EDR triggers. Pass archive: false for harmless files like text reports. Provide output_path to save directly to the host filesystem.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "File path relative to the output directory"
+            },
+            "output_path": {
+              "type": "string",
+              "description": "Directory on host to save the downloaded file"
+            },
+            "archive": {
+              "type": "boolean",
+              "default": true,
+              "description": "Wrap the file in a password-protected archive before transfer (default: true). Protects against AV/EDR triggers on the host. Pass false for harmless files like text reports."
+            }
+          },
+          "required": [
+            "file_path",
+            "output_path"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "analyze_file",
+        "description": "Auto-analyze a file using REMnux tools appropriate for the detected file type. Runs `file` to detect type, then executes matching tools (e.g., PE → peframe/capa, PDF → pdfid/pdf-parser, Office → olevba/oleid). Use `depth` to control analysis intensity: 'quick' (triage only), 'standard' (default), 'deep' (includes expensive tools). Note: 'standard' is sufficient for most files; use 'deep' only when standard doesn't reveal enough. Output includes a capability_evidence field (behavior_capable vs artifact_only) and per-capa evidence_types tags so you can tell code-backed capabilities from data-only artifacts — an artifact_only match means the data is present, not that the behavior executes.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "Filename relative to samples directory, or absolute path in local mode"
+            },
+            "timeout_per_tool": {
+              "type": "number",
+              "description": "Timeout per tool in seconds (default: 60)"
+            },
+            "depth": {
+              "type": "string",
+              "enum": [
+                "quick",
+                "standard",
+                "deep"
+              ],
+              "default": "standard",
+              "description": "Analysis depth. 'quick' (~5-15s): fast triage. 'standard' (~30-90s, default): comprehensive analysis. 'deep' (~2-5min): exhaustive. Use 'deep' only when 'standard' isn't enough."
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "suggest_tools",
+        "description": "Detect file type and return recommended REMnux analysis tools without executing them. Use this to plan an analysis strategy, then run individual tools with run_tool. Returns tool names, descriptions, depth tiers, and expert analysis hints. For binaries, confirming a behavior (versus merely finding its artifacts) generally requires more than static analysis — plan for emulation (speakeasy) or sandbox detonation when a behavioral claim is needed.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "Filename relative to samples directory, or absolute path in local mode"
+            },
+            "depth": {
+              "type": "string",
+              "enum": [
+                "quick",
+                "standard",
+                "deep"
+              ],
+              "default": "standard",
+              "description": "Filter recommendations by depth tier: 'quick' (triage only), 'standard' (default), 'deep' (all tools)"
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "extract_iocs",
+        "description": "Extract IOCs (IPs, domains, URLs, hashes, registry keys, etc.) from text. Pass output from run_tool or analyze_file to identify indicators. Works well with Volatility 3 plugin output (netscan, cmdline, filescan). Returns deduplicated IOCs with confidence scores. Note: an IOC extracted from a binary's strings is an artifact (present in the file) — not evidence the binary uses it at runtime. Cross-reference it against reachable code or dynamic analysis before treating it as an operational indicator.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text to extract IOCs from (e.g., output from run_tool or analyze_file)"
+            },
+            "include_noise": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include low-confidence known-good IOCs"
+            },
+            "include_private_ips": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include private/internal IP addresses (10.x, 172.16-31.x, 192.168.x)"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "check_behavior_prerequisites",
+        "description": "Before claiming a Windows PE performs a behavior (clipboard hijacking, HTTP/WinHTTP C2, process injection, registry/LNK persistence, browser-credential theft, screen capture, keylogging, network-share enumeration), check whether the prerequisite APIs are even accessible. Reads the static import table (readpe) and detects packing (diec), then reports a `static_capability` per behavior: capable_statically / incapable_statically / possibly_via_dynamic_resolution (GetProcAddress + loader present) / analysis_incomplete (packed, or a managed/.NET assembly whose native imports don't reflect its capability — don't read it as a clean negative) / not_applicable (not a PE). This is a STATIC gate — it tells you whether the binary CAN call the required APIs, not whether it does. Omit `behavior` to scan all. Confirm any behavior with dynamic analysis.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "Filename relative to the samples directory, or an absolute path in local mode."
+            },
+            "behavior": {
+              "type": "string",
+              "description": "Behavior to check (omit to scan ALL known behaviors). One of: clipboard_hijacking, http_c2_wininet, winhttp_c2, socket_c2, process_injection_remote, process_injection_self, registry_persistence_run, lnk_persistence, browser_credential_theft, screen_capture, keylog_polling, keylog_hook, network_share_enum."
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "verify_string_usage",
+        "description": "Check whether a string embedded in a binary is actually referenced by code, or is a vestigial artifact (e.g. a wallet address or C2 host sitting in .rdata). Uses radare2 to locate the string and find code cross-references to it. Returns a per-match `xref_status`: `referenced_from_code` (an instruction references it) / `no_code_xrefs_detected` (a COMPLETE-analysis null — NOT proof it is unused; the reference may be computed, indirect, or in code the analyzer missed) / `data_only` (non-code file) / `unknown` (analysis incomplete: packed, timed out, or version drift — never a negative). A static check: never concludes a string is 'unused', and confirm runtime use dynamically.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "Filename relative to the samples directory, or an absolute path in local mode."
+            },
+            "query": {
+              "type": "string",
+              "description": "The string (or substring) to locate in the binary and cross-reference against code."
+            },
+            "depth": {
+              "type": "string",
+              "enum": [
+                "standard",
+                "deep"
+              ],
+              "description": "Analysis depth: 'standard' (radare2 aa; aar — default) or 'deep' (aaa — slower, more thorough)."
+            },
+            "max_matches": {
+              "type": "number",
+              "description": "Cap on the number of distinct matching strings to classify (default 50)."
+            }
+          },
+          "required": [
+            "file",
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "compare_files",
+        "description": "Compare two related samples (e.g. a loader and its unpacked payload) and return a structured diff: size and entropy deltas, architecture, compiler, packer, imports added/removed, capabilities (capa) added/removed, and section changes. Reuses readpe/diec/capa/radare2. Use depth='quick' to skip the (slower) capa capability diff. Surfaces what each stage adds without re-running tools by hand.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_a": {
+              "type": "string",
+              "description": "First file (relative to the samples directory, or absolute in local mode)."
+            },
+            "file_b": {
+              "type": "string",
+              "description": "Second file to compare against file_a."
+            },
+            "depth": {
+              "type": "string",
+              "enum": [
+                "quick",
+                "standard"
+              ],
+              "description": "'standard' (default) includes a capa capability diff (slower — runs capa on both files); 'quick' skips capa (imports/sections/compiler/entropy only)."
+            }
+          },
+          "required": [
+            "file_a",
+            "file_b"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_tool_help",
+        "description": "Get usage help for a REMnux tool. Returns the tool's --help output so you can understand available flags, options, and usage patterns.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "type": "string",
+              "description": "Tool name (e.g., 'capa', 'pdfid.py', 'olevba'). Returns the tool's --help output."
+            }
+          },
+          "required": [
+            "tool"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "check_tools",
+        "description": "Check which REMnux analysis tools are installed and available. Returns a summary of installed vs missing tools across all file type categories.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_report_template",
+        "description": "Get a malware analysis report template (Markdown) bundled locally for offline use. Created by Lenny Zeltser, licensed CC BY 4.0. Use it to structure a report after analyzing a sample. The response also carries optional_section_convention: headings marked (Optional) are conditional markers to resolve (include only if warranted, and drop the marker), not literal heading text. For interactive review/scoring or the latest version, the zeltser-website MCP server's malware_get_template offers more when connected.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_report_guidance",
+        "description": "Get malware analysis report writing guidelines bundled locally for offline use — report sections, required fields, the MBC capability model, ICD-203 confidence, Pyramid-of-Pain IOC tiering, anti-patterns, and review criteria. Use `topic` to narrow the full digest, or topic='triage_checklist' for the pre-claim triage discipline checklist (artifact-vs-behavior gates) to consult at the START of an analysis. Every report-writing response (any topic except 'triage_checklist') also carries optional_section_convention (how to resolve (Optional) section markers when drafting). For interactive review or numeric scoring, the zeltser-website MCP server's malware_review_report / rating_score_writing offer more when connected.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "enum": [
+                "all",
+                "sections",
+                "confidence",
+                "capabilities",
+                "pyramid_of_pain",
+                "anti_patterns",
+                "review",
+                "writing",
+                "frameworks",
+                "profiles",
+                "triage_checklist"
+              ],
+              "default": "all",
+              "description": "Which slice of guidance to return. 'all' (default) returns the full writing-guidelines digest; narrow to 'sections', 'confidence', 'capabilities', 'pyramid_of_pain', 'anti_patterns', 'review', 'writing', 'frameworks', or 'profiles' to reduce size. 'triage_checklist' returns the pre-claim triage discipline checklist (artifact-vs-behavior gates to pass before drawing a behavioral conclusion) — useful at the START of an analysis, not just when writing up."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_osint_guidance",
+        "description": "OSINT triage for malware indicators. Given the hashes, C2 domains/IPs, and URLs from a sample (for example from analyze_file or extract_iocs), returns malware-specific enrichment tradecraft — hash-first and disclosure-aware, do not tip off the adversary, leads not verdicts — plus a curated catalog of free and freemium lookup services. Use `topic` to pick the guidance slice and `ioc_type` to narrow the catalog to a hash, url, domain, ip, family, or host_artifact. Guidance only: it runs no lookups and stores no API keys; the AI performs the lookups with its own tools.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "enum": [
+                "all",
+                "tradecraft",
+                "workflow",
+                "access",
+                "resources"
+              ],
+              "default": "all",
+              "description": "Which slice of guidance prose to return. 'all' (default) returns tradecraft + workflow + access guidance plus a CONDENSED resource catalog. 'tradecraft' returns the OPSEC principles, 'workflow' the per-IOC decision tree, 'access' the free-vs-paid handling, 'resources' the FULL catalog with per-entry detail. Lean flow for a real sample: call once with 'all' for prose plus a condensed index, then 'resources' with an ioc_type per indicator type for detail without re-emitting the prose."
+            },
+            "ioc_type": {
+              "type": "string",
+              "enum": [
+                "hash",
+                "url",
+                "domain",
+                "ip",
+                "family",
+                "host_artifact"
+              ],
+              "description": "Optional. When set, narrows the resource catalog to full-detail entries relevant to that IOC type. Orthogonal to `topic` (which selects the prose): `topic` picks guidance, `ioc_type` picks catalog rows."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "remnux://tools",
+        "name": "tools",
+        "description": "All registered REMnux analysis tools with metadata",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://report/template",
+        "name": "report-template",
+        "description": "Malware analysis report template (Markdown, CC BY 4.0, by Lenny Zeltser)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://report/guidelines",
+        "name": "report-guidelines",
+        "description": "Malware analysis report writing guidelines digest (© Lenny Zeltser)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://report/optional-section-convention",
+        "name": "report-optional-section-convention",
+        "description": "How to handle report template headings marked (Optional): conditional markers to resolve, not literal text",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/ai",
+        "name": "Tools tagged \"ai\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/apk",
+        "name": "Tools tagged \"apk\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/autoit",
+        "name": "Tools tagged \"autoit\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/capabilities",
+        "name": "Tools tagged \"capabilities\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/cobalt-strike",
+        "name": "Tools tagged \"cobalt-strike\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/crypto",
+        "name": "Tools tagged \"crypto\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/data-exe",
+        "name": "Tools tagged \"data-exe\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/decompilation",
+        "name": "Tools tagged \"decompilation\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/decryption",
+        "name": "Tools tagged \"decryption\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/dotnet",
+        "name": "Tools tagged \"dotnet\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/elf",
+        "name": "Tools tagged \"elf\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/email",
+        "name": "Tools tagged \"email\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/fallback",
+        "name": "Tools tagged \"fallback\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/family-detection",
+        "name": "Tools tagged \"family-detection\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/jar",
+        "name": "Tools tagged \"jar\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/javascript",
+        "name": "Tools tagged \"javascript\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/macros",
+        "name": "Tools tagged \"macros\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/memory",
+        "name": "Tools tagged \"memory\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/metadata",
+        "name": "Tools tagged \"metadata\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/ole2",
+        "name": "Tools tagged \"ole2\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/onenote",
+        "name": "Tools tagged \"onenote\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/ooxml",
+        "name": "Tools tagged \"ooxml\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/packer-detection",
+        "name": "Tools tagged \"packer-detection\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/pcap",
+        "name": "Tools tagged \"pcap\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/pdf",
+        "name": "Tools tagged \"pdf\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/pe",
+        "name": "Tools tagged \"pe\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/python",
+        "name": "Tools tagged \"python\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/rtf",
+        "name": "Tools tagged \"rtf\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/script",
+        "name": "Tools tagged \"script\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/shellcode",
+        "name": "Tools tagged \"shellcode\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/strings",
+        "name": "Tools tagged \"strings\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/triage",
+        "name": "Tools tagged \"triage\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/unpacking",
+        "name": "Tools tagged \"unpacking\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/by-tag/yara",
+        "name": "Tools tagged \"yara\"",
+        "description": "REMnux tools filtered by tag (pe, pdf, ole2, etc.)",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/peframe",
+        "name": "peframe",
+        "description": "Statically analyze PE and Microsoft Office files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/diec",
+        "name": "diec",
+        "description": "Determine types of files and examine file properties.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/capa",
+        "name": "capa",
+        "description": "Identify capabilities in executable files using CAPA rules.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/capa-vv",
+        "name": "capa-vv",
+        "description": "Identify capabilities with verbose rule match details (addresses and evidence).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/floss",
+        "name": "floss",
+        "description": "Extract and deobfuscate strings from PE executables.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pestr",
+        "name": "pestr",
+        "description": "Extract ASCII and Unicode strings from PE files with section and offset info.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/portex",
+        "name": "portex",
+        "description": "Statically analyze PE files for anomalies, structure, and metadata.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/yara-forge",
+        "name": "yara-forge",
+        "description": "Scan for malware family signatures using curated YARA rules from 45+ sources (Malpedia, ReversingLabs, etc.). Matches indicate resemblance to known families, not confirmed attribution.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/yara-rules",
+        "name": "yara-rules",
+        "description": "Scan a file with YARA rules to identify capabilities and behaviors (packer detection, anti-debug, networking).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pecheck",
+        "name": "pecheck",
+        "description": "Analyze static properties of PE files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/disitool",
+        "name": "disitool",
+        "description": "Examine and manipulate embedded Authenticode digital signatures in PE files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pescan",
+        "name": "pescan",
+        "description": "Scan PE files for anomalies and notable indicators.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/signsrch",
+        "name": "signsrch",
+        "description": "Find patterns of common encryption, compression, or encoding algorithms.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/ilspycmd",
+        "name": "ilspycmd",
+        "description": "Decompile .NET assemblies to C# source code.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/monodis-presources",
+        "name": "monodis-presources",
+        "description": "List embedded manifest resources in a .NET assembly (names and offsets).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/monodis-mresources",
+        "name": "monodis-mresources",
+        "description": "Extract all embedded managed resources from a .NET assembly to the current directory.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/autoit-ripper",
+        "name": "autoit-ripper",
+        "description": "Extract and decompile AutoIt scripts from compiled executables.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/upx-decompress",
+        "name": "upx-decompress",
+        "description": "Decompress UPX-packed executables in-place (keeps backup as .exe~).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/manalyze",
+        "name": "manalyze",
+        "description": "Statically analyze PE files for imports, resources, and anomalies.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/1768",
+        "name": "1768",
+        "description": "Analyze Cobalt Strike beacons and extract configuration details.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/cs-decrypt-metadata",
+        "name": "cs-decrypt-metadata",
+        "description": "Decrypt and analyze Cobalt Strike beacon metadata.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/csce",
+        "name": "csce",
+        "description": "Extract Cobalt Strike beacon configuration from raw shellcode or memory dumps.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pedump",
+        "name": "pedump",
+        "description": "Statically analyze PE files and extract their components.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/dotnetfile_dump",
+        "name": "dotnetfile_dump",
+        "description": "Analyze static properties of .NET files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/brxor",
+        "name": "brxor",
+        "description": "Bruteforce XOR-encoded strings to find English words.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfid",
+        "name": "pdfid",
+        "description": "Identify notable elements of a PDF file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfid-detailed",
+        "name": "pdfid-detailed",
+        "description": "Identify notable elements of a PDF file (detailed names output).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdf-parser",
+        "name": "pdf-parser",
+        "description": "Examine elements and structure of a PDF file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdftool",
+        "name": "pdftool",
+        "description": "Analyze incremental updates in PDF files to detect hidden payload swaps.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfresurrect",
+        "name": "pdfresurrect",
+        "description": "Extract previous versions of content from PDF files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/peepdf-3",
+        "name": "peepdf-3",
+        "description": "Examine elements of a PDF file for notable content.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/qpdf",
+        "name": "qpdf",
+        "description": "Decrypt password-protected or permission-locked PDF files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdftk",
+        "name": "pdftk",
+        "description": "Manipulate PDF files: merge, split, decrypt, repair, and extract metadata.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfcop",
+        "name": "pdfcop",
+        "description": "Detect malicious PDF structures using policy-based heuristics.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfextract",
+        "name": "pdfextract",
+        "description": "Extract JavaScript, attachments, fonts, images, and streams from PDF.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pdfdecompress",
+        "name": "pdfdecompress",
+        "description": "Decompress PDF streams to reveal obfuscated content.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/oleid",
+        "name": "oleid",
+        "description": "Analyze OLE2 files for risk indicators (macros, encryption, etc.).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/olevba",
+        "name": "olevba",
+        "description": "Extract and analyze VBA macros from Microsoft Office documents.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/oledump",
+        "name": "oledump",
+        "description": "Analyze OLE2 Structured Storage files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/msoffcrypto-crack",
+        "name": "msoffcrypto-crack",
+        "description": "Attempt to recover the password of encrypted Microsoft Office documents.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pcodedmp",
+        "name": "pcodedmp",
+        "description": "Disassemble VBA p-code from Office documents.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/xlmdeobfuscator",
+        "name": "xlmdeobfuscator",
+        "description": "Deobfuscate Excel 4.0 (XLM) macros.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/zipdump",
+        "name": "zipdump",
+        "description": "Analyze zip-compressed files including OOXML and JAR.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/xmldump",
+        "name": "xmldump",
+        "description": "Format and analyze XML. For OOXML: zipdump.py -s <n> -d file | xmldump.py pretty",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/rtfdump",
+        "name": "rtfdump",
+        "description": "Analyze RTF files for embedded content.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/rtfobj",
+        "name": "rtfobj",
+        "description": "Extract embedded objects from RTF files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/redress",
+        "name": "redress",
+        "description": "Analyze Go binaries to recover package names, type definitions, source structure, and compiler version.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/r2ghidra",
+        "name": "r2ghidra",
+        "description": "Decompile native PE/ELF functions to pseudo-C using the r2ghidra (Ghidra) decompiler in radare2. Function-scoped — one function per 'pdg'. List functions first: run_tool command=\"r2 -A -q -c afl <file>\", then decompile a target: run_tool command=\"r2 -A -q -c 'pdg @ main' <file>\" ('pdg @ entry0', 'pdg @ sym.<name>', or 'pdg @ 0x<addr>'). If the Ghidra plugin is unavailable, use radare2's native 'pdc' instead of 'pdg' (lower fidelity, no plugin). Decompiled output can be fed to extract_iocs.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/decai",
+        "name": "decai",
+        "description": "AI-assisted decompiler: turn a native PE/ELF function into readable pseudo-C with the decai radare2 plugin. REQUIRES a configured LLM backend — an API key or a local Ollama, set via 'decai -e' (e.g. 'decai -e api=openai'); without one it returns an error, not code. Function-scoped: first list functions with run_tool command=\"r2 -A -q -c afl <file>\", then decompile a target by seeking to it: run_tool command=\"r2 -A -q -c 's main; decai -d' <file>\" (or 's sym.<name>;', 's 0x<addr>;'). Check availability and settings with get_tool_help tool=\"decai\". For deterministic, offline decompilation that needs no API key, use r2ghidra (pdg) instead.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/r2ai",
+        "name": "r2ai",
+        "description": "AI assistant for radare2 (r2ai plugin): decompile or ask natural-language questions about the current function. REQUIRES a configured LLM backend — an API key or a local Ollama; without one it returns an error. Seek to a function first, then: run_tool command=\"r2 -A -q -c 's main; r2ai -d' <file>\" to decompile, or run_tool command=\"r2 -A -q -c 's main; r2ai -d what does this function do' <file>\" to ask about it. Check availability and settings with get_tool_help tool=\"r2ai\". For deterministic, offline decompilation that needs no API key, use r2ghidra (pdg) instead.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/readelf-header",
+        "name": "readelf-header",
+        "description": "Display ELF file header information.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/readelf-sections",
+        "name": "readelf-sections",
+        "description": "Display ELF section headers.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/js-beautify",
+        "name": "js-beautify",
+        "description": "Beautify and deobfuscate JavaScript, CSS, and HTML files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/webcrack",
+        "name": "webcrack",
+        "description": "Deobfuscate, unminify, and unpack bundled JavaScript, including scripts protected with obfuscator.io. Prints deobfuscated code to stdout; with -o <dir> it writes <dir>/deobfuscated.js instead, but refuses to run if the directory already exists — point -o at a fresh path and never pre-create it.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/box-js",
+        "name": "box-js",
+        "description": "Emulate JavaScript in a sandbox to observe runtime behavior — recovers URLs and config assembled at runtime that static deobfuscation (webcrack) leaves unresolved. An older, emulation-based tool: it stalls on anti-emulation (e.g. a wscript self-relaunch), so it is a deliberate deep-tier step, not part of the fast standard chain.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/jstillery",
+        "name": "jstillery",
+        "description": "Deobfuscate JavaScript using AST-based partial evaluation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/spidermonkey",
+        "name": "spidermonkey",
+        "description": "Execute JavaScript with SpiderMonkey engine using browser/PDF object emulation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/js-deobfuscator",
+        "name": "js-deobfuscator",
+        "description": "Deobfuscate JavaScript by removing string arrays, proxy functions, and other common obfuscation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/gootloader-decode",
+        "name": "gootloader-decode",
+        "description": "Statically deobfuscate GootLoader JScript to recover the payload and extract C2 domains.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/strings",
+        "name": "strings",
+        "description": "Extract printable ASCII strings from binary files. For Unicode (UTF-16), use 'strings -e l <file>' (little-endian) or 'strings -e b <file>' (big-endian). For PE files, prefer pestr which extracts both automatically.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/decode-vbe",
+        "name": "decode-vbe",
+        "description": "Decode VBE-encoded VBScript files to readable source.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/base64dump",
+        "name": "base64dump",
+        "description": "Locate and decode Base64 and other encoded strings.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pycdc",
+        "name": "pycdc",
+        "description": "Decompile Python bytecode (.pyc) to readable source code.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/uncompyle6",
+        "name": "uncompyle6",
+        "description": "Decompile Python bytecode (.pyc) to source code. Supports Python 1.0 through 3.8.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/pyinstxtractor-ng",
+        "name": "pyinstxtractor-ng",
+        "description": "Extract contents of PyInstaller executables without requiring a matching Python version.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/cfr",
+        "name": "cfr",
+        "description": "Decompile Java class files and JARs to readable Java source code.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/emldump",
+        "name": "emldump",
+        "description": "Analyze and extract content from email (EML) files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/msgconvert",
+        "name": "msgconvert",
+        "description": "Convert Outlook MSG files to standard EML format.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/onedump",
+        "name": "onedump",
+        "description": "Analyze OneNote documents and extract embedded files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/apkid",
+        "name": "apkid",
+        "description": "Identify compilers, packers, and obfuscators used to protect Android APK and DEX files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/apktool",
+        "name": "apktool",
+        "description": "Reverse-engineer Android APK files.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/droidlysis",
+        "name": "droidlysis",
+        "description": "Perform static analysis of Android applications.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/jadx",
+        "name": "jadx",
+        "description": "Decompile Android APK/DEX files to Java source code.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-info",
+        "name": "vol3-info",
+        "description": "Display OS and kernel details from a memory image.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-pslist",
+        "name": "vol3-pslist",
+        "description": "List running processes from a memory image.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-pstree",
+        "name": "vol3-pstree",
+        "description": "Display process tree from a memory image.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-netscan",
+        "name": "vol3-netscan",
+        "description": "Scan for network connections and sockets in a memory image.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-psscan",
+        "name": "vol3-psscan",
+        "description": "Find hidden or unlinked processes via pool tag scanning.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-cmdline",
+        "name": "vol3-cmdline",
+        "description": "Extract command-line arguments for each process.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-dlllist",
+        "name": "vol3-dlllist",
+        "description": "List loaded DLLs for each process.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-filescan",
+        "name": "vol3-filescan",
+        "description": "Scan for file objects in memory.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-hivelist",
+        "name": "vol3-hivelist",
+        "description": "List registry hives found in memory.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-linux-pslist",
+        "name": "vol3-linux-pslist",
+        "description": "List running processes from a Linux memory image.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-malfind",
+        "name": "vol3-malfind",
+        "description": "Detect injected code and notable memory regions.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/vol3-handles",
+        "name": "vol3-handles",
+        "description": "List open handles for each process.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/translate",
+        "name": "translate",
+        "description": "Apply byte-level transforms to files (XOR, reverse, shift, custom expressions).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/numbers-to-string",
+        "name": "numbers-to-string",
+        "description": "Convert numeric representations to strings for deobfuscating encoded payloads.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/re-search",
+        "name": "re-search",
+        "description": "Search files using regular expressions to extract patterns and data.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/file-magic",
+        "name": "file-magic",
+        "description": "Identify file types of data streams using libmagic signatures.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/cut-bytes",
+        "name": "cut-bytes",
+        "description": "Cut out portions of data streams by position or pattern.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/format-bytes",
+        "name": "format-bytes",
+        "description": "Decompose and display structured binary data in readable format.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/xor-kpa",
+        "name": "xor-kpa",
+        "description": "Perform XOR decryption using known-plaintext attack.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/sets",
+        "name": "sets",
+        "description": "Perform set operations (union, intersection, difference) on text file lines or bytes.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/speakeasy-sc-x86",
+        "name": "speakeasy-sc-x86",
+        "description": "Emulate 32-bit shellcode using Speakeasy Windows API emulation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/speakeasy-sc-x64",
+        "name": "speakeasy-sc-x64",
+        "description": "Emulate 64-bit shellcode using Speakeasy Windows API emulation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/speakeasy",
+        "name": "speakeasy",
+        "description": "Emulate Windows PE, DLL, and driver execution using Speakeasy API emulation.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/qltool-sc-x86",
+        "name": "qltool-sc-x86",
+        "description": "Emulate 32-bit Windows shellcode using Qiling framework (requires rootfs).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/qltool-sc-x64",
+        "name": "qltool-sc-x64",
+        "description": "Emulate 64-bit Windows shellcode using Qiling framework (requires rootfs).",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tracesc",
+        "name": "tracesc",
+        "description": "Execute and trace shellcode via Wine to log API calls and behavior.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/capinfos",
+        "name": "capinfos",
+        "description": "Capture overview: packet count, duration, start/end timestamps, data rates, and link-layer encapsulation for a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-conversations",
+        "name": "tshark-conversations",
+        "description": "Summarize TCP/UDP conversations from a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-http",
+        "name": "tshark-http",
+        "description": "Show HTTP request/response statistics from a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-hierarchy",
+        "name": "tshark-hierarchy",
+        "description": "Show protocol hierarchy statistics from a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-dns",
+        "name": "tshark-dns",
+        "description": "Extract DNS queries and responses from a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-tls",
+        "name": "tshark-tls",
+        "description": "Extract TLS Client Hello server names (SNI) — surfaces destination/C2 domains even when payloads are encrypted.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-fingerprint",
+        "name": "tshark-fingerprint",
+        "description": "Fingerprint TLS clients (JA4 and JA3) per Client Hello, with SNI and destination IP/port, to cluster traffic by client stack and pivot to threat intel. Uses tshark's native fields, no plugin.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/tshark-verbose",
+        "name": "tshark-verbose",
+        "description": "Full packet decode of first 50 packets from a PCAP file.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/ssdeep",
+        "name": "ssdeep",
+        "description": "Compute fuzzy hash (ssdeep) for file similarity comparison.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/exiftool",
+        "name": "exiftool",
+        "description": "Read and analyze EXIF metadata from various file types.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/xorsearch",
+        "name": "xorsearch",
+        "description": "Locate and decode strings obfuscated using XOR and other techniques.",
+        "mime_type": null
+      },
+      {
+        "uri": "remnux://tools/xorsearch.py",
+        "name": "xorsearch.py",
+        "description": "Search for XOR/ROL/ROT/SHIFT encoded strings with JSON output and YARA support.",
+        "mime_type": null
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "16 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 13.046999999998661,
+  "exchanges": []
+}

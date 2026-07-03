@@ -1,0 +1,1572 @@
+{
+  "target": "npx -y @spartan-ng/mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "spartan-ui",
+    "server_version": "0.0.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "spartan_components_list",
+        "description": "Returns a list of known Spartan Angular UI components with their documentation URLs. Use this to discover available components, then call spartan_components_get with specific component names to get detailed API documentation.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_components_get",
+        "description": "Fetch the Spartan UI documentation page for a given component (e.g., 'accordion'). IMPORTANT: The response contains comprehensive API information including Brain API (Brn*) and Helm API (Hlm*) components with their inputs, outputs, selectors, and examples. Always parse and present the API tables, code examples, and component specifications from the response. Look for structured sections like 'Brain API', 'Helm API', and 'Examples' in the response.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Component name (kebab-case), e.g., 'accordion'."
+            },
+            "extract": {
+              "type": "string",
+              "enum": [
+                "code",
+                "api"
+              ],
+              "default": "code",
+              "description": "Extraction: 'code' for code blocks, 'api' for structured API information."
+            },
+            "noCache": {
+              "type": "boolean",
+              "default": false,
+              "description": "Bypass cache when true."
+            },
+            "spartanVersion": {
+              "type": "string",
+              "description": "Spartan UI version to use for caching (e.g., '1.2.3'). If not provided, defaults to 'latest'."
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_docs_get",
+        "description": "Fetch an official Spartan documentation section by topic (installation, cli, theming, dark-mode, typography, health-checks, update-guide).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "enum": [
+                "installation",
+                "cli",
+                "theming",
+                "dark-mode",
+                "typography",
+                "health-checks",
+                "update-guide",
+                "analog-dark-mode"
+              ],
+              "description": "Documentation topic to fetch. Includes 'analog-dark-mode' external article."
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "html",
+                "text"
+              ],
+              "default": "html",
+              "description": "Return format: raw HTML or plain text."
+            },
+            "extract": {
+              "type": "string",
+              "enum": [
+                "none",
+                "code",
+                "headings",
+                "links"
+              ],
+              "default": "code",
+              "description": "Optional extraction: code blocks, headings, or links."
+            },
+            "noCache": {
+              "type": "boolean",
+              "default": false,
+              "description": "Bypass cache when true."
+            },
+            "spartanVersion": {
+              "type": "string",
+              "description": "Spartan UI version to use for caching (e.g., '1.2.3'). If not provided, defaults to 'latest'."
+            }
+          },
+          "required": [
+            "topic"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_health_check",
+        "description": "Check availability and response times for selected Spartan docs and component pages. This validates the docs site, not your local workspace health check.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "installation",
+                  "cli",
+                  "theming",
+                  "dark-mode",
+                  "typography",
+                  "health-checks",
+                  "update-guide"
+                ]
+              },
+              "description": "Docs topics to check; defaults to a standard set."
+            },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Component names to check; defaults to a small representative set."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_health_instructions",
+        "description": "Return official instructions and commands for running the Spartan CLI health check in Angular CLI or Nx workspaces.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_health_command",
+        "description": "Return the exact command to run the Spartan health check for Angular CLI or Nx. Optionally append --dry-run.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "type": "string",
+              "enum": [
+                "ng",
+                "nx"
+              ],
+              "description": "Which toolchain to use: Angular CLI (ng) or Nx (nx)."
+            },
+            "dryRun": {
+              "type": "boolean",
+              "default": false,
+              "description": "Append --dry-run to preview changes."
+            }
+          },
+          "required": [
+            "tool"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_meta",
+        "description": "Return known docs topics, components, and blocks for client autocomplete.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_components_dependencies",
+        "description": "Analyze what other components, packages, or dependencies a Spartan UI component requires. Includes Angular CDK dependencies, peer components, and installation requirements.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Spartan component name (e.g., 'calendar', 'dialog')"
+            },
+            "includeTransitive": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include transitive dependencies (dependencies of dependencies)"
+            }
+          },
+          "required": [
+            "componentName"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_accessibility_check",
+        "description": "Analyze accessibility features, ARIA support, keyboard navigation, and screen reader compatibility for a Spartan UI component. Provides accessibility best practices and implementation guidance.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Spartan component name"
+            },
+            "checkType": {
+              "type": "string",
+              "enum": [
+                "overview",
+                "aria",
+                "keyboard",
+                "screenreader",
+                "wcag",
+                "all"
+              ],
+              "default": "all",
+              "description": "Type of accessibility check: specific area or 'all' for comprehensive analysis"
+            }
+          },
+          "required": [
+            "componentName"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_cache_status",
+        "description": "Get current cache status, including version, cached components, and statistics",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_cache_clear",
+        "description": "Clear cached documentation for the current Spartan UI version",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "allVersions": {
+              "type": "boolean",
+              "description": "Clear cache for all versions (default: false)"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_cache_rebuild",
+        "description": "Rebuild cache by fetching fresh documentation from spartan.ng for all components and blocks",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Specific components to rebuild (default: all components)"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Specific blocks to rebuild (default: all blocks)"
+            },
+            "includeDocs": {
+              "type": "boolean",
+              "description": "Include documentation topics (default: true)"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_cache_switch_version",
+        "description": "Switch to a different Spartan UI version for caching and retrieval",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string",
+              "description": "Spartan UI version (e.g., '1.2.3', 'latest')"
+            }
+          },
+          "required": [
+            "version"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_cache_list_versions",
+        "description": "List all cached Spartan UI versions",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_blocks_list",
+        "description": "Returns a list of known Spartan Angular UI blocks (pre-built UI patterns) with their documentation URLs. Blocks are higher-level compositions of components like sidebars, login forms, signup forms, and calendars. Use this to discover available blocks, then call spartan_blocks_get with specific block names to get detailed code.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "spartan_blocks_get",
+        "description": "Fetch the Spartan UI documentation page for a given block (e.g., 'sidebar', 'login'). Blocks are pre-built UI patterns that combine multiple components. The response includes complete code examples showing how to use the block.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Block name (kebab-case), e.g., 'sidebar', 'login', 'signup', 'calendar'."
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "html",
+                "text"
+              ],
+              "default": "html",
+              "description": "Return format: raw HTML or plain text."
+            },
+            "noCache": {
+              "type": "boolean",
+              "default": false,
+              "description": "Bypass cache when true."
+            },
+            "spartanVersion": {
+              "type": "string",
+              "description": "Spartan UI version to use for caching (e.g., '1.2.3'). If not provided, defaults to 'latest'."
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "spartan_blocks_dependencies",
+        "description": "Analyze what components and packages a Spartan UI block requires. Blocks are compositions of multiple components, so this shows all underlying dependencies.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "blockName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Spartan block name (e.g., 'sidebar', 'login')"
+            }
+          },
+          "required": [
+            "blockName"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "spartan://components/list",
+        "name": "Spartan UI Components List",
+        "description": "Complete list of all available Spartan UI components with URLs",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/accordion/api",
+        "name": "accordion - API Documentation",
+        "description": "Brain API and Helm API specifications for accordion component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert/api",
+        "name": "alert - API Documentation",
+        "description": "Brain API and Helm API specifications for alert component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert-dialog/api",
+        "name": "alert-dialog - API Documentation",
+        "description": "Brain API and Helm API specifications for alert-dialog component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/aspect-ratio/api",
+        "name": "aspect-ratio - API Documentation",
+        "description": "Brain API and Helm API specifications for aspect-ratio component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/autocomplete/api",
+        "name": "autocomplete - API Documentation",
+        "description": "Brain API and Helm API specifications for autocomplete component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/avatar/api",
+        "name": "avatar - API Documentation",
+        "description": "Brain API and Helm API specifications for avatar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/badge/api",
+        "name": "badge - API Documentation",
+        "description": "Brain API and Helm API specifications for badge component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/breadcrumb/api",
+        "name": "breadcrumb - API Documentation",
+        "description": "Brain API and Helm API specifications for breadcrumb component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button/api",
+        "name": "button - API Documentation",
+        "description": "Brain API and Helm API specifications for button component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button-group/api",
+        "name": "button-group - API Documentation",
+        "description": "Brain API and Helm API specifications for button-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/calendar/api",
+        "name": "calendar - API Documentation",
+        "description": "Brain API and Helm API specifications for calendar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/card/api",
+        "name": "card - API Documentation",
+        "description": "Brain API and Helm API specifications for card component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/carousel/api",
+        "name": "carousel - API Documentation",
+        "description": "Brain API and Helm API specifications for carousel component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/checkbox/api",
+        "name": "checkbox - API Documentation",
+        "description": "Brain API and Helm API specifications for checkbox component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/collapsible/api",
+        "name": "collapsible - API Documentation",
+        "description": "Brain API and Helm API specifications for collapsible component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/combobox/api",
+        "name": "combobox - API Documentation",
+        "description": "Brain API and Helm API specifications for combobox component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/command/api",
+        "name": "command - API Documentation",
+        "description": "Brain API and Helm API specifications for command component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/context-menu/api",
+        "name": "context-menu - API Documentation",
+        "description": "Brain API and Helm API specifications for context-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/data-table/api",
+        "name": "data-table - API Documentation",
+        "description": "Brain API and Helm API specifications for data-table component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/date-picker/api",
+        "name": "date-picker - API Documentation",
+        "description": "Brain API and Helm API specifications for date-picker component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dialog/api",
+        "name": "dialog - API Documentation",
+        "description": "Brain API and Helm API specifications for dialog component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dropdown-menu/api",
+        "name": "dropdown-menu - API Documentation",
+        "description": "Brain API and Helm API specifications for dropdown-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/empty/api",
+        "name": "empty - API Documentation",
+        "description": "Brain API and Helm API specifications for empty component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/field/api",
+        "name": "field - API Documentation",
+        "description": "Brain API and Helm API specifications for field component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/form-field/api",
+        "name": "form-field - API Documentation",
+        "description": "Brain API and Helm API specifications for form-field component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/hover-card/api",
+        "name": "hover-card - API Documentation",
+        "description": "Brain API and Helm API specifications for hover-card component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/icon/api",
+        "name": "icon - API Documentation",
+        "description": "Brain API and Helm API specifications for icon component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input/api",
+        "name": "input - API Documentation",
+        "description": "Brain API and Helm API specifications for input component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-group/api",
+        "name": "input-group - API Documentation",
+        "description": "Brain API and Helm API specifications for input-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-otp/api",
+        "name": "input-otp - API Documentation",
+        "description": "Brain API and Helm API specifications for input-otp component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/item/api",
+        "name": "item - API Documentation",
+        "description": "Brain API and Helm API specifications for item component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/kbd/api",
+        "name": "kbd - API Documentation",
+        "description": "Brain API and Helm API specifications for kbd component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/label/api",
+        "name": "label - API Documentation",
+        "description": "Brain API and Helm API specifications for label component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/menubar/api",
+        "name": "menubar - API Documentation",
+        "description": "Brain API and Helm API specifications for menubar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/native-select/api",
+        "name": "native-select - API Documentation",
+        "description": "Brain API and Helm API specifications for native-select component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/navigation-menu/api",
+        "name": "navigation-menu - API Documentation",
+        "description": "Brain API and Helm API specifications for navigation-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/pagination/api",
+        "name": "pagination - API Documentation",
+        "description": "Brain API and Helm API specifications for pagination component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/popover/api",
+        "name": "popover - API Documentation",
+        "description": "Brain API and Helm API specifications for popover component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/progress/api",
+        "name": "progress - API Documentation",
+        "description": "Brain API and Helm API specifications for progress component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/radio-group/api",
+        "name": "radio-group - API Documentation",
+        "description": "Brain API and Helm API specifications for radio-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/resizable/api",
+        "name": "resizable - API Documentation",
+        "description": "Brain API and Helm API specifications for resizable component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/scroll-area/api",
+        "name": "scroll-area - API Documentation",
+        "description": "Brain API and Helm API specifications for scroll-area component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/select/api",
+        "name": "select - API Documentation",
+        "description": "Brain API and Helm API specifications for select component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/separator/api",
+        "name": "separator - API Documentation",
+        "description": "Brain API and Helm API specifications for separator component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sheet/api",
+        "name": "sheet - API Documentation",
+        "description": "Brain API and Helm API specifications for sheet component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sidebar/api",
+        "name": "sidebar - API Documentation",
+        "description": "Brain API and Helm API specifications for sidebar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/skeleton/api",
+        "name": "skeleton - API Documentation",
+        "description": "Brain API and Helm API specifications for skeleton component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/slider/api",
+        "name": "slider - API Documentation",
+        "description": "Brain API and Helm API specifications for slider component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sonner/api",
+        "name": "sonner - API Documentation",
+        "description": "Brain API and Helm API specifications for sonner component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/spinner/api",
+        "name": "spinner - API Documentation",
+        "description": "Brain API and Helm API specifications for spinner component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/switch/api",
+        "name": "switch - API Documentation",
+        "description": "Brain API and Helm API specifications for switch component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/table/api",
+        "name": "table - API Documentation",
+        "description": "Brain API and Helm API specifications for table component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tabs/api",
+        "name": "tabs - API Documentation",
+        "description": "Brain API and Helm API specifications for tabs component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/textarea/api",
+        "name": "textarea - API Documentation",
+        "description": "Brain API and Helm API specifications for textarea component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle/api",
+        "name": "toggle - API Documentation",
+        "description": "Brain API and Helm API specifications for toggle component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle-group/api",
+        "name": "toggle-group - API Documentation",
+        "description": "Brain API and Helm API specifications for toggle-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tooltip/api",
+        "name": "tooltip - API Documentation",
+        "description": "Brain API and Helm API specifications for tooltip component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/accordion/examples",
+        "name": "accordion - Code Examples",
+        "description": "Working code examples for accordion component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert/examples",
+        "name": "alert - Code Examples",
+        "description": "Working code examples for alert component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert-dialog/examples",
+        "name": "alert-dialog - Code Examples",
+        "description": "Working code examples for alert-dialog component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/aspect-ratio/examples",
+        "name": "aspect-ratio - Code Examples",
+        "description": "Working code examples for aspect-ratio component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/autocomplete/examples",
+        "name": "autocomplete - Code Examples",
+        "description": "Working code examples for autocomplete component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/avatar/examples",
+        "name": "avatar - Code Examples",
+        "description": "Working code examples for avatar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/badge/examples",
+        "name": "badge - Code Examples",
+        "description": "Working code examples for badge component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/breadcrumb/examples",
+        "name": "breadcrumb - Code Examples",
+        "description": "Working code examples for breadcrumb component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button/examples",
+        "name": "button - Code Examples",
+        "description": "Working code examples for button component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button-group/examples",
+        "name": "button-group - Code Examples",
+        "description": "Working code examples for button-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/calendar/examples",
+        "name": "calendar - Code Examples",
+        "description": "Working code examples for calendar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/card/examples",
+        "name": "card - Code Examples",
+        "description": "Working code examples for card component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/carousel/examples",
+        "name": "carousel - Code Examples",
+        "description": "Working code examples for carousel component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/checkbox/examples",
+        "name": "checkbox - Code Examples",
+        "description": "Working code examples for checkbox component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/collapsible/examples",
+        "name": "collapsible - Code Examples",
+        "description": "Working code examples for collapsible component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/combobox/examples",
+        "name": "combobox - Code Examples",
+        "description": "Working code examples for combobox component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/command/examples",
+        "name": "command - Code Examples",
+        "description": "Working code examples for command component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/context-menu/examples",
+        "name": "context-menu - Code Examples",
+        "description": "Working code examples for context-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/data-table/examples",
+        "name": "data-table - Code Examples",
+        "description": "Working code examples for data-table component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/date-picker/examples",
+        "name": "date-picker - Code Examples",
+        "description": "Working code examples for date-picker component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dialog/examples",
+        "name": "dialog - Code Examples",
+        "description": "Working code examples for dialog component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dropdown-menu/examples",
+        "name": "dropdown-menu - Code Examples",
+        "description": "Working code examples for dropdown-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/empty/examples",
+        "name": "empty - Code Examples",
+        "description": "Working code examples for empty component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/field/examples",
+        "name": "field - Code Examples",
+        "description": "Working code examples for field component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/form-field/examples",
+        "name": "form-field - Code Examples",
+        "description": "Working code examples for form-field component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/hover-card/examples",
+        "name": "hover-card - Code Examples",
+        "description": "Working code examples for hover-card component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/icon/examples",
+        "name": "icon - Code Examples",
+        "description": "Working code examples for icon component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input/examples",
+        "name": "input - Code Examples",
+        "description": "Working code examples for input component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-group/examples",
+        "name": "input-group - Code Examples",
+        "description": "Working code examples for input-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-otp/examples",
+        "name": "input-otp - Code Examples",
+        "description": "Working code examples for input-otp component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/item/examples",
+        "name": "item - Code Examples",
+        "description": "Working code examples for item component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/kbd/examples",
+        "name": "kbd - Code Examples",
+        "description": "Working code examples for kbd component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/label/examples",
+        "name": "label - Code Examples",
+        "description": "Working code examples for label component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/menubar/examples",
+        "name": "menubar - Code Examples",
+        "description": "Working code examples for menubar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/native-select/examples",
+        "name": "native-select - Code Examples",
+        "description": "Working code examples for native-select component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/navigation-menu/examples",
+        "name": "navigation-menu - Code Examples",
+        "description": "Working code examples for navigation-menu component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/pagination/examples",
+        "name": "pagination - Code Examples",
+        "description": "Working code examples for pagination component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/popover/examples",
+        "name": "popover - Code Examples",
+        "description": "Working code examples for popover component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/progress/examples",
+        "name": "progress - Code Examples",
+        "description": "Working code examples for progress component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/radio-group/examples",
+        "name": "radio-group - Code Examples",
+        "description": "Working code examples for radio-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/resizable/examples",
+        "name": "resizable - Code Examples",
+        "description": "Working code examples for resizable component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/scroll-area/examples",
+        "name": "scroll-area - Code Examples",
+        "description": "Working code examples for scroll-area component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/select/examples",
+        "name": "select - Code Examples",
+        "description": "Working code examples for select component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/separator/examples",
+        "name": "separator - Code Examples",
+        "description": "Working code examples for separator component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sheet/examples",
+        "name": "sheet - Code Examples",
+        "description": "Working code examples for sheet component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sidebar/examples",
+        "name": "sidebar - Code Examples",
+        "description": "Working code examples for sidebar component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/skeleton/examples",
+        "name": "skeleton - Code Examples",
+        "description": "Working code examples for skeleton component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/slider/examples",
+        "name": "slider - Code Examples",
+        "description": "Working code examples for slider component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sonner/examples",
+        "name": "sonner - Code Examples",
+        "description": "Working code examples for sonner component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/spinner/examples",
+        "name": "spinner - Code Examples",
+        "description": "Working code examples for spinner component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/switch/examples",
+        "name": "switch - Code Examples",
+        "description": "Working code examples for switch component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/table/examples",
+        "name": "table - Code Examples",
+        "description": "Working code examples for table component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tabs/examples",
+        "name": "tabs - Code Examples",
+        "description": "Working code examples for tabs component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/textarea/examples",
+        "name": "textarea - Code Examples",
+        "description": "Working code examples for textarea component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle/examples",
+        "name": "toggle - Code Examples",
+        "description": "Working code examples for toggle component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle-group/examples",
+        "name": "toggle-group - Code Examples",
+        "description": "Working code examples for toggle-group component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tooltip/examples",
+        "name": "tooltip - Code Examples",
+        "description": "Working code examples for tooltip component",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/accordion/full",
+        "name": "accordion - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for accordion",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert/full",
+        "name": "alert - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for alert",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/alert-dialog/full",
+        "name": "alert-dialog - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for alert-dialog",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/aspect-ratio/full",
+        "name": "aspect-ratio - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for aspect-ratio",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/autocomplete/full",
+        "name": "autocomplete - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for autocomplete",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/avatar/full",
+        "name": "avatar - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for avatar",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/badge/full",
+        "name": "badge - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for badge",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/breadcrumb/full",
+        "name": "breadcrumb - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for breadcrumb",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button/full",
+        "name": "button - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for button",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/button-group/full",
+        "name": "button-group - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for button-group",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/calendar/full",
+        "name": "calendar - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for calendar",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/card/full",
+        "name": "card - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for card",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/carousel/full",
+        "name": "carousel - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for carousel",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/checkbox/full",
+        "name": "checkbox - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for checkbox",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/collapsible/full",
+        "name": "collapsible - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for collapsible",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/combobox/full",
+        "name": "combobox - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for combobox",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/command/full",
+        "name": "command - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for command",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/context-menu/full",
+        "name": "context-menu - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for context-menu",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/data-table/full",
+        "name": "data-table - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for data-table",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/date-picker/full",
+        "name": "date-picker - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for date-picker",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dialog/full",
+        "name": "dialog - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for dialog",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/dropdown-menu/full",
+        "name": "dropdown-menu - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for dropdown-menu",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/empty/full",
+        "name": "empty - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for empty",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/field/full",
+        "name": "field - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for field",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/form-field/full",
+        "name": "form-field - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for form-field",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/hover-card/full",
+        "name": "hover-card - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for hover-card",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/icon/full",
+        "name": "icon - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for icon",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input/full",
+        "name": "input - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for input",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-group/full",
+        "name": "input-group - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for input-group",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/input-otp/full",
+        "name": "input-otp - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for input-otp",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/item/full",
+        "name": "item - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for item",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/kbd/full",
+        "name": "kbd - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for kbd",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/label/full",
+        "name": "label - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for label",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/menubar/full",
+        "name": "menubar - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for menubar",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/native-select/full",
+        "name": "native-select - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for native-select",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/navigation-menu/full",
+        "name": "navigation-menu - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for navigation-menu",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/pagination/full",
+        "name": "pagination - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for pagination",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/popover/full",
+        "name": "popover - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for popover",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/progress/full",
+        "name": "progress - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for progress",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/radio-group/full",
+        "name": "radio-group - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for radio-group",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/resizable/full",
+        "name": "resizable - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for resizable",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/scroll-area/full",
+        "name": "scroll-area - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for scroll-area",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/select/full",
+        "name": "select - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for select",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/separator/full",
+        "name": "separator - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for separator",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sheet/full",
+        "name": "sheet - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for sheet",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sidebar/full",
+        "name": "sidebar - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for sidebar",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/skeleton/full",
+        "name": "skeleton - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for skeleton",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/slider/full",
+        "name": "slider - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for slider",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/sonner/full",
+        "name": "sonner - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for sonner",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/spinner/full",
+        "name": "spinner - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for spinner",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/switch/full",
+        "name": "switch - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for switch",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/table/full",
+        "name": "table - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for table",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tabs/full",
+        "name": "tabs - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for tabs",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/textarea/full",
+        "name": "textarea - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for textarea",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle/full",
+        "name": "toggle - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for toggle",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/toggle-group/full",
+        "name": "toggle-group - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for toggle-group",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "spartan://component/tooltip/full",
+        "name": "tooltip - Complete Documentation",
+        "description": "Complete documentation including API, examples, and metadata for tooltip",
+        "mime_type": "application/json"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "spartan-get-started",
+        "description": "Get started with a Spartan UI component",
+        "arguments": [
+          {
+            "name": "componentName",
+            "description": "Name of the Spartan UI component (e.g., 'button', 'calendar')",
+            "required": true
+          },
+          {
+            "name": "variant",
+            "description": "Which API to use: 'brain' (unstyled) or 'helm' (styled)",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "spartan-compare-apis",
+        "description": "Compare Brain API vs Helm API for a component",
+        "arguments": [
+          {
+            "name": "componentName",
+            "description": "Name of the Spartan UI component to compare",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "spartan-implement-feature",
+        "description": "Get help implementing a specific feature with a Spartan UI component",
+        "arguments": [
+          {
+            "name": "componentName",
+            "description": "Spartan UI component to use",
+            "required": true
+          },
+          {
+            "name": "feature",
+            "description": "Feature to implement (e.g., 'form validation', 'multi-select', 'date range')",
+            "required": true
+          },
+          {
+            "name": "framework",
+            "description": "Framework context (e.g., 'standalone', 'NgModule', 'with Signals')",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "spartan-troubleshoot",
+        "description": "Get help troubleshooting issues with a Spartan UI component",
+        "arguments": [
+          {
+            "name": "componentName",
+            "description": "Component you're having issues with",
+            "required": true
+          },
+          {
+            "name": "issue",
+            "description": "Description of the problem",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "spartan-list-components",
+        "description": "List all available Spartan UI components with their categories",
+        "arguments": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "11 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 10.531999999999243,
+  "exchanges": []
+}

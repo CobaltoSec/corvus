@@ -1,0 +1,1111 @@
+{
+  "target": "npx -y @professional-wiki/mediawiki-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mediawiki-mcp-server",
+    "server_version": "0.13.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get-page",
+        "description": "Returns a single wiki page (wikitext source, rendered HTML, or metadata only). If the title does not exist, an error is returned. Use metadata=true to retrieve the revision ID (for edit-conflict detection), page size, and section outline. Set content=\"none\" to fetch only metadata. Large content is truncated at 50000 bytes by default with a trailing marker listing available sections; a follow-up call with section=N fetches a specific section. For more than one page at a time, use get-pages. For a specific historical revision, use get-revision.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "content": {
+              "default": "source",
+              "description": "Type of content to return",
+              "type": "string",
+              "enum": [
+                "source",
+                "html",
+                "none"
+              ]
+            },
+            "metadata": {
+              "default": false,
+              "description": "Whether to include metadata (page ID, revision info, size, section outline) in the response",
+              "type": "boolean"
+            },
+            "section": {
+              "description": "Section number (0 = lead; 1..N = heading sections). Narrows content to one section.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "get-pages",
+        "description": "Returns multiple wiki pages in one call (wikitext source or metadata only). Suited to reading a cluster of related pages, diffing a page family, or syncing pages to local storage. Accepts up to 50 titles; missing pages are reported inline (not as errors). Each page's content is truncated at 50000 bytes by default with a trailing marker listing available sections; get-page with section=N fetches a specific section. For a single page or HTML output, use get-page. requestedTitle is included only when it differs from the resolved title.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "titles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of wiki page titles (1..50)"
+            },
+            "content": {
+              "default": "source",
+              "description": "Type of content to return; \"none\" returns metadata only",
+              "type": "string",
+              "enum": [
+                "source",
+                "none"
+              ]
+            },
+            "metadata": {
+              "default": false,
+              "description": "Whether to include metadata (page ID, revision info) in the response",
+              "type": "boolean"
+            },
+            "followRedirects": {
+              "default": true,
+              "description": "Follow wiki redirects. When true (default), redirect targets are returned with a \"Redirected from:\" line in the metadata. Set false to fetch redirect pseudo-pages as-is (sync-fidelity).",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "titles"
+          ]
+        }
+      },
+      {
+        "name": "get-page-history",
+        "description": "Returns revision metadata (revision ID, timestamp, user, comment, size, minor flag) for a wiki page, in segments of 20 revisions, newest first. Paginate with olderThan or newerThan (mutually exclusive). If the title does not exist, an error is returned. Boolean flags appear only when true.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "olderThan": {
+              "description": "Revision ID — return revisions older than this (exclusive). Mutually exclusive with newerThan.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "newerThan": {
+              "description": "Revision ID — return revisions newer than this (exclusive). Mutually exclusive with olderThan.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "filter": {
+              "description": "Change tag — return only revisions carrying this tag",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "get-recent-changes",
+        "description": "Returns recent change events, newest first, in segments of 50. Defaults to edits and page creations; set types to include log actions, categorizations, or external changes. Each row includes title, timestamp, user, revision IDs, size change, flags (minor/bot/new/anon), tags, and change type. Filter by timestamp window, namespaces, user, change tag, or hide flags (hideBots/hideMinor/hideAnon/hideRedirects/hidePatrolled). Pass showPatrolStatus to include per-row patrol state (requires patrol rights). Paginate with the continue token from the truncation marker. For a single page's revision history, use get-page-history. Boolean flags appear only when true; rows report the size delta, not raw old/new lengths.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "since": {
+              "description": "ISO 8601 timestamp — only return changes at or after this time",
+              "type": "string"
+            },
+            "until": {
+              "description": "ISO 8601 timestamp — only return changes at or before this time",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace IDs to restrict the feed to — e.g. [0, 1] for main and talk",
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "types": {
+              "description": "Event types to include. Defaults to edit and new (content changes only).",
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "edit",
+                  "new",
+                  "log",
+                  "categorize",
+                  "external"
+                ]
+              }
+            },
+            "user": {
+              "description": "Username — return only changes by this user. Mutually exclusive with excludeUser.",
+              "type": "string"
+            },
+            "excludeUser": {
+              "description": "Username — exclude changes by this user. Mutually exclusive with user.",
+              "type": "string"
+            },
+            "tag": {
+              "description": "Change tag — return only changes carrying this tag",
+              "type": "string"
+            },
+            "hideBots": {
+              "description": "Omit bot-flagged edits",
+              "type": "boolean"
+            },
+            "hideMinor": {
+              "description": "Omit minor-flagged edits",
+              "type": "boolean"
+            },
+            "hideAnon": {
+              "description": "Omit edits by anonymous users",
+              "type": "boolean"
+            },
+            "hideRedirects": {
+              "description": "Omit changes whose target is a redirect",
+              "type": "boolean"
+            },
+            "hidePatrolled": {
+              "description": "Omit patrolled edits. Requires patrol rights.",
+              "type": "boolean"
+            },
+            "showPatrolStatus": {
+              "description": "Include per-row patrol status; adds an \"Unpatrolled: yes\" line to unpatrolled rows. Requires patrol rights.",
+              "type": "boolean"
+            },
+            "continue": {
+              "description": "Continuation token from a prior call's truncation marker",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "search-page",
+        "description": "Searches wiki page titles and page content (full-text) for the provided terms. Returns matching pages with a snippet, size, and timestamp. Accepts up to 100 matches per call (default 10); additional matches beyond the cap are flagged in the response — narrow the query to surface more. For title-prefix lookup (e.g. autocomplete), use search-page-by-prefix.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search terms"
+            },
+            "limit": {
+              "description": "Maximum number of search results to return",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "search-page-by-prefix",
+        "description": "Returns wiki page titles beginning with a given prefix (suited to autocomplete and title lookup). Only titles are returned — no snippets, sizes, or IDs. Accepts up to 500 titles per call (default 10); additional matches beyond the cap are flagged in the response. For full-text content search, use search-page.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "prefix": {
+              "type": "string",
+              "description": "Wiki page title prefix"
+            },
+            "limit": {
+              "description": "Maximum number of results to return",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "namespace": {
+              "description": "Namespace ID to restrict the search to",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "prefix"
+          ]
+        }
+      },
+      {
+        "name": "parse-wikitext",
+        "description": "Renders wikitext through the live wiki without saving. Returns HTML, parse warnings, categories, wikilinks, templates, external URLs, and display title. Suited to dry-running a planned edit before create-page or update-page, or previewing standalone wikitext (template combinations, sanitizer checks) with no target page. HTML output is truncated at 50000 bytes by default with a trailing marker; a smaller wikitext fragment in a follow-up call returns the rest.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "wikitext": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Wikitext to render"
+            },
+            "title": {
+              "description": "Wiki page title providing context for magic words like {{PAGENAME}}. Defaults to \"API\".",
+              "type": "string"
+            },
+            "applyPreSaveTransform": {
+              "default": true,
+              "description": "Apply pre-save transform (expand ~~~~ signatures, {{subst:}}, normalize whitespace). Matches editor \"Show preview\" behavior.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "wikitext"
+          ]
+        }
+      },
+      {
+        "name": "compare-pages",
+        "description": "Returns the changes between two versions of a wiki page as a compact text diff. Each side accepts a revision ID, page title (latest revision), or supplied wikitext; text-vs-text is rejected. Only the changes are returned over the wire. For the full text of both sides, fetch with get-page instead. If a title or revision ID does not exist, an error is returned. Set includeDiff=false for a cheap change-detection response that skips diff rendering and returns just the change flag, revision metadata, and size delta. Diff output is truncated at 50000 bytes by default with a trailing marker; a narrower revision range or includeDiff=false avoids truncation.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "fromRevision": {
+              "description": "Revision ID for the \"from\" side",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fromTitle": {
+              "description": "Wiki page title for the \"from\" side (latest revision is used)",
+              "type": "string"
+            },
+            "fromText": {
+              "description": "Supplied wikitext for the \"from\" side",
+              "type": "string"
+            },
+            "toRevision": {
+              "description": "Revision ID for the \"to\" side",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "toTitle": {
+              "description": "Wiki page title for the \"to\" side (latest revision is used)",
+              "type": "string"
+            },
+            "toText": {
+              "description": "Supplied wikitext for the \"to\" side",
+              "type": "string"
+            },
+            "includeDiff": {
+              "description": "Include the diff body (default true). Set false for a cheap change-detection response.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "get-file",
+        "description": "Returns metadata for a file (uploader, timestamp, size, MIME type) along with download URLs for the thumbnail, preview, and original. The File: prefix is added automatically if omitted.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "get-file-data",
+        "description": "Fetches a wiki file server-side and returns the image inline as a content block, for clients that cannot reach the wiki host (sandboxed or network-restricted) and need the image sent to the model for visual analysis. Returns a scaled rendition sized by width. Files MediaWiki can rasterize (images, SVG, PDF, DjVu) come back as an image; other types (audio, video, arbitrary binaries) error — for those, and for metadata or a download URL, use get-file.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "width": {
+              "description": "Pixel width of the scaled rendition. A quality/detail knob: in image mode the model caps image tokens regardless of size, so larger mainly means more detail. Defaults to 1024 (512 when format is \"text\"); values above 1568 are clamped.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "format": {
+              "default": "image",
+              "description": "'image' returns a native image content block the model can view; 'text' returns the base64 as a text block, for hosts that do not forward image content to the model (base64 text costs far more tokens).",
+              "type": "string",
+              "enum": [
+                "image",
+                "text"
+              ]
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "get-revision",
+        "description": "Returns a specific historical revision of a wiki page by revision ID (wikitext source, rendered HTML, or metadata only). If the revision ID does not exist, an error is returned. For the latest revision plus metadata, use get-page with metadata=true.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "revisionId": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "Revision ID"
+            },
+            "content": {
+              "default": "source",
+              "type": "string",
+              "enum": [
+                "source",
+                "html",
+                "none"
+              ],
+              "description": "Type of content to return"
+            },
+            "metadata": {
+              "default": false,
+              "type": "boolean",
+              "description": "Whether to include metadata (revision ID, page ID, page title, user ID, user name, timestamp, comment, size, minor, HTML URL) in the response"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "revisionId"
+          ]
+        }
+      },
+      {
+        "name": "get-site-info",
+        "description": "Returns key facts about the targeted wiki from its MediaWiki siteinfo: general settings (sitename, MediaWiki version, content language, page-title case-sensitivity, live read-only state, and maxarticlesize in bytes), the namespace map with localized names and aliases, the list of installed extension names, and the content license. Set includeStatistics to also return page, article, edit, image, user, active-user, and admin counts.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "includeStatistics": {
+              "description": "Also return live wiki statistics (page, article, edit, image, user, active-user, and admin counts). Defaults to false.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "get-category-members",
+        "description": "Lists members of a category, returning each member's page ID, namespace ID, and wiki page title. Optionally filter by member type (page, file, subcat) or by namespace ID — filters apply server-side before the cap. Returns up to 500 members per call; paginate with continueFrom (opaque cursor echoed from the previous response). A member's type is omitted when it is an ordinary page (present only for files and subcategories).",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Category name (with or without the \"Category:\" prefix)"
+            },
+            "types": {
+              "description": "Types of members to include",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "file",
+                  "page",
+                  "subcat"
+                ]
+              }
+            },
+            "namespaces": {
+              "description": "Namespace IDs to filter by",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "limit": {
+              "description": "Maximum members to return (1..500)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "continueFrom": {
+              "description": "Opaque continuation token from the previous response; omit on first call",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "category"
+          ]
+        }
+      },
+      {
+        "name": "get-links-here",
+        "description": "Lists pages that reference a target wiki page, returning each referencing page's title, page ID, namespace ID, and whether it is a redirect. The type parameter selects the relationship — wikilinks (pages that link to the target), transclusions (pages that embed it, such as a template), or fileusage (pages that display it, for File pages) — one relationship per call. With expandRedirects, a referencing redirect also yields the pages that link through it (wikilinks and fileusage only), each tagged with the via redirect. Filter by namespace ID or by redirect status. For members of a category, use get-category-members; for full-text content search, use search-page. Returns up to 500 per call; paginate with continueFrom. The redirect flag appears only when the referencing page is a redirect.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title to find references to (the link target). A File title when type is fileusage."
+            },
+            "type": {
+              "default": "wikilinks",
+              "description": "Inbound relationship to list: wikilinks (pages that link to the target), transclusions (pages that embed it), or fileusage (pages that display it)",
+              "type": "string",
+              "enum": [
+                "wikilinks",
+                "transclusions",
+                "fileusage"
+              ]
+            },
+            "namespaces": {
+              "description": "Namespace IDs to filter the referencing pages by",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "filter": {
+              "default": "all",
+              "description": "Filter the referencing pages by redirect status",
+              "type": "string",
+              "enum": [
+                "all",
+                "redirects",
+                "nonredirects"
+              ]
+            },
+            "expandRedirects": {
+              "default": true,
+              "description": "When a referencing page is a redirect to the target, also return the pages that link through it. Applies to wikilinks and fileusage only.",
+              "type": "boolean"
+            },
+            "limit": {
+              "description": "Maximum referencing pages to return (1..500)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "continueFrom": {
+              "description": "Opaque continuation token from the previous response; omit on first call",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "list-wikis",
+        "description": "Lists every configured wiki: its key (pass as the `wiki` argument to other tools), sitename, server URL, whether it is read-only or the default, whether it is currently reachable, and which extension-gated tools (cargo-*, smw-*, bucket-query) work on it. Use to discover the configured wikis, their keys, and which extension tools each supports.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "whoami",
+        "description": "Returns the identity the current session is authenticated as on the targeted wiki: the username, whether the session is anonymous (no user is logged in), and the user groups it belongs to. Set includeRights to also return the full list of user rights. Use to confirm who edits and uploads will be attributed to before writing — for example, to resolve your own username before building a title under your own user namespace (User:<username>/…). Reports anonymous access rather than failing when the session has no credentials. For which wikis have stored OAuth tokens and their scopes, use oauth-status instead.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "includeRights": {
+              "description": "Also return the full list of user rights granted on this wiki (a long list). Defaults to false.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "create-page",
+        "description": "Creates a new wiki page with the provided content and returns the new page's title, page ID, and first revision ID. Fails if a page with the given title already exists; for existing pages, use update-page. The optional contentModel parameter selects a non-default content format (e.g. javascript, css); when omitted, MediaWiki picks the default for the title's namespace. For building up a large page across multiple calls, pair create-page with chained update-page(mode='append') calls, each adding a chunk.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "Page content in the format specified by the contentModel parameter"
+            },
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "comment": {
+              "description": "Reason for creating the page",
+              "type": "string"
+            },
+            "contentModel": {
+              "description": "Content model of the new page. If omitted, MediaWiki picks the default for the title's namespace.",
+              "type": "string"
+            },
+            "bot": {
+              "description": "Marks the edit as a bot edit, which Special:RecentChanges hides by default. Takes effect only when the authenticated account has the `bot` right (granted by the bot group, or by the high-volume grant on a bot password or OAuth consumer); without it the edit saves unflagged and the response reports botMarked: false. Use when performing bulk or automated edit runs, or when the user requests it.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source",
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "update-page",
+        "description": "Replaces the existing content of a wiki page and returns the new revision ID. Fails if the page does not exist; for new pages, use create-page. Pass latestId (obtained from get-page with metadata=true) to enable edit-conflict detection: if the page has been edited since that revision, the update is rejected rather than silently clobbering concurrent changes. For large pages, three modifiers avoid shipping the full source: section=N edits one section (pairs with get-page section=N for reads), section='new' adds a new heading section, and mode='append' or 'prepend' sends a delta. Each call is a separate revision; for chains of mode='append' calls, re-fetching latestId between calls confirms the previous chunk landed before the next.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "source": {
+              "type": "string",
+              "description": "The content to write, in the existing page's content model. Interpreted as the full page by default; as the given section's content when section is set; or as a delta (appended or prepended) when mode is set."
+            },
+            "latestId": {
+              "description": "Base revision ID for edit-conflict detection; obtain from get-page with metadata=true. If omitted, the update is applied without conflict detection.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "comment": {
+              "description": "Summary of the edit",
+              "type": "string"
+            },
+            "section": {
+              "description": "Section to edit: 0 (lead), 1..N (existing heading sections), or 'new' to append a new heading section.",
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "string",
+                  "const": "new"
+                }
+              ]
+            },
+            "mode": {
+              "description": "Adds source to the existing content instead of replacing it: 'append' to the end, 'prepend' to the start.",
+              "type": "string",
+              "enum": [
+                "append",
+                "prepend"
+              ]
+            },
+            "sectionTitle": {
+              "description": "Heading for a new section; required when section='new', rejected otherwise.",
+              "type": "string"
+            },
+            "bot": {
+              "description": "Marks the edit as a bot edit, which Special:RecentChanges hides by default. Takes effect only when the authenticated account has the `bot` right (granted by the bot group, or by the high-volume grant on a bot password or OAuth consumer); without it the edit saves unflagged and the response reports botMarked: false. Use when performing bulk or automated edit runs, or when the user requests it.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "source"
+          ]
+        }
+      },
+      {
+        "name": "move-page",
+        "description": "Renames a wiki page, moving it — and by default its talk page — to a new title, and returns the old and new titles plus whether a redirect was left behind. By default leaves a redirect at the old title; set leaveRedirect=false to suppress it (requires the suppressredirect right, otherwise the redirect is left regardless). Fails if the source page does not exist, if the target title already exists (unless it is a redirect and ignoreWarnings is set), or if the authenticated user lacks the move permission. Moving a File page additionally requires the file-move permission.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "fromTitle": {
+              "type": "string",
+              "description": "Current title of the wiki page to move"
+            },
+            "toTitle": {
+              "type": "string",
+              "description": "New title to move the page to"
+            },
+            "comment": {
+              "description": "Reason for the move",
+              "type": "string"
+            },
+            "moveTalk": {
+              "default": true,
+              "description": "Also move the associated talk page",
+              "type": "boolean"
+            },
+            "moveSubpages": {
+              "default": false,
+              "description": "Also move subpages, where the namespace allows subpages",
+              "type": "boolean"
+            },
+            "leaveRedirect": {
+              "default": true,
+              "description": "Leave a redirect at the old title. Suppressing it requires the suppressredirect right; without that right MediaWiki leaves the redirect regardless.",
+              "type": "boolean"
+            },
+            "ignoreWarnings": {
+              "default": false,
+              "description": "Proceed past move warnings, e.g. when the target is an existing redirect. Moving over a non-redirect page still fails.",
+              "type": "boolean"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fromTitle",
+            "toTitle"
+          ]
+        }
+      },
+      {
+        "name": "delete-page",
+        "description": "Removes a wiki page from public view and returns the deleted title. This is a soft delete: the page and its revision history remain in the database and can be restored with undelete-page until an administrator purges them. Fails if the page does not exist or the authenticated user lacks the delete permission.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "comment": {
+              "description": "Reason for deleting the page",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "undelete-page",
+        "description": "Restores a previously deleted wiki page, including its full revision history, and returns the restored title. The page must currently be in a deleted state (from delete-page); fails if no deleted revisions exist for the title or the authenticated user lacks the undelete permission.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Wiki page title"
+            },
+            "comment": {
+              "description": "Reason for undeleting the page",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "upload-file",
+        "description": "Uploads a file from the local disk into the wiki's File namespace and returns the resulting file title and URL. The upload appears in the wiki's upload log. The operator restricts which directories are readable; filepath must be an absolute path inside a configured upload directory, or the call fails before contacting the wiki. Fails if a file with the target title already exists (the wiki does not silently overwrite existing files). To upload directly from a remote web address instead of a local path, use upload-file-from-url. To replace an existing file with a new revision, use update-file.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "filepath": {
+              "type": "string",
+              "description": "File path on the local disk"
+            },
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "text": {
+              "type": "string",
+              "description": "Wikitext on the file page"
+            },
+            "comment": {
+              "description": "Reason for uploading the file",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "filepath",
+            "title",
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "upload-file-from-url",
+        "description": "Fetches a file from a remote web URL and uploads it into the wiki's File namespace, returning the resulting file title and URL. The upload appears in the wiki's upload log. Works whether or not the wiki has upload-by-URL enabled: the server retrieves the file and uploads it directly, falling back to wiki-side fetching only when it cannot reach the URL itself. Fails if a file with the target title already exists. To replace an existing file with a new revision, use update-file-from-url.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL of the file to upload"
+            },
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "text": {
+              "type": "string",
+              "description": "Wikitext on the file page"
+            },
+            "comment": {
+              "description": "Reason for uploading the file",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "title",
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "update-file",
+        "description": "Uploads a new revision of an existing file from the local disk, preserving prior revisions in the file history, and returns the file title and URL. The upload appears in the wiki's upload log. Replaces the file content (bytes) only; for editing the wikitext on a file's description page, use update-page. The operator restricts which directories are readable; filepath must be an absolute path inside a configured upload directory, or the call fails before contacting the wiki. Fails if no file exists at the target title; for the initial upload, use upload-file. To upload a new revision from a remote web address instead of a local path, use update-file-from-url.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "filepath": {
+              "type": "string",
+              "description": "File path on the local disk"
+            },
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "comment": {
+              "description": "Reason for uploading the new revision",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "filepath",
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "update-file-from-url",
+        "description": "Fetches a file from a remote web URL and uploads it as a new revision of an existing file, preserving prior revisions in the file history, and returns the file title and URL. The upload appears in the wiki's upload log. Replaces the file content (bytes) only; for editing the wikitext on a file's description page, use update-page. Works whether or not the wiki has upload-by-URL enabled: the server retrieves the file and uploads it directly, falling back to wiki-side fetching only when it cannot reach the URL itself. Fails if no file exists at the target title; for the initial upload, use upload-file-from-url.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL of the file to upload"
+            },
+            "title": {
+              "type": "string",
+              "description": "File title (with or without the \"File:\" prefix)"
+            },
+            "comment": {
+              "description": "Reason for uploading the new revision",
+              "type": "string"
+            },
+            "wiki": {
+              "description": "Wiki to target, as a key from the mcp://wikis/ resources (e.g. en.wikipedia.org), or the full mcp://wikis/ URI. Omit to use the default wiki.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "oauth-status",
+        "description": "Lists wikis with stored OAuth tokens, their scopes, and expiry. Stdio only. Never returns token values.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "oauth-logout",
+        "description": "Removes stored OAuth tokens. With no argument, removes all stored tokens; with `wiki`, removes only that wiki. Stdio only.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "wiki": {
+              "description": "Wiki key to log out from. Omit to log out from all wikis.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "add-wiki",
+        "description": "Registers a new wiki as an MCP resource by fetching its sitename and API configuration from any URL on the wiki (e.g. a page URL). The wiki becomes available at mcp://wikis/<servername> and can be targeted by passing its key as the `wiki` argument to any wiki tool. Fails if the URL is not a MediaWiki wiki or if a wiki with the same key is already registered.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "wikiUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Any URL from the target wiki (e.g. https://en.wikipedia.org/wiki/Main_Page)"
+            }
+          },
+          "required": [
+            "wikiUrl"
+          ]
+        }
+      },
+      {
+        "name": "remove-wiki",
+        "description": "Removes a wiki from the MCP resources. Clears any cached credentials and license metadata for the wiki. Fails if the specified wiki is the configured default wiki.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "MCP resource URI of the wiki to remove (e.g. mcp://wikis/en.wikipedia.org)"
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "mcp://wikis/en.wikipedia.org",
+        "name": "wikis/en.wikipedia.org",
+        "description": "Wiki \"Wikipedia\" hosted at https://en.wikipedia.org",
+        "mime_type": null
+      },
+      {
+        "uri": "mcp://wikis/localhost:8080",
+        "name": "wikis/localhost:8080",
+        "description": "Wiki \"Local MediaWiki Docker\" hosted at http://localhost:8080",
+        "mime_type": null
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "27 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT11",
+      "severity": "high",
+      "title": "Server allows external log level escalation to DEBUG",
+      "description": "The MCP server accepted an unauthenticated logging/setLevel request with level='debug'. This may expose tokens, internal paths, and sensitive state in log streams accessible to the operator.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='debug' and level='emergency' both returned success",
+      "remediation": "Restrict logging/setLevel to admin contexts or disable it entirely.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 12.51600000000326,
+  "exchanges": []
+}

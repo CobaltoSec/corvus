@@ -1,0 +1,358 @@
+{
+  "target": "npx -y @ui5/mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "UI5",
+    "server_version": "0.2.14",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_guidelines",
+        "description": "This tool MUST be called once to retrieve UI5 guidelines before working on any UI5 (SAPUI5/OpenUI5) related task or project or creating a UI5 project. The guidelines provided by this tool MUST be followed to ensure best practices and avoid common pitfalls in UI5 development.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "run_ui5_linter",
+        "description": "Run UI5 linter on a UI5 project to find and optionally fix UI5 related problems like the usage of deprecated API. After making changes, you should always run the linter again to verify that no new problems have been introduced.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "projectDir": {
+              "type": "string",
+              "description": "Root directory of the UI5 project to analyze. Must be an absolute path. Typically this the directory where the 'package.json' and 'ui5.yaml' files are located."
+            },
+            "fix": {
+              "default": false,
+              "description": "Attempt to automatically correct certain findings in the files. Only the remaining findings will be returned.",
+              "type": "boolean"
+            },
+            "filePatterns": {
+              "description": "File paths or patterns to lint. If not provided, all files in the project will be linted.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "provideContextInformation": {
+              "default": true,
+              "description": "Whether to include supplementary information in the output. This includes UI5 API reference and documentation resources. When calling the tool multiple times for the same file or project, refrain from requesting additional context every time.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "projectDir"
+          ]
+        }
+      },
+      {
+        "name": "get_api_reference",
+        "description": "Search the UI5 API reference for module names and symbols",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "projectDir": {
+              "type": "string",
+              "description": "The root directory of the UI5 project, containing the 'package.json' and 'ui5.yaml' files. This is used to determine the UI5 framework version and libraries used in the project. "
+            },
+            "query": {
+              "type": "string",
+              "pattern": "^[^<>\"'()]+$",
+              "description": "Name of the UI5 module or symbol using either dot or slash notation. Examples: 'sap.m.Button', 'sap/ui/core/Core'. Individual symbols can be requested as well, e.g. 'sap.m.Button#text', 'sap.ui.core.Core#init'"
+            }
+          },
+          "required": [
+            "projectDir",
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "get_project_info",
+        "description": "Get general information about a local UI5 project.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "projectDir": {
+              "type": "string",
+              "description": "Root directory of the UI5 project to analyze. Must be an absolute path. If a path to a file is provided, the root directory will be determined automatically."
+            }
+          },
+          "required": [
+            "projectDir"
+          ]
+        }
+      },
+      {
+        "name": "create_ui5_app",
+        "description": "Create a new basic SAPUI5 application implemented in TypeScript or JavaScript",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "appNamespace": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_.]*$",
+              "description": "The namespace for the application, e.g. com.myorg.myapp. Only lowercase alpha-numeric characters, underscores and dots are allowed."
+            },
+            "basePath": {
+              "type": "string",
+              "description": "Absolute base path for the creation. The application will be created either immediately inside this path or in a subdirectory (its name equals the application namespace), depending on the 'createAppDirectory' parameter. This base path must be absolute, not just 'app' or '.' or './something'!"
+            },
+            "createAppDirectory": {
+              "default": true,
+              "description": "Whether to create a new directory (name equals the application namespace) inside the base path. Set this to 'false' when you want to place the 'app' directly in the given base path. In SAP CAP applications, typically give the path to the 'app' folder as basePath and set this to 'true' to create an application folder. Default: true.",
+              "type": "boolean"
+            },
+            "framework": {
+              "default": "SAPUI5",
+              "description": "Framework to use (OpenUI5 or SAPUI5), defaults to SAPUI5",
+              "type": "string",
+              "enum": [
+                "OpenUI5",
+                "SAPUI5"
+              ]
+            },
+            "frameworkVersion": {
+              "description": "Framework version, defaults to latest version. Omit this when in doubt. When provided, it must be a concrete semantic version, like e.g. 1.136.0. Versions older than 1.96.0 are not supported.",
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "author": {
+              "description": "Author of the application (auto-detected if not provided)",
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9 .,'@_-]+$"
+            },
+            "oDataV4Url": {
+              "description": "URL of an OData V4 service, if applicable. This is entirely optional, but without it, the generated app UI will have no OData Model configured. Setting an URL will configure an OData V4 model in the application. Only works for OData V4 services, not for OData V2. The URL must be either a valid complete URL starting with http:// or https:// or a server-root-relative URL like '/odata/v4/serviceName' when the OData service is running on the same server. In this case, the prefix 'http://localhost:4004/' will be assumed and used by this tool for inquiries about the service. When the port is not 4004, a complete 'http://localhost:<port>...' URL must be provided. In the generated application, any 'http://localhost:<port>' prefix will be removed. HINT: when the project is a SAP CAP project and CAP/CDS tools are available, you **MUST** use them to search for OData services and entities and properties **BEFORE** calling this tool. This will help you find the correct service URL.",
+              "type": "string"
+            },
+            "oDataEntitySet": {
+              "description": "Entity set of the OData V4 service to display. Only has an effect when 'oDataV4Url' is set as well. This is optional, but setting an entity set is beneficial, as it will configure a basic UI in the application which displays the entity set.",
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_]+$"
+            },
+            "entityProperties": {
+              "description": "Properties of the OData entity set to display. Only has an effect when 'oDataV4Url' and'oDataEntitySet' are set. This parameter is optional, but useful to display initial data, when the names of existing properties are known. If not provided and the service is active and reachable at tool execution time, some random properties will be displayed.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_]+$"
+              }
+            },
+            "initializeGitRepository": {
+              "default": true,
+              "description": "Initialize a local git repository for the application, default is 'true'",
+              "type": "boolean"
+            },
+            "runNpmInstall": {
+              "default": true,
+              "description": "Execute npm install after creating the application, default is 'true'",
+              "type": "boolean"
+            },
+            "typescript": {
+              "default": true,
+              "description": "Whether to create a TypeScript application (true) or JavaScript application (false), default is 'true'. Although the default is preferred, the user MUST know about this option before generation, but you should not require an active decision. Also, if an overall project already exists, this should influence the language choice to keep things consistent.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "appNamespace",
+            "basePath"
+          ]
+        }
+      },
+      {
+        "name": "get_version_info",
+        "description": "Get version information for UI5 (OpenUI5 or SAPUI5)",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "frameworkName": {
+              "type": "string",
+              "enum": [
+                "OpenUI5",
+                "SAPUI5"
+              ],
+              "description": "The UI5 framework to get version information for"
+            }
+          },
+          "required": [
+            "frameworkName"
+          ]
+        }
+      },
+      {
+        "name": "get_integration_cards_guidelines",
+        "description": "This tool MUST be called once to retrieve Integration Cards guidelines before working on any Integration Card related task or creating an Integration Card. The guidelines provided by this tool MUST be followed to ensure best practices and avoid common pitfalls in Integration Cards development.Integration Cards are also called 'UI Integration Cards' or 'UI5 Integration Cards'.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "create_integration_card",
+        "description": "Create a new Integration Card, UI Integration Card, or UI5 Integration Card",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "basePath": {
+              "type": "string",
+              "description": "Absolute base path for the creation."
+            },
+            "cardFolderName": {
+              "default": "card",
+              "type": "string",
+              "description": "Name of the folder to create the card in, inside the base path."
+            },
+            "cardType": {
+              "default": "List",
+              "type": "string",
+              "enum": [
+                "Analytical",
+                "Calendar",
+                "List",
+                "Object",
+                "Table",
+                "Timeline"
+              ],
+              "description": "Type of the Integration Card to create."
+            },
+            "destinations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9 .,'@_-]+$",
+                    "description": "Name of the destination."
+                  },
+                  "defaultUrl": {
+                    "type": "string",
+                    "description": "Default URL of the destination."
+                  }
+                },
+                "required": [
+                  "name",
+                  "defaultUrl"
+                ]
+              },
+              "description": "List of destinations to be included in the card configuration."
+            }
+          },
+          "required": [
+            "basePath"
+          ]
+        }
+      },
+      {
+        "name": "run_manifest_validation",
+        "description": "Validates UI5 manifest file. After making changes, you should always run the validation again to verify that no new problems have been introduced.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "manifestPath": {
+              "type": "string",
+              "description": "Absolute path to the manifest file to validate."
+            }
+          },
+          "required": [
+            "manifestPath"
+          ]
+        }
+      },
+      {
+        "name": "get_typescript_conversion_guidelines",
+        "description": "This tool MUST be called once before converting a UI5 (SAPUI5/OpenUI5) project from JavaScript to TypeScript. The instructions provided by this tool MUST be followed to ensure that the project setup and code is correctly converted.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "7 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 9.671999999998661,
+  "exchanges": []
+}

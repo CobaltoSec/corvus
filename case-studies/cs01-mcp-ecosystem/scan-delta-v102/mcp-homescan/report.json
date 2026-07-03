@@ -1,0 +1,177 @@
+{
+  "target": "npx -y mcp-homescan",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-homescan",
+    "server_version": "0.1.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "homescan_discover",
+        "description": "Discover all devices on the local network using ARP table. Returns IP, MAC address, and manufacturer for each device found.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "refresh": {
+              "type": "boolean",
+              "description": "If true, performs a ping sweep first to populate ARP cache with all active devices. Takes longer but finds more devices."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "homescan_device",
+        "description": "Get detailed information about a specific device by IP address",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "ip": {
+              "type": "string",
+              "description": "IP address of the device to look up"
+            }
+          },
+          "required": [
+            "ip"
+          ]
+        }
+      },
+      {
+        "name": "homescan_mac_lookup",
+        "description": "Look up the manufacturer of a device from its MAC address",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mac": {
+              "type": "string",
+              "description": "MAC address to look up (format: xx:xx:xx:xx:xx:xx)"
+            }
+          },
+          "required": [
+            "mac"
+          ]
+        }
+      },
+      {
+        "name": "homescan_report",
+        "description": "Generate a comprehensive network discovery report in markdown format, including device summary, categories, and security flags",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "homescan_export",
+        "description": "Export discovered devices to Obsidian inventory format. Returns an array of files that can be saved to your vault.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": [
+                "markdown",
+                "json"
+              ],
+              "description": "Export format (default: markdown)"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "homescan_diff",
+        "description": "Compare current network scan to the last scan and show new/removed devices",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "homescan_flagged",
+        "description": "List devices flagged for security review (unknown manufacturers, Chinese IoT devices, randomized MACs)",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 3.7969999999986612,
+  "exchanges": []
+}

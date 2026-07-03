@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-CS02-DELTA] — 2026-07-03 — Delta scan 7 módulos + 6 GHSAs + quality pass
+
+- **Delta scan ejecutado** — 7 módulos faltantes (EXT08-EXT14: completion/logging/prompts-injection/cursor/cancellation + github-advisory/npm-behavior) contra CS01 (20 targets) + CS02 (49 targets). Resultados en `scan-delta-v102/`.
+- **EXT13 cursor_probe → FP sistémico** — 80%+ hit rate era la señal: non-paginators que ignoran el cursor parameter están en spec. Descartado de todos los candidatos de disclosure.
+- **Curación delta** — EXT11 (`logging/setLevel` sin auth, conf=85%), EXT12 (prompts/get injection reflejada, conf=88%), EXT14 (crash en `notifications/cancelled` ID desconocido, conf=85%). IDs asignados: CS02-D01 a D12 / CS01-F92.
+- **6 nuevos GHSAs creados** — nx-mcp (D01+D02, HIGH), @jpisnice/shadcn-ui-mcp-server (D03-D05, HIGH), european-parliament-mcp-server (D06-D08, HIGH), @get-technology-inc/jamf-docs-mcp-server (D09-D11, HIGH), @notionhq/notion-mcp-server (D12, HIGH), @benborla29/mcp-server-mysql (CS01-F92, MEDIUM). Collaborators invitados 6/6. Portfolio: **17 Corvus GHSAs** (3 published, 14 draft).
+- **Calidad disclosure** — 6 descripciones reescritas al estándar playwright/sqlite: PoC numerado con `npx -y <package>` + JSON-RPC exacto, `## Notes` con IDs (CS02-Dxx), `exploitation_confirmed`, "0 prior advisories", link a `github.com/CobaltoSec/corvus`, contexto de ataque en LLM agent context.
+
 ## [RT-CORVUS-CS02-RESCAN] — 2026-07-02 — CS02 re-scan v1.0.1 + curación + disclosure
 
 - **Re-scan CS02 completo** — 28/29 targets con 34 módulos v1.0.1 (1 skip-env: mysql-mcp-server). 421 findings brutos (4C 61H 147M 181L 28I).

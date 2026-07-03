@@ -1,0 +1,473 @@
+{
+  "target": "npx -y @modelcontextprotocol/server-everything",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-servers/everything",
+    "server_version": "2.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "echo",
+        "description": "Echoes back the input string",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Message to echo"
+            }
+          },
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-annotated-message",
+        "description": "Demonstrates how annotations can be used to provide metadata about content.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "messageType": {
+              "type": "string",
+              "enum": [
+                "error",
+                "success",
+                "debug"
+              ],
+              "description": "Type of message to demonstrate different annotation patterns"
+            },
+            "includeImage": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to include an example image"
+            }
+          },
+          "required": [
+            "messageType"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-env",
+        "description": "Returns all environment variables, helpful for debugging MCP server configuration",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get-resource-links",
+        "description": "Returns up to ten resource links that reference different types of resources",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3,
+              "description": "Number of resource links to return (1-10)"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-resource-reference",
+        "description": "Returns a resource reference that can be used by MCP clients",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "resourceType": {
+              "type": "string",
+              "enum": [
+                "Text",
+                "Blob"
+              ],
+              "default": "Text"
+            },
+            "resourceId": {
+              "type": "number",
+              "default": 1,
+              "description": "ID of the text resource to fetch"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-structured-content",
+        "description": "Returns structured content along with an output schema for client data validation",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "enum": [
+                "New York",
+                "Chicago",
+                "Los Angeles"
+              ],
+              "description": "Choose city"
+            }
+          },
+          "required": [
+            "location"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-sum",
+        "description": "Returns the sum of two numbers",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "number",
+              "description": "First number"
+            },
+            "b": {
+              "type": "number",
+              "description": "Second number"
+            }
+          },
+          "required": [
+            "a",
+            "b"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get-tiny-image",
+        "description": "Returns a tiny MCP logo image.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "gzip-file-as-resource",
+        "description": "Compresses a single file using gzip compression. Depending upon the selected output type, returns either the compressed data as a gzipped resource or a resource link, allowing it to be downloaded in a subsequent request during the current session.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the output file",
+              "default": "README.md.gz"
+            },
+            "data": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL or data URI of the file content to compress",
+              "default": "https://raw.githubusercontent.com/modelcontextprotocol/servers/refs/heads/main/README.md"
+            },
+            "outputType": {
+              "type": "string",
+              "enum": [
+                "resourceLink",
+                "resource"
+              ],
+              "default": "resourceLink",
+              "description": "How the resulting gzipped file should be returned. 'resourceLink' returns a link to a resource that can be read later, 'resource' returns a full resource object."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "toggle-simulated-logging",
+        "description": "Toggles simulated, random-leveled logging on or off.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "toggle-subscriber-updates",
+        "description": "Toggles simulated resource subscription updates on or off.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "trigger-long-running-operation",
+        "description": "Demonstrates a long running operation with progress updates.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "duration": {
+              "type": "number",
+              "default": 10,
+              "description": "Duration of the operation in seconds"
+            },
+            "steps": {
+              "type": "number",
+              "default": 5,
+              "description": "Number of steps in the operation"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "simulate-research-query",
+        "description": "Simulates a deep research operation that gathers, analyzes, and synthesizes information. Demonstrates MCP task-based operations with progress through multiple stages. If 'ambiguous' is true and client supports elicitation, sends an elicitation request for clarification.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "The research topic to investigate"
+            },
+            "ambiguous": {
+              "type": "boolean",
+              "default": false,
+              "description": "Simulate an ambiguous query that requires clarification (triggers input_required status)"
+            }
+          },
+          "required": [
+            "topic"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "demo://resource/static/document/architecture.md",
+        "name": "architecture.md",
+        "description": "Static document file exposed from /docs: architecture.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/extension.md",
+        "name": "extension.md",
+        "description": "Static document file exposed from /docs: extension.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/features.md",
+        "name": "features.md",
+        "description": "Static document file exposed from /docs: features.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/how-it-works.md",
+        "name": "how-it-works.md",
+        "description": "Static document file exposed from /docs: how-it-works.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/instructions.md",
+        "name": "instructions.md",
+        "description": "Static document file exposed from /docs: instructions.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/startup.md",
+        "name": "startup.md",
+        "description": "Static document file exposed from /docs: startup.md",
+        "mime_type": "text/markdown"
+      },
+      {
+        "uri": "demo://resource/static/document/structure.md",
+        "name": "structure.md",
+        "description": "Static document file exposed from /docs: structure.md",
+        "mime_type": "text/markdown"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "simple-prompt",
+        "description": "A prompt with no arguments",
+        "arguments": []
+      },
+      {
+        "name": "args-prompt",
+        "description": "A prompt with two arguments, one required and one optional",
+        "arguments": [
+          {
+            "name": "city",
+            "description": "Name of the city",
+            "required": true
+          },
+          {
+            "name": "state",
+            "description": "Name of the state",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "completable-prompt",
+        "description": "First argument choice narrows values for second argument.",
+        "arguments": [
+          {
+            "name": "department",
+            "description": "Choose the department.",
+            "required": true
+          },
+          {
+            "name": "name",
+            "description": "Choose a team member to lead the selected department.",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "resource-prompt",
+        "description": "A prompt that includes an embedded resource reference",
+        "arguments": [
+          {
+            "name": "resourceType",
+            "description": "Type of resource to fetch",
+            "required": true
+          },
+          {
+            "name": "resourceId",
+            "description": "ID of the text resource to fetch",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "9 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT11",
+      "severity": "high",
+      "title": "Server allows external log level escalation to DEBUG",
+      "description": "The MCP server accepted an unauthenticated logging/setLevel request with level='debug'. This may expose tokens, internal paths, and sensitive state in log streams accessible to the operator.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='debug' and level='emergency' both returned success",
+      "remediation": "Restrict logging/setLevel to admin contexts or disable it entirely.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'args-prompt'",
+      "description": "prompts/get for 'args-prompt' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "args-prompt",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"What's weather in CORVUS_INJECTION_TEST_{{7*7}}, CORVUS_INJECTION_TEST_{{7*7}}?\"}}]}",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'completable-prompt'",
+      "description": "prompts/get for 'completable-prompt' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "completable-prompt",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"Please promote CORVUS_INJECTION_TEST_{{7*7}} to the head of the CORVUS_INJECTION_TEST_{{7*7}} team.\"}}]}",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 2.4530000000013388,
+  "exchanges": []
+}

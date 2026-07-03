@@ -1,0 +1,655 @@
+{
+  "target": "npx -y myclaw-toolkit",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "myclaw-toolkit",
+    "server_version": "1.0.11",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "timestamp",
+        "description": "Get current Unix timestamp and ISO 8601 datetime (runs locally, no network)",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "uuid",
+        "description": "Generate UUID v4 identifiers (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 1,
+              "description": "Number of UUIDs to generate"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "base64",
+        "description": "Encode or decode Base64 strings (runs locally, no data leaves your machine)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "encode",
+                "decode"
+              ],
+              "description": "Operation to perform"
+            },
+            "text": {
+              "type": "string",
+              "description": "Text to encode or Base64 to decode"
+            }
+          },
+          "required": [
+            "action",
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "hash",
+        "description": "Generate cryptographic hashes — MD5, SHA1, SHA256, SHA512 (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "md5",
+                "sha1",
+                "sha256",
+                "sha512"
+              ],
+              "default": "sha256",
+              "description": "Hash algorithm"
+            },
+            "text": {
+              "type": "string",
+              "description": "Text to hash"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "qrcode",
+        "description": "Generate QR codes from text or URLs (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text or URL to encode in QR code"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "color_tools",
+        "description": "Convert colors between hex, RGB, and HSL formats (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string",
+              "description": "Color value (hex like '#ff0000', rgb like '255,0,0', or hsl like '0,100,50')"
+            }
+          },
+          "required": [
+            "color"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "json_formatter",
+        "description": "Format, validate, or minify JSON strings (runs locally, no data leaves your machine)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "format",
+                "validate",
+                "minify"
+              ],
+              "default": "format",
+              "description": "Operation"
+            },
+            "json": {
+              "type": "string",
+              "description": "JSON string to process"
+            }
+          },
+          "required": [
+            "json"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "url_tools",
+        "description": "Encode or decode URL strings (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "encode",
+                "decode"
+              ],
+              "description": "Operation"
+            },
+            "text": {
+              "type": "string",
+              "description": "Text to encode or URL to decode"
+            }
+          },
+          "required": [
+            "action",
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "text_tools",
+        "description": "Text processing utilities — count, reverse, case conversion (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "count",
+                "reverse",
+                "upper",
+                "lower",
+                "title"
+              ],
+              "description": "Operation"
+            },
+            "text": {
+              "type": "string",
+              "description": "Text to process"
+            }
+          },
+          "required": [
+            "action",
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "exchange_rate",
+        "description": "Get real-time currency exchange rates between any two currencies",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "description": "Source currency code (e.g., USD, CNY, EUR)"
+            },
+            "to": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "description": "Target currency code (e.g., USD, CNY, EUR)"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "crypto_price",
+        "description": "Get current cryptocurrency prices in USD or any fiat currency",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "coin": {
+              "type": "string",
+              "description": "Cryptocurrency symbol (e.g., BTC, ETH, SOL, USDT)"
+            },
+            "vs": {
+              "type": "string",
+              "default": "usd",
+              "description": "Quote currency (e.g., usd, cny, eur)"
+            }
+          },
+          "required": [
+            "coin"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "domain_check",
+        "description": "Check domain name availability and whois information",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "description": "Domain name to check (e.g., example.com)"
+            }
+          },
+          "required": [
+            "domain"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "bmi_calculator",
+        "description": "Calculate BMI (Body Mass Index) from height and weight (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "height": {
+              "type": "number",
+              "minimum": 50,
+              "maximum": 300,
+              "description": "Height in centimeters"
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Weight in kilograms"
+            }
+          },
+          "required": [
+            "height",
+            "weight"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "vcard_generator",
+        "description": "Generate vCard (.vcf) contact files (runs locally, no network)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Full name"
+            },
+            "phone": {
+              "type": "string",
+              "description": "Phone number"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email address"
+            },
+            "org": {
+              "type": "string",
+              "description": "Organization/company"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "web_search",
+        "description": "Search the web using Bing — returns titles, snippets, and URLs",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query"
+            },
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10,
+              "description": "Number of results"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "news_search",
+        "description": "Search news articles from global sources",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "News search query"
+            },
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10,
+              "description": "Number of articles"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "product_search",
+        "description": "Search products across multiple e-commerce platforms",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Product search query"
+            },
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10,
+              "description": "Number of results"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "rss_feed",
+        "description": "Fetch and parse RSS feeds from any URL",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "RSS feed URL to fetch"
+            },
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "description": "Number of items"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "read_page",
+        "description": "Extract readable content from any web page (like Readability)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Web page URL to extract content from"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "markdown_to_html",
+        "description": "Convert Markdown text to HTML (runs locally, no data leaves your machine)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "markdown": {
+              "type": "string",
+              "description": "Markdown text to convert"
+            }
+          },
+          "required": [
+            "markdown"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "ai_translate",
+        "description": "Translate text between languages (uses MyMemory translation API)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text to translate"
+            },
+            "from": {
+              "type": "string",
+              "default": "auto",
+              "description": "Source language (auto for auto-detect)"
+            },
+            "to": {
+              "type": "string",
+              "default": "en",
+              "description": "Target language"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "quote",
+        "description": "Get inspirational or random quotes (remote API, no user data sent)",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "wifi_qrcode",
+        "description": "Generate WiFi connection QR codes (runs 100% locally — your password NEVER leaves your device)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "ssid": {
+              "type": "string",
+              "description": "WiFi network name (SSID)"
+            },
+            "password": {
+              "type": "string",
+              "description": "WiFi password"
+            },
+            "security": {
+              "type": "string",
+              "enum": [
+                "WPA",
+                "WEP",
+                "nopass"
+              ],
+              "default": "WPA",
+              "description": "Security type"
+            }
+          },
+          "required": [
+            "ssid",
+            "password"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "compare",
+        "description": "Compare two items side-by-side (text, products, anything)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "string",
+              "description": "First item to compare"
+            },
+            "b": {
+              "type": "string",
+              "description": "Second item to compare"
+            }
+          },
+          "required": [
+            "a",
+            "b"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "health_check",
+        "description": "Check if the MyClaw API backend is reachable and responsive",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "22 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 9.796999999998661,
+  "exchanges": []
+}

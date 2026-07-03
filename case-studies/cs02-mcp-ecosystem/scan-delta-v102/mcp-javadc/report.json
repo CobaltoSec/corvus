@@ -1,0 +1,146 @@
+{
+  "target": "npx -y @idachev/mcp-javadc",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "javadc",
+    "server_version": "1.2.4",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "decompile-from-path",
+        "description": "Decompiles a Java .class file from a given file path",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "classFilePath": {
+              "type": "string",
+              "description": "The absolute path to the .class file"
+            }
+          },
+          "required": [
+            "classFilePath"
+          ]
+        }
+      },
+      {
+        "name": "decompile-from-package",
+        "description": "Decompiles a Java class from a package name",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string",
+              "description": "Fully qualified Java package and class name"
+            },
+            "classpath": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of classpath directories to search"
+            }
+          },
+          "required": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "name": "decompile-from-jar",
+        "description": "Decompiles a Java class from a JAR file\n\n# Using mcp_javadc with Maven Repository\n\nWhen you need to decompile Java classes from dependencies in the M2 repository, follow these steps:\n\n## Step 1: Find the JAR file location\n\nFirst, search for the dependency JAR in the local Maven repository:\n\n```bash\nfind ~/.m2 -name \"*dependency-name*jar\" | grep -v source | grep -v javadoc\n```\n\nNotes:\n- Replace dependency-name with the artifact name\n- Filter out source and javadoc JARs using grep\n- Look for the correct version based on the project's POM file\n\n## Step 2: Use the correct mcp_javadc function\n\nOnce you have the JAR path, use this function:\n\nFor specific class decompilation:\n- jarFilePath: The absolute path to the JAR (from Step 1)\n- className: Fully qualified class name to decompile\n\nFor contextual exploration:\nIf needed, first try to find all available classes in the JAR:\n`jar tf /path/to/the.jar | grep .class | sort`\n\nExample workflow:\n1. Read the POM file to identify dependency version\n2. Search the M2 repository for the JAR\n3. Use mcp_javadc to decompile relevant classes\n4. If multiple versions exist, select the one matching the project's version requirement",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "jarFilePath": {
+              "type": "string",
+              "description": "The absolute path to the JAR file"
+            },
+            "className": {
+              "type": "string",
+              "description": "Fully qualified class name to decompile from the JAR (e.g., \"com.example.MyClass\")"
+            }
+          },
+          "required": [
+            "jarFilePath",
+            "className"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 9.171999999998661,
+  "exchanges": []
+}

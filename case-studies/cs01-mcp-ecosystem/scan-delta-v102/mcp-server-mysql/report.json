@@ -1,0 +1,40 @@
+{
+  "target": "npx -y @benborla29/mcp-server-mysql",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "MySQL MCP Server",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT14",
+      "severity": "high",
+      "title": "Server crashes on notifications/cancelled for unknown request ID",
+      "description": "The server crashed or disconnected after receiving notifications/cancelled with a requestId that was never sent.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"method\": \"notifications/cancelled\", \"params\": {\"requestId\": \"nonexistent-99999\", \"reason\": \"test\"}}",
+      "evidence": null,
+      "remediation": "Handle unknown requestId in notifications/cancelled gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 3.4219999999986612,
+  "exchanges": []
+}

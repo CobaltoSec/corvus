@@ -1,0 +1,251 @@
+{
+  "target": "npx -y mcp-server-nationalparks",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "nationalparks-mcp-server",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "findParks",
+        "description": "Search for national parks based on state, name, activities, or other criteria",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "stateCode": {
+              "type": "string",
+              "description": "Filter parks by state code (e.g., \"CA\" for California, \"NY\" for New York). Multiple states can be comma-separated (e.g., \"CA,OR,WA\")"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter parks by name or description"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of parks to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "activities": {
+              "type": "string",
+              "description": "Filter by available activities (e.g., \"hiking,camping\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getParkDetails",
+        "description": "Get detailed information about a specific national park",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "The park code of the national park (e.g., \"yose\" for Yosemite, \"grca\" for Grand Canyon)"
+            }
+          },
+          "required": [
+            "parkCode"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getAlerts",
+        "description": "Get current alerts for national parks including closures, hazards, and important information",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter alerts by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of alerts to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter alerts by title or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getVisitorCenters",
+        "description": "Get information about visitor centers and their operating hours",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter visitor centers by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of visitor centers to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter visitor centers by name or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getCampgrounds",
+        "description": "Get information about available campgrounds and their amenities",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter campgrounds by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of campgrounds to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter campgrounds by name or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "getEvents",
+        "description": "Find upcoming events at parks",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "parkCode": {
+              "type": "string",
+              "description": "Filter events by park code (e.g., \"yose\" for Yosemite). Multiple parks can be comma-separated (e.g., \"yose,grca\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of events to return (default: 10, max: 50)"
+            },
+            "start": {
+              "type": "number",
+              "description": "Start position for results (useful for pagination)"
+            },
+            "dateStart": {
+              "type": "string",
+              "description": "Start date for filtering events (format: YYYY-MM-DD)"
+            },
+            "dateEnd": {
+              "type": "string",
+              "description": "End date for filtering events (format: YYYY-MM-DD)"
+            },
+            "q": {
+              "type": "string",
+              "description": "Search term to filter events by title or description"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "6 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 3.9219999999986612,
+  "exchanges": []
+}

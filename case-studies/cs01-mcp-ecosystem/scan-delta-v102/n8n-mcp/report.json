@@ -1,0 +1,469 @@
+{
+  "target": "npx -y n8n-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "n8n-documentation-mcp",
+    "server_version": "2.62.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "tools_documentation",
+        "description": "Get documentation for n8n MCP tools. Call without parameters for quick start guide. Use topic parameter to get documentation for specific tools. Use depth='full' for comprehensive documentation.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Tool name (e.g., \"search_nodes\") or \"overview\" for general guide. Leave empty for quick reference."
+            },
+            "depth": {
+              "type": "string",
+              "enum": [
+                "essentials",
+                "full"
+              ],
+              "description": "Level of detail. \"essentials\" (default) for quick reference, \"full\" for comprehensive docs.",
+              "default": "essentials"
+            }
+          }
+        }
+      },
+      {
+        "name": "search_nodes",
+        "description": "Search n8n nodes by keyword with optional real-world examples. Pass query as string. Example: query=\"webhook\" or query=\"database\". Returns max 20 results. Use includeExamples=true to get top 2 template configs per node.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search terms. Use quotes for exact phrase."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max results (default 20)",
+              "default": 20
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "OR",
+                "AND",
+                "FUZZY"
+              ],
+              "description": "OR=any word, AND=all words, FUZZY=typo-tolerant",
+              "default": "OR"
+            },
+            "includeExamples": {
+              "type": "boolean",
+              "description": "Include top 2 real-world configuration examples from popular templates (default: false)",
+              "default": false
+            },
+            "includeOperations": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include resource/operation tree per node. Adds ~100-300 tokens per result but saves a get_node round-trip."
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "all",
+                "core",
+                "community",
+                "verified"
+              ],
+              "description": "Filter by node source: all=everything (default), core=n8n base nodes, community=community nodes, verified=verified community nodes only",
+              "default": "all"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "get_node",
+        "description": "Get node info with progressive detail levels and multiple modes. Detail: minimal (~200 tokens), standard (~1-2K, default), full (~3-8K). Modes: info (default), docs (markdown documentation), search_properties (find properties), versions/compare/breaking/migrations (version info). Use format='docs' for readable documentation, mode='search_properties' with propertyQuery for finding specific fields.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "nodeType": {
+              "type": "string",
+              "description": "Full node type: \"nodes-base.httpRequest\" or \"nodes-langchain.agent\""
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "minimal",
+                "standard",
+                "full"
+              ],
+              "default": "standard",
+              "description": "Information detail level. standard=essential properties (recommended), full=everything"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "info",
+                "docs",
+                "search_properties",
+                "versions",
+                "compare",
+                "breaking",
+                "migrations"
+              ],
+              "default": "info",
+              "description": "Operation mode. info=node schema, docs=readable markdown documentation, search_properties=find specific properties, versions/compare/breaking/migrations=version info"
+            },
+            "includeTypeInfo": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include type structure metadata (type category, JS type, validation rules). Only applies to mode=info. Adds ~80-120 tokens per property."
+            },
+            "includeExamples": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include real-world configuration examples from templates. Only applies to mode=info with detail=standard. Adds ~200-400 tokens per example."
+            },
+            "fromVersion": {
+              "type": "string",
+              "description": "Source version for compare/breaking/migrations modes (e.g., \"1.0\")"
+            },
+            "toVersion": {
+              "type": "string",
+              "description": "Target version for compare mode (e.g., \"2.0\"). Defaults to latest if omitted."
+            },
+            "propertyQuery": {
+              "type": "string",
+              "description": "For mode=search_properties: search term to find properties (e.g., \"auth\", \"header\", \"body\")"
+            },
+            "maxPropertyResults": {
+              "type": "number",
+              "description": "For mode=search_properties: max results (default 20)",
+              "default": 20
+            }
+          },
+          "required": [
+            "nodeType"
+          ]
+        }
+      },
+      {
+        "name": "validate_node",
+        "description": "Validate n8n node configuration. Use mode='full' for comprehensive validation with errors/warnings/suggestions, mode='minimal' for quick required fields check. Example: nodeType=\"nodes-base.slack\", config={resource:\"channel\",operation:\"create\"}",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "nodeType": {
+              "type": "string",
+              "description": "Node type as string. Example: \"nodes-base.slack\""
+            },
+            "config": {
+              "type": "object",
+              "description": "Configuration as object. For simple nodes use {}. For complex nodes include fields like {resource:\"channel\",operation:\"create\"}"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "full",
+                "minimal"
+              ],
+              "description": "Validation mode. full=comprehensive validation with errors/warnings/suggestions, minimal=quick required fields check only. Default is \"full\"",
+              "default": "full"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "strict",
+                "runtime",
+                "ai-friendly",
+                "minimal"
+              ],
+              "description": "Profile for mode=full: \"minimal\", \"runtime\", \"ai-friendly\", or \"strict\". Default is \"ai-friendly\"",
+              "default": "ai-friendly"
+            }
+          },
+          "required": [
+            "nodeType",
+            "config"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_template",
+        "description": "Get template by ID. Use mode to control response size: nodes_only (minimal), structure (nodes+connections), full (complete workflow).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "number",
+              "description": "The template ID to retrieve"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "nodes_only",
+                "structure",
+                "full"
+              ],
+              "description": "Response detail level. nodes_only: just node list, structure: nodes+connections, full: complete workflow JSON.",
+              "default": "full"
+            }
+          },
+          "required": [
+            "templateId"
+          ]
+        }
+      },
+      {
+        "name": "search_templates",
+        "description": "Search templates with multiple modes. Use searchMode='keyword' for text search, 'by_nodes' to find templates using specific nodes, 'by_task' for curated task-based templates, 'by_metadata' for filtering by complexity/setup time/services, 'patterns' for lightweight workflow pattern summaries mined from 2700+ templates.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "searchMode": {
+              "type": "string",
+              "enum": [
+                "keyword",
+                "by_nodes",
+                "by_task",
+                "by_metadata",
+                "patterns"
+              ],
+              "description": "Search mode. keyword=text search (default), by_nodes=find by node types, by_task=curated task templates, by_metadata=filter by complexity/services, patterns=lightweight workflow pattern summaries",
+              "default": "keyword"
+            },
+            "query": {
+              "type": "string",
+              "description": "For searchMode=keyword: search keyword (e.g., \"chatbot\")"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "name",
+                  "description",
+                  "author",
+                  "nodes",
+                  "views",
+                  "created",
+                  "url",
+                  "metadata"
+                ]
+              },
+              "description": "For searchMode=keyword: fields to include in response. Default: all fields."
+            },
+            "nodeTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "For searchMode=by_nodes: array of node types (e.g., [\"n8n-nodes-base.httpRequest\", \"n8n-nodes-base.slack\"])"
+            },
+            "task": {
+              "type": "string",
+              "enum": [
+                "ai_automation",
+                "data_sync",
+                "webhook_processing",
+                "email_automation",
+                "slack_integration",
+                "data_transformation",
+                "file_processing",
+                "scheduling",
+                "api_integration",
+                "database_operations"
+              ],
+              "description": "For searchMode=by_task: the type of task. For searchMode=patterns: optional category filter (omit for overview of all categories)."
+            },
+            "category": {
+              "type": "string",
+              "description": "For searchMode=by_metadata: filter by category (e.g., \"automation\", \"integration\")"
+            },
+            "complexity": {
+              "type": "string",
+              "enum": [
+                "simple",
+                "medium",
+                "complex"
+              ],
+              "description": "For searchMode=by_metadata: filter by complexity level"
+            },
+            "maxSetupMinutes": {
+              "type": "number",
+              "description": "For searchMode=by_metadata: maximum setup time in minutes",
+              "minimum": 5,
+              "maximum": 480
+            },
+            "minSetupMinutes": {
+              "type": "number",
+              "description": "For searchMode=by_metadata: minimum setup time in minutes",
+              "minimum": 5,
+              "maximum": 480
+            },
+            "requiredService": {
+              "type": "string",
+              "description": "For searchMode=by_metadata: filter by required service (e.g., \"openai\", \"slack\")"
+            },
+            "targetAudience": {
+              "type": "string",
+              "description": "For searchMode=by_metadata: filter by target audience (e.g., \"developers\", \"marketers\")"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of results. Default 20.",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "number",
+              "description": "Pagination offset. Default 0.",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        }
+      },
+      {
+        "name": "validate_workflow",
+        "description": "Full workflow validation: structure, connections, expressions, AI tools. Returns errors/warnings/fixes. Essential before deploy.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "workflow": {
+              "type": "object",
+              "description": "The complete workflow JSON to validate. Must include nodes array and connections object."
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "validateNodes": {
+                  "type": "boolean",
+                  "description": "Validate individual node configurations. Default true.",
+                  "default": true
+                },
+                "validateConnections": {
+                  "type": "boolean",
+                  "description": "Validate node connections and flow. Default true.",
+                  "default": true
+                },
+                "validateExpressions": {
+                  "type": "boolean",
+                  "description": "Validate n8n expressions syntax and references. Default true.",
+                  "default": true
+                },
+                "profile": {
+                  "type": "string",
+                  "enum": [
+                    "minimal",
+                    "runtime",
+                    "ai-friendly",
+                    "strict"
+                  ],
+                  "description": "Validation profile for node validation. Default \"runtime\".",
+                  "default": "runtime"
+                }
+              },
+              "description": "Optional validation settings"
+            }
+          },
+          "required": [
+            "workflow"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "ui://n8n-mcp/operation-result",
+        "name": "Operation Result",
+        "description": "Visual summary of workflow operations (create, update, delete, test)",
+        "mime_type": "text/html;profile=mcp-app"
+      },
+      {
+        "uri": "ui://n8n-mcp/validation-summary",
+        "name": "Validation Summary",
+        "description": "Visual summary of node and workflow validation results",
+        "mime_type": "text/html;profile=mcp-app"
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "7 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 3.8280000000013388,
+  "exchanges": []
+}

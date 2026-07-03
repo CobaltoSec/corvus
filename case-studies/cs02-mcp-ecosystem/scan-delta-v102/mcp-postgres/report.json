@@ -1,0 +1,458 @@
+{
+  "target": "npx -y mcp-postgres",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-db-server",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_schema",
+        "description": "Get database schema information including tables and columns",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Optional: specific table name to get schema for"
+            }
+          }
+        }
+      },
+      {
+        "name": "query_data",
+        "description": "Query data from the database (SELECT only for safety)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL query to execute (SELECT statements only)"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "list_tables",
+        "description": "List all tables in the database",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "describe_table",
+        "description": "Get detailed information about a specific table including indexes and constraints",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to describe"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "get_table_sample",
+        "description": "Get a sample of rows from a table",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to sample"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Number of rows to return (default: 10, max: 100)",
+              "default": 10
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "check_certificate_cache",
+        "description": "Check the status of the AWS RDS certificate cache",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "update_data",
+        "description": "Update rows in a table with specified values and conditions",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to update"
+            },
+            "values": {
+              "type": "object",
+              "description": "Object with column names as keys and new values (alias: 'data')"
+            },
+            "data": {
+              "type": "object",
+              "description": "Alias for 'values' — object with column names as keys and new values"
+            },
+            "where": {
+              "type": "object",
+              "description": "Object with column names as keys and values to match for WHERE clause"
+            },
+            "dry_run": {
+              "type": "boolean",
+              "description": "If true, only preview what would be updated without executing",
+              "default": false
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of rows to update (safety limit)",
+              "default": 1000
+            }
+          },
+          "required": [
+            "table_name",
+            "values",
+            "where"
+          ]
+        }
+      },
+      {
+        "name": "delete_data",
+        "description": "Delete rows from a table based on specified conditions",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to delete from"
+            },
+            "where": {
+              "type": "object",
+              "description": "Object with column names as keys and values to match for WHERE clause"
+            },
+            "dry_run": {
+              "type": "boolean",
+              "description": "If true, only preview what would be deleted without executing",
+              "default": false
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of rows to delete (safety limit)",
+              "default": 1000
+            }
+          },
+          "required": [
+            "table_name",
+            "where"
+          ]
+        }
+      },
+      {
+        "name": "insert_data",
+        "description": "Insert new rows into a table",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to insert into"
+            },
+            "data": {
+              "type": "object",
+              "description": "Object with column names as keys and values to insert"
+            }
+          },
+          "required": [
+            "table_name",
+            "data"
+          ]
+        }
+      },
+      {
+        "name": "execute_raw_query",
+        "description": "Execute any SQL query including INSERT, UPDATE, DELETE (use with caution)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "SQL query to execute"
+            },
+            "params": {
+              "type": "array",
+              "description": "Optional array of parameters for parameterized queries",
+              "items": {}
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "count_rows",
+        "description": "Count rows in a table with optional WHERE conditions",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to count rows from"
+            },
+            "where": {
+              "type": "object",
+              "description": "Optional: Object with column names as keys and values to match for WHERE clause"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "table_exists",
+        "description": "Check if a table exists in the database",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to check"
+            }
+          },
+          "required": [
+            "table_name"
+          ]
+        }
+      },
+      {
+        "name": "column_exists",
+        "description": "Check if a column exists in a table",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table"
+            },
+            "column_name": {
+              "type": "string",
+              "description": "Name of the column to check"
+            }
+          },
+          "required": [
+            "table_name",
+            "column_name"
+          ]
+        }
+      },
+      {
+        "name": "get_relationships",
+        "description": "Get foreign key relationships for tables",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Optional: specific table name to get relationships for"
+            }
+          }
+        }
+      },
+      {
+        "name": "create_table",
+        "description": "Create a new table with specified columns",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to create"
+            },
+            "columns": {
+              "type": "array",
+              "description": "Array of column definitions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "nullable": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "primary_key": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "unique": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "default": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type"
+                ]
+              }
+            }
+          },
+          "required": [
+            "table_name",
+            "columns"
+          ]
+        }
+      },
+      {
+        "name": "alter_table",
+        "description": "Modify an existing table structure",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to alter"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "add_column",
+                "drop_column",
+                "rename_column",
+                "alter_column_type"
+              ],
+              "description": "Type of alteration to perform"
+            },
+            "column_name": {
+              "type": "string",
+              "description": "Name of the column (for add/drop/rename/alter)"
+            },
+            "column_type": {
+              "type": "string",
+              "description": "Data type (for add_column or alter_column_type)"
+            },
+            "new_column_name": {
+              "type": "string",
+              "description": "New column name (for rename_column)"
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether column is nullable (for add_column)"
+            },
+            "default_value": {
+              "type": "string",
+              "description": "Default value (for add_column)"
+            }
+          },
+          "required": [
+            "table_name",
+            "action",
+            "column_name"
+          ]
+        }
+      },
+      {
+        "name": "get_connection_status",
+        "description": "Get database connection status and performance metrics",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "14 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "github-advisory",
+    "npm-behavior",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 9.062000000005355,
+  "exchanges": []
+}
