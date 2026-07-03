@@ -23,15 +23,18 @@ _TRAVERSAL_SIGNATURES = [
     "[fonts]", "[extensions]",               # win.ini
 ]
 
-# M1: SQL error keywords that confirm exploitation (error-based SQLi)
+# M1: SQL error keywords that confirm exploitation (error-based SQLi).
+# Must be specific error message patterns — NOT product names like "SQL Server" or
+# short tokens like "ORA-" that appear in documentation content (CS03 aws-docs FP).
 _SQL_ERROR_SIGNATURES = [
     "sqlite3.OperationalError",
     "pg_exception_detail",
     "SQLSTATE",
     "syntax error near",
     "You have an error in your SQL syntax",
-    "ORA-",          # Oracle
-    "SQL Server",    # MSSQL
+    "ORA-00",        # Oracle error codes (ORA-00001 etc) — more specific than bare "ORA-"
+    "Msg 102,",      # MSSQL error format
+    "Unclosed quotation mark",  # MSSQL
 ]
 
 # M2: sanitization signals — presence of these in a reflection response means the
@@ -202,7 +205,9 @@ class CmdInjectionModule(ScanModule):
                                 f"to the filesystem (field: {category}). File content not leaked, "
                                 f"but path traversal is confirmed."
                             )
-                        elif _sql_error_confirmed(text):  # M1: error-based SQLi confirmation
+                        # M1: error-based SQLi — skip for search/echo fields whose responses
+                        # can contain DB error strings as documentation content (CS03 aws-docs FP).
+                        elif param.lower() not in _ECHO_FIELD_NAMES and _sql_error_confirmed(text):
                             severity = Severity.CRITICAL
                             confirmed = True
                             confidence = 92

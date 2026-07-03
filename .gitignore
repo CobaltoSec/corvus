@@ -13,9 +13,12 @@ case-studies/cs01-mcp-ecosystem/%2e*
 case-studies/cs01-mcp-ecosystem/.playwright-mcp/
 case-studies/cs02-mcp-ecosystem/batch-scans/
 # Scan artifact files (path traversal + file write tests)
+.playwright-mcp/
 %00
 %2e*
 ..%2f*
+..%5c*
+%252e*
 product.upg
 test
 *.log

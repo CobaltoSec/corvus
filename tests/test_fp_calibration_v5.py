@@ -210,6 +210,90 @@ async def test_cmd_injection_non_path_param_traversal_echo_still_flagged():
 
 
 # ---------------------------------------------------------------------------
+# M1 — SQL error FP on search/doc tools (CS03 aws-docs calibration)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_cmd_injection_sql_server_in_search_result_no_fp():
+    """M1/CS03: 'SQL Server' appearing in a doc search result must NOT trigger CRITICAL SQLi.
+
+    aws-docs search for '1 AND SLEEP(5)--' returned a page mentioning 'SQL Server' in the
+    documentation content — this generated a CRITICAL FP before this fix.
+    """
+    surface = _surface_with(
+        ("search_docs", "Searches AWS documentation.", {
+            "query": {"type": "string", "description": "Search query."},
+        }, ["query"]),
+    )
+
+    class _DocSearchTransport:
+        async def send_request(self, method: str, params: Any = None) -> dict:
+            if method == "tools/call":
+                return {"content": [{"type": "text", "text": (
+                    "Amazon RDS for SQL Server documentation. "
+                    "You can use SQL Server features with Amazon RDS."
+                )}]}
+            return {}
+
+    findings = await CmdInjectionModule().run(surface, _DocSearchTransport(), None)
+    sql_crit = [f for f in findings if f.severity == Severity.CRITICAL and "query" in f.title]
+    assert not sql_crit, (
+        "SQL Server product name in doc search result must not produce CRITICAL SQLi finding. "
+        f"Got: {[f.title for f in sql_crit]}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_cmd_injection_real_sql_error_on_non_echo_param_flagged():
+    """M1 regression: real SQL error on a non-search param (e.g. 'id') must still be flagged."""
+    surface = _surface_with(
+        ("get_record", "Fetches a database record.", {
+            "id": {"type": "string", "description": "Record identifier."},
+        }, ["id"]),
+    )
+
+    class _SqlErrorTransport:
+        async def send_request(self, method: str, params: Any = None) -> dict:
+            if method == "tools/call":
+                return {"content": [{"type": "text", "text": (
+                    "sqlite3.OperationalError: near \"OR\": syntax error"
+                )}]}
+            return {}
+
+    findings = await CmdInjectionModule().run(surface, _SqlErrorTransport(), None)
+    assert any(f.severity == Severity.CRITICAL for f in findings), (
+        "Genuine sqlite3.OperationalError on a non-echo param should still produce CRITICAL"
+    )
+
+
+@pytest.mark.asyncio
+async def test_cmd_injection_oracle_specific_error_still_flagged():
+    """M1: ORA-00001 (specific Oracle error code) must still be flagged.
+
+    Uses a non-DB tool name so B5 skip doesn't apply.
+    """
+    surface = _surface_with(
+        ("get_user", "Fetches a user record.", {
+            "username": {"type": "string"},
+        }, ["username"]),
+    )
+
+    class _OracleErrorTransport:
+        async def send_request(self, method: str, params: Any = None) -> dict:
+            if method == "tools/call":
+                return {"content": [{"type": "text", "text": (
+                    "ORA-00001: unique constraint violated"
+                )}]}
+            return {}
+
+    findings = await CmdInjectionModule().run(surface, _OracleErrorTransport(), None)
+    assert any(f.severity == Severity.CRITICAL for f in findings), (
+        "ORA-00001 specific Oracle error code should still produce CRITICAL"
+    )
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
