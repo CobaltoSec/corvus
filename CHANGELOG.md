@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-CS04] — 2026-07-03 — Dataset expansion 57→101 unique servers
+
+- **101 MCP servers auditados** — CS04 añade 44 servers únicos nuevos (47 OK, 3 dups de CS01/CS02) via batches D/E/F/G/H/I. Categorías: UI frameworks (Svelte, Flowbite, DaisyUI, Chakra, Taiga, Mantine, ShadCN CLI, Synergy, SAP UI5), news APIs (HN×3, PulseMCP×2), academia (arxiv, pubmed, academic-mcp, Open Library), crypto (CoinGecko), dev-utils (mcp-devutils, devutils-mcp-server, npm-registry, npm-helper), weather (open-meteo×2, dangahagan), finanzas (TradingView, MarketNow, Frankfurter), datos (DuckDB, Excel, pdf-toolkit, mathtools), misc (mcp-web-search, eslint, wiki×2, clarvia, rosetta, cyanheads-git, hero-fe, faker).
+- **979 raw findings** (228C / 101H / 191M / 326L / 90I) — top: sveltejs-mcp (209, 195C), mcp-devutils (168, 30C), lunar-mcp-server (78, 33H). Curación pendiente en RT-CORVUS-CS04-CURATION.
+- **CS04-STATUS.md** — tabla completa 47 servers ranked por findings, guía de curación, patrones FP conocidos como filtro rápido para el bloque siguiente.
+- **public-stats.yaml corregido** — `totals.servers=101`, `totals.raw_findings=1267` (288 CS01-03 + 979 CS04 confirmado). CobaltoSec-Web actualizado: 101 servers / ~1388 findings.
+
 ## [RT-CORVUS-PUBLIC-AUDIT] — 2026-07-03 — Audit público + infraestructura sync docs
 
 - **Audit GHSAs completo** — 21 Corvus GHSAs verificados contra GitHub API. Encontrado: GHSA-pr6r severity MEDIUM→HIGH en DISCLOSURE-PROCESS.md (token exposure es HIGH, confirmado por API). SIGUIENTE.md tenía count 17 (vs 21 real) y 4 CS03 GHSAs listados como "pendientes" cuando ya estaban abiertos — ambos corregidos.
