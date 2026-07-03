@@ -25,8 +25,9 @@ targets:
   - -y
   - nx-mcp
   status: skip
-  notes: Nx monorepo dev tools. SKIP — cuelga buscando workspace Nx, nunca conecta
-    al MCP handshake 58,168/wk.
+  notes: 'Nx monorepo dev tools. SKIP — cuelga buscando workspace Nx, nunca conecta
+    al MCP handshake 58,168/wk. Delta v102: EXT11 HIGH — log level escalation (conf=85%).
+    EXT14 HIGH — race condition hang (conf=72%). GHSA candidato (58k/wk).'
 - name: desktop-commander
   tier: D
   transport: stdio
@@ -35,9 +36,10 @@ targets:
   - -y
   - '@wonderwhy-er/desktop-commander'
   status: skip
-  notes: MCP server for terminal operations and file editing. Terminal + file editing
+  notes: 'MCP server for terminal operations and file editing. Terminal + file editing
     (30+ tools) — huge attack surface 30,359/wk. SKIP — crashes silently on startup
-    (no MCP handshake produced).
+    (no MCP handshake produced). Delta v102: EXT11 HIGH — log level escalation (conf=85%).
+    EXT14 HIGH — race condition hang (conf=72%).'
 - name: drawio-mcp
   tier: D
   transport: stdio
@@ -125,7 +127,8 @@ targets:
   - -y
   - '@ericthered926/duckduckgo-mcp-server'
   status: done
-  notes: DuckDuckGo search integration. Web interaction surface 4,055/wk.
+  notes: 'DuckDuckGo search integration. Web interaction surface 4,055/wk. Delta v102:
+    EXT14 HIGH — race condition hang on cancellation (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 4M 1L
   curation: pending
@@ -137,8 +140,9 @@ targets:
   - -y
   - malicious-mcp-server
   status: done
-  notes: A deliberately malicious MCP server for E2E testing purposes. High attack
-    surface by design 3,967/wk.
+  notes: 'A deliberately malicious MCP server for E2E testing purposes. High attack
+    surface by design 3,967/wk. Delta v102: EXT14 HIGH — race condition hang on cancellation
+    (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 1C 4H 4M 9L 3I
   curation: pending
@@ -163,7 +167,8 @@ targets:
   - -y
   - flightradar-mcp-server
   status: done
-  notes: Flight tracking via Flightradar24 public API. Public API surface 3,625/wk.
+  notes: 'Flight tracking via Flightradar24 public API. Public API surface 3,625/wk.
+    Delta v102: EXT14 HIGH — race condition hang on cancellation (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 1H 2M 1L
   curation: pending
@@ -187,7 +192,8 @@ targets:
   - -y
   - '@cyanheads/pubmed-mcp-server'
   status: done
-  notes: PubMed biomedical literature search. Public API — large schema surface 3,385/wk.
+  notes: 'PubMed biomedical literature search. Public API — large schema surface 3,385/wk.
+    Delta v102: EXT11 HIGH — log level escalation (conf=85%). Update GHSA-m2x9 candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 4H 1M 3L 1I
   curation: pending
@@ -199,7 +205,9 @@ targets:
   - -y
   - '@jpisnice/shadcn-ui-mcp-server'
   status: done
-  notes: shadcn/ui component docs and generation. Schema quality 3,046/wk.
+  notes: 'shadcn/ui component docs and generation. Schema quality 3,046/wk. Delta
+    v102: EXT12 HIGH x3 — prompt injection build-shadcn-page + create-dashboard +
+    create-auth-flow (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 2M 1L 1I
   curation: pending
@@ -223,9 +231,9 @@ targets:
   - -y
   - '@professional-wiki/mediawiki-mcp-server'
   status: skip
-  notes: Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
+  notes: 'Model Context Protocol (MCP) server for MediaWiki. Public API + write surface
     2,844/wk. SKIP — real HTTP calls to Wikipedia per tool probe; consistently exceeds
-    scan timeout.
+    scan timeout. Delta v102: EXT11 HIGH — log level escalation (conf=85%).'
 - name: mantine-mcp-server
   tier: D
   transport: stdio
@@ -258,7 +266,8 @@ targets:
     lab VM 301 (10.13.37.150, lab/lab). ERROR ROOT CAUSE: server requires SSH connection
     to 10.13.37.150 at startup — npx fails if VM 301 is not running. v0.9.x scan (2026-06-29)
     completó con VM running: 2H (execute-command shadow + proto-crash). v1.0.0 scan
-    (2026-07-01) ERROR — VM was off. Retry with: labs/lab.sh up 301.'
+    (2026-07-01) ERROR — VM was off. Retry with: labs/lab.sh up 301. Delta v102: EXT14
+    HIGH — race condition hang on cancellation (conf=72%).'
   last_scanned: '2026-07-01'
   findings_summary: 2H (from v0.9.x scan — see CS02-F18 + CS02-F08)
   curation: done
@@ -323,7 +332,8 @@ targets:
   - -y
   - '@kazuph/mcp-fetch'
   status: done
-  notes: Fetch URL + save images. SSRF + path write 1,729/wk.
+  notes: 'Fetch URL + save images. SSRF + path write 1,729/wk. Delta v102: EXT14 HIGH
+    — race condition hang on cancellation (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 1H 3M 10L
   curation: pending
@@ -433,7 +443,8 @@ targets:
   - -y
   - drawio-mcp-server
   status: skip
-  notes: Draw.io diagram editing. SKIP — abre draw.io UI visible 925/wk.
+  notes: 'Draw.io diagram editing. SKIP — abre draw.io UI visible 925/wk. Delta v102:
+    EXT14 HIGH — race condition hang on cancellation (conf=72%).'
 - name: regle-mcp-server
   tier: D
   transport: stdio
@@ -454,7 +465,9 @@ targets:
   - -y
   - '@get-technology-inc/jamf-docs-mcp-server'
   status: done
-  notes: Jamf MDM documentation server 905/wk.
+  notes: 'Jamf MDM documentation server 905/wk. Delta v102: EXT11 HIGH — log level
+    escalation (conf=85%). EXT12 HIGH x2 — prompt injection jamf_troubleshoot + jamf_setup_guide
+    (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 13M 5L
   curation: pending
@@ -466,7 +479,9 @@ targets:
   - -y
   - european-parliament-mcp-server
   status: done
-  notes: EU Parliament open data. Public API surface 889/wk.
+  notes: 'EU Parliament open data. Public API surface 889/wk. Delta v102: EXT12 HIGH
+    x3 — prompt injection mep_briefing + coalition_analysis + legislative_tracking
+    (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 3M 2L 6I
   curation: pending
@@ -527,7 +542,8 @@ targets:
   - -y
   - '@unified-product-graph/mcp-server'
   status: done
-  notes: Local MCP server for .upg files. Path traversal surface 652/wk.
+  notes: 'Local MCP server for .upg files. Path traversal surface 652/wk. Delta v102:
+    EXT14 HIGH — crash on notifications/cancelled unknown ID (conf=85%).'
   last_scanned: '2026-07-02'
   findings_summary: 1H 1M 1L
   curation: pending
@@ -540,8 +556,9 @@ targets:
   - '@berthojoris/mcp-mysql-server'
   - mysql://root:root@localhost:3306/test
   status: done
-  notes: MySQL per-project permission model. SQL injection surface 636/wk. Requires
-    positional mysql:// URL arg.
+  notes: 'MySQL per-project permission model. SQL injection surface 636/wk. Requires
+    positional mysql:// URL arg. Delta v102: EXT14 HIGH — race condition hang on cancellation
+    (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 8H 17M 11L 3I
   curation: pending
@@ -585,8 +602,9 @@ targets:
   - -y
   - codeloop-mcp-server
   status: done
-  notes: CodeLoop verification, self-repair, and recommendation layer for AI coding
-    agents 390/wk.
+  notes: 'CodeLoop verification, self-repair, and recommendation layer for AI coding
+    agents 390/wk. Delta v102: EXT14 HIGH — crash on notifications/cancelled unknown
+    ID (conf=85%).'
   last_scanned: '2026-07-02'
   findings_summary: 1H 1M 1L
   curation: pending
@@ -598,7 +616,8 @@ targets:
   - -y
   - openapi-mcp-server
   status: done
-  notes: MCP server for interacting with openapisearch.com API 298/wk.
+  notes: 'MCP server for interacting with openapisearch.com API 298/wk. Delta v102:
+    EXT14 HIGH — race condition hang on cancellation (conf=72%).'
   last_scanned: '2026-07-02'
   findings_summary: 1H 3M 1L
   curation: pending

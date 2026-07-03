@@ -16,7 +16,8 @@ targets:
   findings_summary: 5H 4M 1L
   risk_score: 80
   curation: TP
-  notes: Shadow tool pattern + 2 CVEs nuevos OSV (CVE-2025-53110/53109). F79/F80.
+  notes: 'Shadow tool pattern + 2 CVEs nuevos OSV (CVE-2025-53110/53109). F79/F80.
+    Delta v102: EXT14 HIGH — race condition hang on cancellation (conf=72%).'
 - name: server-memory
   tier: A
   transport: stdio
@@ -57,7 +58,9 @@ targets:
   notes: 'Re-scaneado post transport-fix (v0.8.1). 13 tools capturadas. CRITICAL:
     get-env Token Exposure auto-detectado (F11 upgrade). HIGH: response flooding get-env
     (F48). HIGH: echo reflection (FP — by design). F12/F13 resueltos como FP — re-scan
-    no confirma missing-required-fields en echo/get-structured-content.'
+    no confirma missing-required-fields en echo/get-structured-content. Delta v102:
+    EXT11 HIGH — log level escalation to DEBUG (conf=85%). EXT12 HIGH x2 — prompt
+    injection args-prompt + completable-prompt (conf=88%).'
 - name: server-github
   tier: A
   transport: stdio
@@ -128,7 +131,8 @@ targets:
   curation: partial
   notes: 'npm package no existe (@modelcontextprotocol/server-sqlite 404). Correcto:
     uvx mcp-server-sqlite. F29: describe_table SQLi TP. F30: write_query injection
-    FP (by design). F31-F32: schema bypass TP. 8 LOW schema bypass.'
+    FP (by design). F31-F32: schema bypass TP. 8 LOW schema bypass. Delta v102: EXT12
+    HIGH — prompt injection mcp-demo (conf=88%).'
 - name: server-brave-search
   tier: A
   transport: stdio
@@ -158,7 +162,8 @@ targets:
   status: done
   notes: 'HTTP fetch oficial (Python/uvx, no npm). Vector: SSRF, response flood. Corregido
     de npx → uvx. v0.9.0: SSRF bloqueado por whitelist. v1.0.0: SSRF timing bypass
-    detectado (F68) — private-ip lib vulnerable (F15) permite evadir la whitelist.'
+    detectado (F68) — private-ip lib vulnerable (F15) permite evadir la whitelist.
+    Delta v102: EXT12 HIGH — prompt injection fetch (conf=88%).'
   last_scanned: '2026-07-01'
   findings_summary: 1H 2M
   curation: done
@@ -214,7 +219,8 @@ targets:
   - mcp-fetch-server
   status: done
   notes: 'Fetch web con readability/Markdown/JSON/YouTube. F15: private-ip dep vulnerable
-    (SSRF guardia comprometida). 1H TP curado.'
+    (SSRF guardia comprometida). 1H TP curado. Delta v102: EXT14 HIGH — race condition
+    hang on cancellation (conf=72%).'
   last_scanned: '2026-06-30'
   findings_summary: 1H 2M
   curation: TP
@@ -252,8 +258,8 @@ targets:
   - -y
   - n8n-mcp
   status: done
-  notes: 'F18/F59 previos. Re-scan v1.0.1: 9 GHSAs OSV activos (F73-F78) — 6H+3M
-    incluyendo SSRF CVE-2026-39974. Score 100/100. Server más vulnerable del dataset.'
+  notes: 'F18/F59 previos. Re-scan v1.0.1: 9 GHSAs OSV activos (F73-F78) — 6H+3M incluyendo
+    SSRF CVE-2026-39974. Score 100/100. Server más vulnerable del dataset.'
   last_scanned: '2026-07-02'
   findings_summary: 8H 6M 7L
   risk_score: 100
@@ -267,7 +273,8 @@ targets:
   - shell-command-mcp
   status: done
   notes: 'F28: shadow tool execute_command description TP. F56: shadow tool conflicts
-    variant TP (v0.9.0). 2H curados.'
+    variant TP (v0.9.0). 2H curados. Delta v102: EXT11 HIGH — log level escalation
+    to DEBUG (conf=85%).'
   last_scanned: '2026-06-30'
   findings_summary: 2H 2M
   curation: TP
@@ -288,8 +295,9 @@ targets:
   - -y
   - '@notionhq/notion-mcp-server'
   status: skip
-  notes: Necesita NOTION_API_KEY. Servidor oficial Notion. Alta visibilidad — target
-    futuro si conseguimos key trial.
+  notes: 'Necesita NOTION_API_KEY. Servidor oficial Notion. Alta visibilidad — target
+    futuro si conseguimos key trial. Delta v102: EXT14 HIGH — crash on notifications/cancelled
+    unknown ID sin API key (conf=85%). GHSA candidato.'
 - name: tavily-mcp
   tier: B
   transport: stdio
@@ -352,7 +360,7 @@ targets:
   status: done
   notes: 'F42: shell_set_default_workdir injection TP. F43: command_history_query
     injection TP. F58: shell_execute shadow tool TP (v0.9.0). GHSA-7763-c5gf-v5fj
-    disclosed.'
+    disclosed. Delta v102: EXT11 HIGH — log level escalation to DEBUG (conf=85%).'
   last_scanned: '2026-06-30'
   findings_summary: 2H 1M 2I
   curation: TP
@@ -423,7 +431,8 @@ targets:
   - '@benborla29/mcp-server-mysql'
   status: done
   notes: 'F50: undici supply chain TP. F51: sdk cascade FP. Docker mysql:8 en :3306
-    para test. Curado.'
+    para test. Curado. Delta v102: EXT14 HIGH — crash on notifications/cancelled unknown
+    ID (conf=85%). GHSA candidato.'
   last_scanned: '2026-06-30'
   findings_summary: 3H 2M
   curation: partial
