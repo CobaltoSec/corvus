@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-CAL-CS03] — 2026-07-03 — Calibración FP post-CS03 + curación dataset
+
+- **cancellation_probe cascade FP eliminado** — EXT14 HIGH se generaba falsamente cuando `proto_fuzz` mataba el server en módulos anteriores (34/34). Agregado health-check `_server_alive()` al inicio de `run()`: si el server no responde antes del probe, retorna `[]`. Los GHSAs EXT14 (notion/mysql/nx-mcp) vienen de delta scans sin proto_fuzz — todos TP. 16 tests cancellation_probe.
+- **SQL FP calibration v6 (CS03 aws-docs)** — `"SQL Server"` y `"ORA-"` eliminados de `_SQL_ERROR_SIGNATURES`: aparecen en contenido de documentación AWS y generaban CRITICAL falsos. Reemplazados por patrones específicos (`ORA-00`, `Msg 102,`, `Unclosed quotation mark`). Además: skip de `_sql_error_confirmed` para parámetros en `_ECHO_FIELD_NAMES` (search tools retornan docs con contenido arbitrario). 3 tests nuevos en `test_fp_calibration_v5.py` — **671 unit tests pass**.
+- **CS03 dataset expansion curado** — 8 targets nuevos (~116 raw findings). Curación: 39 TP / 3 FP. Highlights: SAP SSRF+injection (GHSA-vrmg), markitdown SSRF 12s timeout (GHSA-frqj, LFI descartado — playwright-mcp artifact), context7 injection reflection (GHSA-8ggf), heroku credential scope creep (GHSA-4r48). 4 GHSAs CS03 abiertos (publish 2026-10-03). Portfolio: **21 GHSAs** (3 published, 18 draft).
+- **Cleanup scan artifacts** — `.playwright-mcp/` + archivos con nombres de payloads path traversal URL-encoded (`%252e*`, `..%5c*`) borrados y agregados a `.gitignore`.
+
 ## [RT-CORVUS-CS02-DELTA] — 2026-07-03 — Delta scan 7 módulos + 6 GHSAs + quality pass
 
 - **Delta scan ejecutado** — 7 módulos faltantes (EXT08-EXT14: completion/logging/prompts-injection/cursor/cancellation + github-advisory/npm-behavior) contra CS01 (20 targets) + CS02 (49 targets). Resultados en `scan-delta-v102/`.
