@@ -63,10 +63,16 @@ case_studies:
     raw_findings: 116
     true_positives: 70  # estimated, full curation pending
     false_positives: 3
+  cs04:
+    servers: 44  # new unique servers (excludes 3 duplicates from CS01/CS02)
+    raw_findings: 1100  # preliminary — full curation pending (2026-07-03)
+    true_positives: null  # not yet curated
+    false_positives: null
+    note: "Batches B/C/D/E/F/G/H/I. Categories: academia, UI frameworks, news APIs, crypto, food, books, dictionary, NASA, weather, dev-utils, web-search"
   totals:
-    servers: 57
-    raw_findings: 288
-    true_positives: 191  # includes CS03 estimate
+    servers: 101
+    raw_findings: 1388  # 288 (CS01-03) + 1100 (CS04 preliminary)
+    true_positives: 191  # CS01-03 curated only; CS04 curation pending
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:

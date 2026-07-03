@@ -1,0 +1,29 @@
+meta:
+  case_study: CS04-I
+  description: OWASP MCP Ecosystem Audit — CS04 Batch I (milestone 100 servers 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Mini-batch para cruzar el hito de 100 unique servers.
+    Objetivo: 1+ éxitos de 2 targets → 100 total unique.
+
+targets:
+
+# SAP UI5 — framework enterprise open-source de SAP
+# Documentación de componentes UI5 web, sin API key
+- name: ui5-mcp-server
+  tier: CS04-I
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ui5/mcp-server'
+
+# Synergy Design System — web component library de Bayern Design
+# componentes basados en Shoelace/lit, sin API key
+- name: synergy-mcp-server
+  tier: CS04-I
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@synergy-design-system/mcp'

@@ -1,0 +1,232 @@
+meta:
+  case_study: CS04-D
+  description: OWASP MCP Ecosystem Audit — CS04 Batch D (research-confirmed no-auth + candidates.yaml subset 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Basado en research manual npm/PyPI. Excluye @cyanheads/* (todos fallaron en CS04-B).
+    Categorías:
+    - Datos financieros públicos (Yahoo Finance, sin auth)
+    - Framework docs públicos (Mastra AI, sin auth)
+    - Weather/clima (NOAA + Open-Meteo npm, sin auth)
+    - Enciclopedias (Wikipedia npm + PyPI, sin auth)
+    - Herramientas científicas (ToolUniverse Harvard, PubMed, Academic, sin auth)
+    - DB local (DuckDB, sin auth)
+    - Design systems / docs
+    - PyPI variantes académicas
+    - Candidatos de candidates.yaml no intentados aún
+
+targets:
+
+# ─── FINANZAS PÚBLICAS ────────────────────────────────────────────────────────
+
+# Yahoo Finance público, sin auth — datos en tiempo real de stocks
+- name: yahoo-finance-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - yahoo-finance-mcp-server
+
+# ─── FRAMEWORK DOCS (PUBLIC URL) ─────────────────────────────────────────────
+
+# 22.6k/wk PulseMCP — Mastra AI TypeScript framework docs, sin auth
+- name: mastra-mcp-docs-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mastra/mcp-docs-server@latest'
+
+# ─── WEATHER / CLIMA ─────────────────────────────────────────────────────────
+
+# Sin auth — NOAA + Open-Meteo combinado, zero credentials
+- name: dangahagan-weather-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@dangahagan/weather-mcp@latest'
+
+# ─── ENCICLOPEDIA ────────────────────────────────────────────────────────────
+
+# Wikipedia REST API pública, sin auth — versión npm
+- name: wikipedia-mcp-npm
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - wikipedia-mcp
+
+# Wikipedia PyPI — Python implementation, sin auth
+- name: wikipedia-mcp-server-pypi
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - wikipedia-mcp-server
+
+# ─── SCIENTIFIC / RESEARCH (PyPI) ────────────────────────────────────────────
+
+# Harvard/MIT — 72.9k PulseMCP — 1000+ life science tools, sin auth
+- name: tooluniverse-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - --refresh
+  - tooluniverse
+
+# PubMed NCBI biomedical search, public API (email opcional), sin auth
+- name: pubmed-search-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - pubmed-search-mcp
+
+# Multi-source academic: Semantic Scholar + arXiv + CrossRef, sin auth
+- name: academic-mcp-pypi
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - academic-mcp
+
+# Lunar calendar computation (sin auth, local calculation)
+- name: lunar-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - lunar-mcp-server
+
+# ─── DATABASE LOCAL ──────────────────────────────────────────────────────────
+
+# DuckDB SQL sobre archivos locales, sin auth
+- name: mcp-server-duckdb
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-duckdb
+  - --db-path
+  - ':memory:'
+
+# ─── DESIGN SYSTEMS / DOCS ───────────────────────────────────────────────────
+
+# 6k/wk — Hero design system (Elysia / Booking.com), sin auth, docs públicos
+- name: hero-fe-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ehrocks/fe-mcp-server'
+
+# 1.5k/wk — PyRosetta protein structure modeling docs, sin auth
+- name: rosetta-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - rosetta-mcp-server
+
+# 2.5k/wk — PaPut memo output, sin auth
+- name: paput-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - paput-mcp
+
+# 8k/wk — Docusaurus plugin MCP server endpoint
+- name: docusaurus-mcp-plugin
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - docusaurus-plugin-mcp-server
+
+# ─── GIT / DEVTOOLS ──────────────────────────────────────────────────────────
+
+# @cyanheads Git MCP (4.6k/wk) — diferente de Python mcp-server-git (CS01)
+# Cyanheads familia falló en CS04-B; git puede ser excepción (no necesita API)
+- name: cyanheads-git-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/git-mcp-server@latest'
+
+# ─── INCIERTOS (posible no-auth, vale probar) ────────────────────────────────
+
+# 10k/wk — Z.AI MCP capabilities, incierto si necesita auth
+- name: zai-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@z_ai/mcp-server'
+
+# 5k/wk — Storybook AI assistant, puede necesitar Storybook corriendo
+- name: storybook-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - storybook-mcp-server
+
+# 2.9k/wk — Kapture browser automation (Chrome extension bridge)
+- name: kapture-mcp
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kapture-mcp
+
+# 2.2k/wk — React Native automation, puede fallar sin env RN
+- name: react-native-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ohah/react-native-mcp-server'
+
+# 1.9k/wk — VibeFrame AI-native video editing
+- name: vibeframe-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vibeframe/mcp-server'
+
+# 1.7k/wk — Glean enterprise search local MCP
+- name: glean-local-mcp-server
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@gleanwork/local-mcp-server'
+
+# 10k/wk — IronBee browser devtools bridge
+- name: ironbee-devtools
+  tier: CS04-D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ironbee-ai/devtools'

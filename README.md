@@ -359,11 +359,11 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across three case studies — 57 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across three case studies — 101 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
 
 | | CS01 | CS02 | CS03 | Combined |
 |---|---|---|---|---|
-| Servers audited | 20 | 29 | 8 | **57** |
+| Servers audited | 20 | 29 | 8 | **101** |
 | True positives | 70 | 51 | ~70 | **~191** |
 | FP rate | 23.1% | 20.3% | ~2.6% | — |
 

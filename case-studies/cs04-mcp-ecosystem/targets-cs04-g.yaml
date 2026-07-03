@@ -1,0 +1,153 @@
+meta:
+  case_study: CS04-G
+  description: OWASP MCP Ecosystem Audit — CS04 Batch G (news/crypto/food/books/meta 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Nuevas categorías no cubiertas en batches anteriores:
+    - Noticias tech (Hacker News public API — múltiples implementaciones)
+    - Criptomonedas (CoinGecko oficial, sin API key)
+    - Comida/nutrición (Open Food Facts, libre)
+    - Libros (Open Library, sin auth)
+    - Diccionario offline (multilingual, 4755 idiomas, sin deps externos)
+    - Meta-MCP (PulseMCP directory, MarketNow skills)
+    - Finanzas fiat (Frankfurter exchange rates, sin auth)
+    - Tool discovery/scanner (clarvia)
+
+targets:
+
+# ─── HACKER NEWS (MÚLTIPLES IMPLEMENTACIONES) ─────────────────────────────────
+
+# hn-mcp — karanb192, "Hacker News MCP Server running (stdio mode)", rate 300req/min
+- name: hn-mcp
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - hn-mcp
+
+# hackernews-mcp — George Nance, georgenance/hackernews-mcp, diferente impl
+- name: hackernews-mcp
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - hackernews-mcp
+
+# mcp-hacker-news — paabloLC, bridge hacia HN official API
+- name: mcp-hacker-news
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-hacker-news
+
+# ─── CRIPTOMONEDAS ───────────────────────────────────────────────────────────
+
+# @coingecko/coingecko-mcp — oficial de CoinGecko, 2 tools: execute+search_docs
+# sin API key (demo tier con rate limits compartidos)
+- name: coingecko-mcp-official
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@coingecko/coingecko-mcp@latest'
+
+# ─── COMIDA / NUTRICIÓN ───────────────────────────────────────────────────────
+
+# openfoodfacts-mcp — base de datos pública, sin auth para lectura
+# requiere User-Agent por política del API, no autenticación real
+- name: openfoodfacts-mcp
+  tier: CS04-G
+  transport: stdio
+  env:
+    OFF_USER_AGENT: "corvus-audit/1.0.0 (security-research@cobalto-sec.tech)"
+  cmd:
+  - npx
+  - -y
+  - openfoodfacts-mcp
+
+# ─── LIBROS ──────────────────────────────────────────────────────────────────
+
+# @geobio/mcp-open-library — Open Library (Internet Archive) API, sin auth
+# tools: get_book_by_title, get_authors, get_book_cover, etc.
+- name: mcp-open-library
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@geobio/mcp-open-library'
+
+# ─── DICCIONARIO ─────────────────────────────────────────────────────────────
+
+# multilingual-dictionary-mcp — offline first, 4755 idiomas, sin API
+# descarga bundle de datos en primer run (ya cacheado en sesión)
+- name: multilingual-dictionary-mcp
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - multilingual-dictionary-mcp
+
+# ─── META-MCP / DISCOVERY ────────────────────────────────────────────────────
+
+# pulsemcp-server — orliesaurus, busca servers en pulsemcp.com (20k+ servers)
+# sin auth, HTTP calls a pulsemcp.com API
+- name: pulsemcp-server
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - pulsemcp-server
+
+# marketnow-mcp — "MarketNow MCP Server running on stdio", skills marketplace
+# 8560+ MCP-compatible skills, agente commerce
+- name: marketnow-mcp
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - marketnow-mcp
+
+# ─── FINANZAS FIAT ────────────────────────────────────────────────────────────
+
+# @easysolutions906/mcp-finance — Frankfurter API (ECB rates), 30+ currencies
+# sin API key, 1h cache, rates from European Central Bank
+- name: mcp-finance-frankfurter
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@easysolutions906/mcp-finance'
+
+# ─── TOOL DISCOVERY / SCANNER ─────────────────────────────────────────────────
+
+# clarvia-mcp-server — tool discovery and quality scanner for MCP servers
+# sin auth, scans/discovers tools via MCP protocol
+- name: clarvia-mcp-server
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - clarvia-mcp-server
+
+# ─── CHESS / JUEGOS ──────────────────────────────────────────────────────────
+
+# chess-mcp — Chess.com public API, stats de jugadores, partidas
+# sin API key, datos públicos de chess.com
+- name: chess-mcp
+  tier: CS04-G
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - chess-mcp

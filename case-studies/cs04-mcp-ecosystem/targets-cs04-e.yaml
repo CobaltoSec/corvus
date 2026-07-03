@@ -1,0 +1,150 @@
+meta:
+  case_study: CS04-E
+  description: OWASP MCP Ecosystem Audit — CS04 Batch E (fixes + new no-auth research 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Fix de packages que fallaron en CS04-D por timeout en primer download.
+    Todos estos ya están pre-cacheados. Nuevos targets de investigación adicional.
+    Regla: NO @cyanheads/* excepto git. NO paquetes con >20MB de deps.
+    Categorías:
+    - Fixes de CS04-D (ahora cacheados: mastra, wikipedia, pubmed, academic, duckdb, lunar)
+    - Nuevas herramientas npm sin auth (npm search, web fetch, calculator, TradingView)
+    - Datos financieros/crypto (TradingView public API, sin key)
+
+targets:
+
+# ─── FIXES DE CS04-D (YA CACHEADOS) ─────────────────────────────────────────
+
+# Mastra AI docs — cacheado, debería iniciar en <10s ahora
+- name: mastra-mcp-docs
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mastra/mcp-docs-server'
+
+# Wikipedia npm — cacheado, confirmed working via manual test
+- name: wikipedia-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - wikipedia-mcp
+
+# PubMed biomedical search — 44 packages cacheados
+- name: pubmed-search-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - pubmed-search-mcp
+
+# Academic multi-source — 72 packages cacheados
+- name: academic-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - academic-mcp
+
+# Wikipedia PyPI — fix: executable name es "wikipedia-mcp" no "wikipedia-mcp-server"
+- name: wikipedia-mcp-pypi
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - --from
+  - wikipedia-mcp-server
+  - wikipedia-mcp
+
+# Lunar calendar — astronomical data pre-descargado
+- name: lunar-mcp-server
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - lunar-mcp-server
+
+# DuckDB SQL local — fix: usar path real (C:\Temp existe en Windows)
+- name: mcp-server-duckdb
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-duckdb
+  - --db-path
+  - 'C:\Users\nicol\AppData\Local\Temp\corvus-test.duckdb'
+
+# ─── WEATHER ─────────────────────────────────────────────────────────────────
+
+# NOAA + Open-Meteo — verificar si se cachea
+- name: dangahagan-weather-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@dangahagan/weather-mcp'
+
+# ─── NPM TOOLING (PUBLIC, SIN AUTH) ──────────────────────────────────────────
+
+# npm search — btwiuse, sin auth, npm registry público
+- name: npm-search-mcp-server
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - npm-search-mcp-server
+
+# npm registry — einfacheente, sin auth (mcp-npm-registry en npm)
+- name: mcp-npm-registry
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-npm-registry
+
+# npm helper — pinkpixel, package management, sin auth
+- name: npm-helper-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@pinkpixel/npm-helper-mcp'
+
+# PulseMCP pulse-fetch — web page fetching, sin auth (optional Firecrawl)
+- name: pulsemcp-pulse-fetch
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@pulsemcp/pulse-fetch'
+
+# ─── CALCULADORA / UTILIDADES ────────────────────────────────────────────────
+
+# wrtnlabs calculator — zero auth, math operations via MCP
+- name: calculator-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@wrtnlabs/calculator-mcp@latest'
+
+# ─── FINANZAS (PUBLIC API, SIN KEY) ──────────────────────────────────────────
+
+# TradingView — 40+ tools, stocks/crypto/forex, sin API key requerido
+- name: tradingview-mcp
+  tier: CS04-E
+  transport: stdio
+  cmd:
+  - uvx
+  - --from
+  - tradingview-mcp-server
+  - tradingview-mcp

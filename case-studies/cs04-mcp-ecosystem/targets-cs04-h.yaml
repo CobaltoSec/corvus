@@ -1,0 +1,148 @@
+meta:
+  case_study: CS04-H
+  description: OWASP MCP Ecosystem Audit — CS04 Batch H (dev-utilities/nasa/weather/search 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Categorías nuevas:
+    - Developer utilities (faker, devutils, pdf+QR, math tools) — local, sin API
+    - Datos espaciales (NASA APOD/Mars/NEO, 2 implementaciones con DEMO_KEY)
+    - Clima (Open-Meteo, free no-key API)
+    - Búsqueda web multi-proveedor (DuckDuckGo/Bing/SearXNG, sin auth)
+    - Document conversion (Microsoft MarkItDown Python wrapper)
+    - Food (Open Food Facts, retry con env var correcto)
+    Objetivo: 8 éxitos → 100 total unique servers
+
+targets:
+
+# ─── GENERACIÓN DE DATOS FICTICIOS / UTILIDADES DEV ──────────────────────────
+
+# faker-mcp-server — Faker.js, 200+ locales, local sin API
+# nombres, emails, fechas, texto, números, colores, etc.
+- name: faker-mcp-server
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - faker-mcp-server
+
+# mcp-devutils — 45 utilidades dev (16 free: UUID, hash, base64, regex, color, etc.)
+# local, sin API, sin deps externas
+- name: mcp-devutils
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-devutils
+
+# devutils-mcp-server — paladini, alternativa a mcp-devutils
+# "DevUtils MCP Server running on stdio", similar feature set pero distinto paquete
+- name: devutils-mcp-server
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - devutils-mcp-server
+
+# ─── PDF / QR / DOCUMENT TOOLS ───────────────────────────────────────────────
+
+# @aryanbv/pdf-toolkit-mcp — 22 herramientas: PDF analysis, QR code gen, etc.
+# local, sin config/API keys/Docker/compiler
+- name: pdf-toolkit-mcp
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@aryanbv/pdf-toolkit-mcp'
+
+# markitdown-mcp-npx — Microsoft MarkItDown Python wrapper
+# convierte PDFs, Word, Excel, HTML → Markdown usando Python
+# npm wrapper que bootstraps Python venv automáticamente
+- name: markitdown-mcp
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - markitdown-mcp-npx
+
+# ─── MATEMÁTICAS / CÁLCULO ────────────────────────────────────────────────────
+
+# mcp-mathtools — herramientas matemáticas (algebra, cálculo, estadística)
+# local, sin API, sin deps externas
+- name: mcp-mathtools
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-mathtools
+
+# ─── NASA / DATOS ESPACIALES ──────────────────────────────────────────────────
+
+# @programcomputer/nasa-mcp-server — NASA public APIs con DEMO_KEY
+# APOD (foto del día), Mars rovers, asteroides NEO, DONKI space weather, EPIC
+# DEMO_KEY: 30 req/hr, 50/day — sin registro requerido
+- name: nasa-mcp-programcomputer
+  tier: CS04-H
+  transport: stdio
+  env:
+    NASA_API_KEY: DEMO_KEY
+  cmd:
+  - npx
+  - -y
+  - '@programcomputer/nasa-mcp-server@latest'
+
+# @iflow-mcp/nasa-mcp-server — segunda implementación NASA, usa DotenvX
+# tools distintos al anterior — otra superficie de ataque
+- name: nasa-mcp-iflow
+  tier: CS04-H
+  transport: stdio
+  env:
+    NASA_API_KEY: DEMO_KEY
+  cmd:
+  - npx
+  - -y
+  - '@iflow-mcp/nasa-mcp-server'
+
+# ─── CLIMA / METEOROLOGÍA ─────────────────────────────────────────────────────
+
+# open-meteo-mcp — Open-Meteo API (completamente libre, sin API key)
+# clima actual, pronósticos 7 días, datos históricos desde 1940
+- name: open-meteo-mcp
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - open-meteo-mcp
+
+# ─── BÚSQUEDA WEB ────────────────────────────────────────────────────────────
+
+# @zhafron/mcp-web-search — multi-provider: DuckDuckGo, Bing, SearXNG
+# fallback automático entre proveedores, extracción de contenido URL
+# sin API keys para DuckDuckGo/SearXNG
+- name: mcp-web-search
+  tier: CS04-H
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@zhafron/mcp-web-search'
+
+# ─── COMIDA / NUTRICIÓN (RETRY) ──────────────────────────────────────────────
+
+# openfoodfacts-mcp — Open Food Facts DB, sin auth real
+# retry desde CS04-G (ERROR previo), OFF_USER_AGENT es política, no autenticación
+- name: openfoodfacts-mcp
+  tier: CS04-H
+  transport: stdio
+  env:
+    OFF_USER_AGENT: "corvus-audit/1.0 security-research@cobalto-sec.tech"
+  cmd:
+  - npx
+  - -y
+  - openfoodfacts-mcp

@@ -1,0 +1,144 @@
+meta:
+  case_study: CS04-F
+  description: OWASP MCP Ecosystem Audit — CS04 Batch F (UI framework docs category 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Categoría: UI Framework / Component Library Documentation MCP servers.
+    Todos los paquetes pre-cacheados y confirmados funcionales antes de correr el batch.
+    Ninguno requiere API key — sirven docs públicos de sus respectivos frameworks.
+    Algunos pueden hacer fetch a URLs externas (superficie SSRF potencial).
+    Resultados esperados: ~10-12 exitosos de 12 targets.
+
+targets:
+
+# ─── SVELTE / SVELTEKIT ───────────────────────────────────────────────────────
+
+# @sveltejs/mcp — Svelte official MCP (mcp.svelte.dev local version)
+# 5k+/wk · local stdio · docs from TypeScript declarations
+- name: sveltejs-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sveltejs/mcp'
+
+# mcp-svelte-docs — spences10, 65 Svelte 5 + SvelteKit definitions
+# local stdio · authoritative TypeScript source · no external calls
+- name: mcp-svelte-docs
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-svelte-docs
+
+# ─── REACT / NEXT.JS ──────────────────────────────────────────────────────────
+
+# react-design-systems-mcp — AWS Cloudscape + future MUI/Chakra/Ant
+# Cloudscape Assistant · FastMCP · no auth
+- name: react-design-systems-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@agentience/react-design-systems-mcp'
+
+# nextjs-docs-mcp — @taiyokimura, Next.js 16 docs static DB, no auth
+# fast: static database of Next.js docs URLs, no external dependencies
+- name: nextjs-docs-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@taiyokimura/nextjs-docs-mcp@latest'
+
+# ─── CHAKRA / MANTINE ─────────────────────────────────────────────────────────
+
+# @chakra-ui/react-mcp — Chakra UI official MCP, v2.1.1
+# props, code examples, theming · no auth
+- name: chakra-ui-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@chakra-ui/react-mcp'
+
+# @mantine/mcp-server — Mantine official, 120+ components, v9.4.1
+# component docs, props, examples · no auth
+- name: mantine-mcp-server
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mantine/mcp-server'
+
+# ─── TAILWIND / FLOWBITE / DAISYUI ───────────────────────────────────────────
+
+# tailwindcss-mcp-server — TailwindCSS utility classes + docs + project assist
+# no auth · works with Vue, Angular, Svelte, React
+- name: tailwindcss-mcp-server
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - tailwindcss-mcp-server
+
+# flowbite-mcp — Flowbite (Tailwind component library) MCP, stdio mode
+# 60+ components · Tailwind-based · no auth
+- name: flowbite-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - flowbite-mcp
+
+# daisyui-mcp-server — matracey, DaisyUI React component docs
+# 60+ daisyUI components · no auth · props/examples/search
+- name: daisyui-mcp-server
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - daisyui-mcp-server
+
+# ─── VUE / VUETIFY ───────────────────────────────────────────────────────────
+
+# @vuetify/mcp — Vuetify official MCP, Vue component library
+# component info + docs · optional API key (no auth required)
+- name: vuetify-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vuetify/mcp'
+
+# ─── SHADCN ───────────────────────────────────────────────────────────────────
+
+# shadcn UI MCP — @jpisnice, multi-framework (React/Vue/Svelte/RN)
+# GitHub-sourced component info · optional GitHub token for higher rate limits
+- name: shadcn-ui-mcp-server
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@jpisnice/shadcn-ui-mcp-server'
+
+# shadcn CLI mcp subcommand — official shadcn registry access
+# browse/search/install shadcn components via MCP · no auth for public registry
+- name: shadcn-cli-mcp
+  tier: CS04-F
+  transport: stdio
+  cmd:
+  - npx
+  - shadcn@latest
+  - mcp
