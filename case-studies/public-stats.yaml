@@ -1,0 +1,89 @@
+# Corvus — Public Stats (source of truth for README + web)
+# Update this file after each block, then run: python scripts/update-public.py
+
+version: "1.0.1"
+tests_unit: 671
+
+modules:
+  total: 34
+  static: 13
+  dynamic: 21
+  static_list:
+    - {name: "tool-poisoning",     owasp: "MCP03", desc: "Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions"}
+    - {name: "shadow-tool",        owasp: "EXT03", desc: "Tool names signaling dangerous operations — namespace squatting, covert chaining, trust hijacking"}
+    - {name: "scope-audit",        owasp: "MCP02", desc: "Credential and PII fields in tool inputSchema — tools that request passwords, tokens, or SSNs"}
+    - {name: "supply-chain",       owasp: "MCP04", desc: "Known-vulnerable npm packages extracted from the server command (npm audit)"}
+    - {name: "supply-chain-python",owasp: "MCP04", desc: "Known-vulnerable Python packages extracted from the server environment (pip list)"}
+    - {name: "osv-supply-chain",   owasp: "MCP04", desc: "Queries OSV.dev API for known vulnerabilities in detected dependencies"}
+    - {name: "github-advisory",    owasp: "MCP04", desc: "Queries GitHub Security Advisories for known vulnerabilities in detected packages"}
+    - {name: "npm-behavior",       owasp: "MCP04", desc: "Queries npm registry for suspicious install scripts (postinstall, preinstall) in detected packages"}
+    - {name: "auth-audit",         owasp: "MCP07", desc: "Tool names and descriptions suggesting missing, optional, or bypassable authentication"}
+    - {name: "log-audit",          owasp: "MCP08", desc: "Tools exposing or tampering with audit logs — anti-forensic techniques or operational data leaks"}
+    - {name: "schema-audit",       owasp: "EXT02", desc: "Weak schema definitions (missing required fields, unconstrained types) that expand the attack surface"}
+    - {name: "resource-uri",       owasp: "EXT05", desc: "Static analysis of resources/list URIs — detects sensitive schemes (file://, env://, exec://)"}
+    - {name: "tool-chaining",      owasp: "EXT03", desc: "Detects tool descriptions that covertly chain additional tool calls or bypass user confirmation"}
+  dynamic_list:
+    - {name: "cmd-injection",      owasp: "MCP05", desc: "Command, path, SQL, and prompt injection payloads per parameter — schema-aware, confirmation-required"}
+    - {name: "token-exposure",     owasp: "MCP01", desc: "Credentials, filesystem paths, stack traces, and tokens leaked in tool responses"}
+    - {name: "ssrf",               owasp: "EXT04", desc: "SSRF via URL/host parameters — probes internal metadata endpoints, measures timing anomalies"}
+    - {name: "endpoint-probe",     owasp: "MCP01", desc: "Path traversal, SSRF, template injection, and credential exposure via resources/read and prompts/get"}
+    - {name: "param-smuggling",    owasp: "EXT01", desc: "Hidden parameter backdoors — appends undeclared params and measures behavior differences"}
+    - {name: "schema-bypass",      owasp: "EXT01", desc: "Whether tools properly reject inputs that violate their declared schema"}
+    - {name: "proto-fuzz",         owasp: "EXT01", desc: "Protocol-level crash testing — unknown methods, oversized method names, null request IDs"}
+    - {name: "batch-dos",          owasp: "EXT01", desc: "Sends JSON-RPC 2.0 batch arrays and oversized payloads to detect crash/DoS conditions"}
+    - {name: "output-encoding",    owasp: "MCP10", desc: "Invisible Unicode in tool outputs — control chars, zero-width chars, bidi overrides"}
+    - {name: "response-flood",     owasp: "MCP10", desc: "Excessively large or repetitive responses that overflow an LLM context window"}
+    - {name: "response-injection", owasp: "MCP10", desc: "Detects injected content (HTML/JS/markdown directives) in benign tool responses"}
+    - {name: "rug-pull",           owasp: "MCP06", desc: "Re-enumerates the server after dynamic testing; diffs to detect tools added, removed, or mutated mid-session"}
+    - {name: "init-audit",         owasp: "MCP07", desc: "Audits the initialize handshake — serverInfo injection chars, protocol version downgrade acceptance"}
+    - {name: "oauth-bypass",       owasp: "MCP07", desc: "Tests HTTP transport endpoints for authentication bypass: missing auth, invalid Bearer, URL-embedded creds"}
+    - {name: "sampling-probe",     owasp: "EXT08", desc: "Detects malicious MCP sampling/createMessage — prompt injection, context exfil, unsolicited calls"}
+    - {name: "elicitation-probe",  owasp: "EXT09", desc: "Detects MCP elicitation/create misuse — credential phishing, sensitive data schemas"}
+    - {name: "completion-probe",   owasp: "EXT10", desc: "Probes MCP completion/complete endpoint for prompt injection via argument context"}
+    - {name: "logging-probe",      owasp: "EXT11", desc: "Tests whether the server allows unauthenticated external log level manipulation"}
+    - {name: "prompts-injection",  owasp: "EXT12", desc: "Detects prompt injection via MCP prompts/get — static patterns + live argument injection"}
+    - {name: "cursor-probe",       owasp: "EXT13", desc: "Tests MCP pagination cursor handling for path traversal, oversized values, and injection"}
+    - {name: "cancellation-probe", owasp: "EXT14", desc: "Tests MCP notifications/cancelled handling for race conditions and crash on unknown requestIds"}
+
+case_studies:
+  cs01:
+    servers: 20
+    raw_findings: 91
+    true_positives: 70
+    false_positives: 21
+    fp_rate: 23.1
+  cs02:
+    servers: 29
+    raw_findings: 81
+    true_positives: 51
+    false_positives: 13
+    fp_rate: 20.3
+  cs03:
+    servers: 8
+    raw_findings: 116
+    true_positives: 70  # estimated, full curation pending
+    false_positives: 3
+  totals:
+    servers: 57
+    raw_findings: 288
+    true_positives: 191  # includes CS03 estimate
+
+# Key ecosystem findings (update manually as new data accumulates)
+key_findings:
+  - "100% of MCP servers tested crash on a 37-byte notifications/cancelled payload with unknown requestId (EXT14) — universal DoS requiring zero authentication"
+  - "37% of servers crash on spec-compliant JSON-RPC batch arrays or oversized method names — reproducible DoS without authentication"
+  - "71% of servers accept arbitrary protocolVersion strings during the initialize handshake — protocol downgrade accepted"
+  - "SSRF confirmed in 3 servers (myclaw-toolkit, @sap-ux/fiori-mcp-server, markitdown-mcp) — internal metadata endpoints reachable from tool parameters"
+  - "Supply chain cascade: @modelcontextprotocol/sdk ≤1.25.1 advisory propagates to the majority of JS-based servers in the ecosystem"
+  - "FP rate reduced from ~40% (v0.5.0, early calibration) to ~7% (CS03, v1.0.1) through 5 calibration iterations"
+
+# GHSAs — queried live from GitHub API by update-public.py
+# Counts below are updated by the script; descriptions are kept here for non-API context
+ghsas:
+  total: 21
+  published: 3
+  draft: 18
+  published_list:
+    - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
+    - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}
+    - {ghsa: "GHSA-3f55-qgq4-f88c", pkg: "server-sequential-thinking",            sev: "MEDIUM", finding: "DoS via oversized JSON-RPC method names (CWE-755)"}

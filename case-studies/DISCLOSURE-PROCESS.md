@@ -178,7 +178,7 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 |-----------------------|--------------------------------------|-------------|-----------------|-------------------|-------------|
 | GHSA-mf64-cgv4-ppcx   | @playwright/mcp                      | HIGH        | pavelfeldman ✅  | draft, 90d        | 2026-09-25  |
 | GHSA-7763-c5gf-v5fj   | mcp-shell-server                     | HIGH        | mako10k ✅       | draft             | 2026-07-25  |
-| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | MEDIUM   | olaservo ✅      | draft             | 2026-07-25  |
+| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | HIGH     | olaservo ✅      | draft             | 2026-07-25  |
 | GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH        | olaservo ✅      | draft             | 2026-07-25  |
 | GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM      | N/A             | **published** ✅   | —           |
 | GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL**| Dusheh ✅        | draft (LFI+SSRF)  | 2026-07-29  |

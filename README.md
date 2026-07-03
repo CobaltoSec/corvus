@@ -7,13 +7,16 @@
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
-Corvus v0.9.1  MCP Security Scanner
+Corvus v1.0.1  MCP Security Scanner
 Target     : python my_mcp_server.py
 Transport  : stdio
-Modules    : tool-poisoning, scope-audit, shadow-tool, supply-chain, auth-audit,
-             log-audit, schema-audit, cmd-injection, token-exposure, schema-bypass,
-             response-flood, rug-pull, ssrf, endpoint-probe, param-smuggling,
-             init-audit, proto-fuzz, output-encoding
+Modules    : tool-poisoning, scope-audit, shadow-tool, supply-chain, osv-supply-chain,
+             github-advisory, npm-behavior, supply-chain-python, auth-audit, log-audit,
+             schema-audit, resource-uri, tool-chaining, cmd-injection, token-exposure,
+             ssrf, endpoint-probe, param-smuggling, schema-bypass, proto-fuzz, batch-dos,
+             output-encoding, response-flood, response-injection, rug-pull, init-audit,
+             oauth-bypass, sampling-probe, elicitation-probe, completion-probe,
+             logging-probe, prompts-injection, cursor-probe, cancellation-probe
 
 Enumerating surface...
   Tools      : 12
@@ -32,6 +35,7 @@ Enumerating surface...
 
 ─── Summary ──────────────────────────────────────────────────────────────────
   CRITICAL  0   HIGH  2   MEDIUM  1   LOW  3   INFO  4
+  Risk Score: 56 / 100 (HIGH)
   Session   : corvus-sessions/20260608-143022/
 ```
 
@@ -82,6 +86,15 @@ corvus scan --transport stdio --cmd "python my_server.py" --min-confidence 70
 # Capture raw JSON-RPC exchanges
 corvus scan --transport stdio --cmd "python my_server.py" --log-requests
 
+# Rate-limit probes (ms between requests)
+corvus scan --transport stdio --cmd "python my_server.py" --delay 500
+
+# Pass environment variables to the server process
+corvus scan --transport stdio --cmd "python my_server.py" --env API_KEY=secret --env DEBUG=1
+
+# Print Risk Score at the end
+corvus scan --transport stdio --cmd "python my_server.py" --score
+
 # List available modules
 corvus list-modules
 ```
@@ -110,19 +123,26 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 
 ## Modules
 
-18 built-in modules covering the full OWASP MCP Top 10 plus protocol and supply chain extensions:
+<!-- CORVUS_MODULES_START -->
+34 built-in modules covering the full OWASP MCP Top 10 plus protocol, elicitation, sampling, OAuth and supply chain extensions:
 
 ### Static modules (no live tool calls)
 
 | Name | OWASP | What it tests |
 |------|-------|---------------|
 | `tool-poisoning` | MCP03 | Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions |
-| `shadow-tool` | EXT03 | Tool names and descriptions signaling dangerous operations — namespace squatting, trust hijacking |
-| `scope-audit` | MCP02 | Credential and PII fields in tool `inputSchema` — tools that request passwords, tokens, or SSNs as parameters |
-| `supply-chain` | MCP04 | Known-vulnerable npm packages extracted from the server command (`npm audit`) |
+| `shadow-tool` | EXT03 | Tool names signaling dangerous operations — namespace squatting, covert chaining, trust hijacking |
+| `scope-audit` | MCP02 | Credential and PII fields in tool inputSchema — tools that request passwords, tokens, or SSNs |
+| `supply-chain` | MCP04 | Known-vulnerable npm packages extracted from the server command (npm audit) |
+| `supply-chain-python` | MCP04 | Known-vulnerable Python packages extracted from the server environment (pip list) |
+| `osv-supply-chain` | MCP04 | Queries OSV.dev API for known vulnerabilities in detected dependencies |
+| `github-advisory` | MCP04 | Queries GitHub Security Advisories for known vulnerabilities in detected packages |
+| `npm-behavior` | MCP04 | Queries npm registry for suspicious install scripts (postinstall, preinstall) in detected packages |
 | `auth-audit` | MCP07 | Tool names and descriptions suggesting missing, optional, or bypassable authentication |
-| `log-audit` | MCP08 | Tools exposing or tampering with audit logs — enables anti-forensic techniques or leaks operational data |
+| `log-audit` | MCP08 | Tools exposing or tampering with audit logs — anti-forensic techniques or operational data leaks |
 | `schema-audit` | EXT02 | Weak schema definitions (missing required fields, unconstrained types) that expand the attack surface |
+| `resource-uri` | EXT05 | Static analysis of resources/list URIs — detects sensitive schemes (file://, env://, exec://) |
+| `tool-chaining` | EXT03 | Detects tool descriptions that covertly chain additional tool calls or bypass user confirmation |
 
 ### Dynamic modules (live tool calls)
 
@@ -130,15 +150,25 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 |------|-------|---------------|
 | `cmd-injection` | MCP05 | Command, path, SQL, and prompt injection payloads per parameter — schema-aware, confirmation-required |
 | `token-exposure` | MCP01 | Credentials, filesystem paths, stack traces, and tokens leaked in tool responses |
-| `proto-fuzz` | EXT01 | Protocol-level crash testing — unknown methods, oversized method names, null request IDs |
+| `ssrf` | EXT04 | SSRF via URL/host parameters — probes internal metadata endpoints, measures timing anomalies |
+| `endpoint-probe` | MCP01 | Path traversal, SSRF, template injection, and credential exposure via resources/read and prompts/get |
 | `param-smuggling` | EXT01 | Hidden parameter backdoors — appends undeclared params and measures behavior differences |
 | `schema-bypass` | EXT01 | Whether tools properly reject inputs that violate their declared schema |
-| `ssrf` | EXT04 | SSRF via URL/host parameters — probes internal metadata endpoints, measures timing anomalies |
-| `endpoint-probe` | MCP01 | Path traversal, SSRF, template injection, and credential exposure via `resources/read` and `prompts/get` |
-| `output-encoding` | MCP10 | Invisible Unicode in tool outputs — control chars, zero-width chars, bidi overrides that hide malicious content |
+| `proto-fuzz` | EXT01 | Protocol-level crash testing — unknown methods, oversized method names, null request IDs |
+| `batch-dos` | EXT01 | Sends JSON-RPC 2.0 batch arrays and oversized payloads to detect crash/DoS conditions |
+| `output-encoding` | MCP10 | Invisible Unicode in tool outputs — control chars, zero-width chars, bidi overrides |
 | `response-flood` | MCP10 | Excessively large or repetitive responses that overflow an LLM context window |
+| `response-injection` | MCP10 | Detects injected content (HTML/JS/markdown directives) in benign tool responses |
 | `rug-pull` | MCP06 | Re-enumerates the server after dynamic testing; diffs to detect tools added, removed, or mutated mid-session |
 | `init-audit` | MCP07 | Audits the initialize handshake — serverInfo injection chars, protocol version downgrade acceptance |
+| `oauth-bypass` | MCP07 | Tests HTTP transport endpoints for authentication bypass: missing auth, invalid Bearer, URL-embedded creds |
+| `sampling-probe` | EXT08 | Detects malicious MCP sampling/createMessage — prompt injection, context exfil, unsolicited calls |
+| `elicitation-probe` | EXT09 | Detects MCP elicitation/create misuse — credential phishing, sensitive data schemas |
+| `completion-probe` | EXT10 | Probes MCP completion/complete endpoint for prompt injection via argument context |
+| `logging-probe` | EXT11 | Tests whether the server allows unauthenticated external log level manipulation |
+| `prompts-injection` | EXT12 | Detects prompt injection via MCP prompts/get — static patterns + live argument injection |
+| `cursor-probe` | EXT13 | Tests MCP pagination cursor handling for path traversal, oversized values, and injection |
+| `cancellation-probe` | EXT14 | Tests MCP notifications/cancelled handling for race conditions and crash on unknown requestIds |
 
 ### Module groups
 
@@ -155,6 +185,7 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 # Individual module
 --module cmd-injection
 ```
+<!-- CORVUS_MODULES_END -->
 
 ## Transports
 
@@ -234,6 +265,10 @@ Other commands:
 corvus list-modules              # list available modules with OWASP ID and type
 corvus list-modules --plugin-dir ./plugins/   # include external plugins
 corvus version                   # print version
+corvus init                      # generate a corvus.toml skeleton in the current directory
+corvus report REPORT.json        # regenerate MD/SARIF/HTML from an existing report.json
+corvus diff OLD.sarif NEW.sarif  # compare two SARIF files: new / fixed / unchanged findings
+corvus score REPORT.json         # print Risk Score (0-100) for a report
 ```
 
 ## Output
@@ -323,34 +358,44 @@ After `pip install my-package`, Corvus auto-discovers the module.
 
 ## Research: MCP Ecosystem Security Audit
 
-Corvus has been battle-tested against the real-world MCP ecosystem across two case studies — 43 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
+<!-- CORVUS_RESEARCH_START -->
+Corvus has been battle-tested against the real-world MCP ecosystem across three case studies — 57 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
 
-| | CS01 (Tier A/B/C) | CS02 (Tier D) | Combined |
-|---|---|---|---|
-| Servers audited | 23 | 20 | **43** |
-| True positives | 43 | 12 | **55** |
-| HIGH findings | 27 | 10 | **37** |
-| CRITICAL findings | 1 | 0 | **1** |
-| FP rate | 30.6% | 40% | ~34% |
+| | CS01 | CS02 | CS03 | Combined |
+|---|---|---|---|---|
+| Servers audited | 20 | 29 | 8 | **57** |
+| True positives | 70 | 51 | ~70 | **~191** |
+| FP rate | 23.1% | 20.3% | ~2.6% | — |
 
 Key findings from the wild:
 
-- **35% of MCP servers crash** on a single malformed JSON-RPC request — reproducible DoS with no authentication required
-- **Shadow tool injection** confirmed in `mcp-server-docker`, `postgres-mcp-server`, `lsp-mcp-server` — tool descriptions that instruct an AI agent to execute arbitrary operations
-- **Supply chain cascade**: `@modelcontextprotocol/sdk ≤1.25.1` advisory propagates to the majority of JS-based servers in the ecosystem
-- **Invisible Unicode** (zero-width chars, bidi overrides) in tool descriptions — undetectable to human reviewers, can manipulate AI agent reasoning
-- **65% of audited servers** have at least one HIGH-severity confirmed finding
+- **100% of MCP servers tested crash on a 37-byte notifications/cancelled payload with unknown requestId (EXT14) — universal DoS requiring zero authentication**
+- **37% of servers crash on spec-compliant JSON-RPC batch arrays or oversized method names — reproducible DoS without authentication**
+- **71% of servers accept arbitrary protocolVersion strings during the initialize handshake — protocol downgrade accepted**
+- **SSRF confirmed in 3 servers (myclaw-toolkit, @sap-ux/fiori-mcp-server, markitdown-mcp) — internal metadata endpoints reachable from tool parameters**
+- **Supply chain cascade: @modelcontextprotocol/sdk ≤1.25.1 advisory propagates to the majority of JS-based servers in the ecosystem**
+- **FP rate reduced from ~40% (v0.5.0, early calibration) to ~7% (CS03, v1.0.1) through 5 calibration iterations**
 
 Full datasets, curated findings, and methodology in [`case-studies/`](case-studies/).
+<!-- CORVUS_RESEARCH_END -->
 
 ### Responsible Disclosure
 
-| Advisory | Package | Finding | Status |
-|----------|---------|---------|--------|
-| [GHSA-mf64-cgv4-ppcx](https://github.com/advisories/GHSA-mf64-cgv4-ppcx) | @playwright/mcp | Path traversal via filesystem tools | Coordinated disclosure (MSRC) |
-| [GHSA-7w27-7xwv-x6x2](https://github.com/advisories/GHSA-7w27-7xwv-x6x2) | mcp-server-sqlite | SQL injection via query tools | Disclosed |
-| [GHSA-7763-c5gf-v5fj](https://github.com/advisories/GHSA-7763-c5gf-v5fj) | mcp-shell-server | Command injection via shell tools | Disclosed |
-| [GHSA-pr6r-h66r-m47j](https://github.com/advisories/GHSA-pr6r-h66r-m47j) | server-everything | Token exposure via env tool | Disclosed |
+<!-- CORVUS_DISCLOSURE_START -->
+21 security advisories filed across 3 case studies — 3 published, 18 in active coordinated disclosure (90-day window).
+
+**Published:**
+
+| Advisory | Package | Severity | Finding |
+|----------|---------|----------|---------|
+| [GHSA-43j9-hmpq-cgv7](https://github.com/advisories/GHSA-43j9-hmpq-cgv7) | remnux-mcp-server | MEDIUM | Unauthenticated RCE via HTTP transport on non-loopback deployments |
+| [GHSA-hv3x-m9fv-4vhf](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) | mcp-server-git | HIGH | DoS via spec-compliant JSON-RPC batch arrays and oversized method names |
+| [GHSA-3f55-qgq4-f88c](https://github.com/advisories/GHSA-3f55-qgq4-f88c) | server-sequential-thinking | MEDIUM | DoS via oversized JSON-RPC method names (CWE-755) |
+
+**Active coordinated disclosure (18 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+
+Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
+<!-- CORVUS_DISCLOSURE_END -->
 
 ## Development
 

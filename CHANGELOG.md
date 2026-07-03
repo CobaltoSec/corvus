@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-PUBLIC-AUDIT] — 2026-07-03 — Audit público + infraestructura sync docs
+
+- **Audit GHSAs completo** — 21 Corvus GHSAs verificados contra GitHub API. Encontrado: GHSA-pr6r severity MEDIUM→HIGH en DISCLOSURE-PROCESS.md (token exposure es HIGH, confirmado por API). SIGUIENTE.md tenía count 17 (vs 21 real) y 4 CS03 GHSAs listados como "pendientes" cuando ya estaban abiertos — ambos corregidos.
+- **README actualizado** — v0.9.1→v1.0.1, 18→34 módulos (tabla completa con los 16 nuevos de V27-V30), research stats CS01+CS02+CS03 (~191 TP / 57 servers), disclosure table 3 published + 18 coordinated (removido "MSRC pending" incorrecto), CLI commands `corvus init/report/diff/score` + flags `--delay/--env/--score`.
+- **CobaltoSec-Web actualizado** — `projectsData.ts`: stats 57 servers / 21 GHSAs, removido "MSRC pending". `toolsData.ts`: tagline "21 advisories" reemplaza "4 CVEs".
+- **Infraestructura sync** — `case-studies/public-stats.yaml` como fuente única de verdad (versión, módulos, stats CS01/02/03, GHSAs published). `scripts/update-public.py` lee YAML + GitHub API → parchea README y web entre comment markers `<!-- CORVUS_xxx_START/END -->`.
+- **Cierre skill actualizado** — P5b (sync docs públicos, corre update-public.py) + P5c (repos públicos, incluye CobaltoSec-Web). CobaltoSec CLAUDE.md: nuevo bloque "Repo CobaltoSec-Web" en la sección de repos públicos.
+
 ## [RT-CORVUS-CAL-CS03] — 2026-07-03 — Calibración FP post-CS03 + curación dataset
 
 - **cancellation_probe cascade FP eliminado** — EXT14 HIGH se generaba falsamente cuando `proto_fuzz` mataba el server en módulos anteriores (34/34). Agregado health-check `_server_alive()` al inicio de `run()`: si el server no responde antes del probe, retorna `[]`. Los GHSAs EXT14 (notion/mysql/nx-mcp) vienen de delta scans sin proto_fuzz — todos TP. 16 tests cancellation_probe.
