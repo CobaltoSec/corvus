@@ -28,6 +28,8 @@ targets:
   notes: 'Nx monorepo dev tools. SKIP — cuelga buscando workspace Nx, nunca conecta
     al MCP handshake 58,168/wk. Delta v102: EXT11 HIGH — log level escalation (conf=85%).
     EXT14 HIGH — race condition hang (conf=72%). GHSA candidato (58k/wk).'
+  ghsa_id: GHSA-m9p4-rqc7-2fqx
+  curation: TP
 - name: desktop-commander
   tier: D
   transport: stdio
@@ -196,7 +198,7 @@ targets:
     Delta v102: EXT11 HIGH — log level escalation (conf=85%). Update GHSA-m2x9 candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 4H 1M 3L 1I
-  curation: pending
+  curation: TP
 - name: shadcn-ui-mcp-server
   tier: D
   transport: stdio
@@ -210,7 +212,8 @@ targets:
     create-auth-flow (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 2M 1L 1I
-  curation: pending
+  curation: TP
+  ghsa_id: GHSA-q974-p8xv-f7c7
 - name: mcp-server-hotnews
   tier: D
   transport: stdio
@@ -470,7 +473,8 @@ targets:
     (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 13M 5L
-  curation: pending
+  curation: TP
+  ghsa_id: GHSA-rqqv-9rxr-gj2h
 - name: european-parliament-mcp-server
   tier: D
   transport: stdio
@@ -484,7 +488,8 @@ targets:
     (conf=88%). GHSA candidato.'
   last_scanned: '2026-07-02'
   findings_summary: 1H 3M 2L 6I
-  curation: pending
+  curation: TP
+  ghsa_id: GHSA-qc46-wfh2-238g
 - name: fetch-url-mcp
   tier: D
   transport: stdio

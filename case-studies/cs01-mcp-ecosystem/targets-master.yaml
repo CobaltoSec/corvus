@@ -298,6 +298,8 @@ targets:
   notes: 'Necesita NOTION_API_KEY. Servidor oficial Notion. Alta visibilidad — target
     futuro si conseguimos key trial. Delta v102: EXT14 HIGH — crash on notifications/cancelled
     unknown ID sin API key (conf=85%). GHSA candidato.'
+  ghsa_id: GHSA-gpm5-mj27-94gp
+  curation: TP
 - name: tavily-mcp
   tier: B
   transport: stdio
@@ -435,4 +437,5 @@ targets:
     ID (conf=85%). GHSA candidato.'
   last_scanned: '2026-06-30'
   findings_summary: 3H 2M
-  curation: partial
+  curation: TP
+  ghsa_id: GHSA-6j6r-pf9m-gqxf

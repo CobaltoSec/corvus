@@ -149,6 +149,12 @@ echo '{"state": "published"}' | \
 | KyrieTangSheng/mcp-server-nationalparks     | KyrieTangSheng      | ✅       | No  |
 | cyanheads/pubmed-mcp-server                 | cyanheads           | ✅       | No  |
 | idachev/mcp-javadc                          | idachev             | ✅       | No  |
+| nrwl/nx-console (nx-mcp)                    | vsavkin             | ✅       | No  |
+| Jpisnice/shadcn-ui-mcp-server               | Jpisnice            | ✅       | No  |
+| Hack23/European-Parliament-MCP-Server       | pethers             | ✅       | No  |
+| GET-Technology-Inc/jamf-docs-mcp-server     | h1431532403240      | ✅       | No  |
+| makenotion/notion-mcp-server                | mquan               | ✅       | No  |
+| benborla/mcp-server-mysql                   | benborla            | ✅       | No  |
 
 **Cómo encontrar maintainer:** `npm show <package> repository.url` → extrae el GitHub username del repo.
 
@@ -181,3 +187,9 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅| draft            | 2026-08-01  |
 | GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅     | draft            | 2026-08-01  |
 | GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅       | draft            | 2026-08-01  |
+| GHSA-m9p4-rqc7-2fqx   | nx-mcp                               | HIGH        | vsavkin ✅       | draft            | 2026-08-01  |
+| GHSA-q974-p8xv-f7c7   | @jpisnice/shadcn-ui-mcp-server       | HIGH        | Jpisnice ✅      | draft            | 2026-08-01  |
+| GHSA-qc46-wfh2-238g   | european-parliament-mcp-server       | HIGH        | pethers ✅       | draft            | 2026-08-01  |
+| GHSA-rqqv-9rxr-gj2h   | @get-technology-inc/jamf-docs-mcp-server | HIGH    | h1431532403240 ✅| draft            | 2026-08-01  |
+| GHSA-gpm5-mj27-94gp   | @notionhq/notion-mcp-server          | HIGH        | mquan ✅         | draft            | 2026-08-01  |
+| GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅      | draft            | 2026-08-01  |
