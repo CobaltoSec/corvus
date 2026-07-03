@@ -203,3 +203,12 @@ async def test_server_alive_returns_false_on_exception():
     t.send_request = AsyncMock(side_effect=Exception("connection lost"))
     alive = await _server_alive(t)
     assert alive is False
+
+
+@pytest.mark.asyncio
+async def test_module_skips_when_server_already_dead():
+    """Server dead before probe (e.g. from prior proto_fuzz) → no EXT14 cascade FP."""
+    t = _stdio_transport()
+    t.send_request = AsyncMock(side_effect=Exception("server already dead"))
+    findings = await CancellationProbeModule().run(_surface(), t, _session())
+    assert findings == []

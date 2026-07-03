@@ -79,6 +79,13 @@ class CancellationProbeModule(ScanModule):
 
         findings: list[Finding] = []
 
+        # Pre-check: confirm server is alive before probing.
+        # cancellation_probe runs last — proto_fuzz / batch_dos may have already
+        # killed the server. Without this guard, EXT14 HIGH cascades from those
+        # crashes rather than from cancellation handling.
+        if not await _server_alive(transport):
+            return []
+
         # Probe 1 — cancel non-existent request
         cancel_msg = {
             "jsonrpc": "2.0",

@@ -1,0 +1,141 @@
+meta:
+  case_study: CS02-EXT
+  description: OWASP MCP Ecosystem Audit — CS02 Expansion batch (nuevos targets, 2026-07-03)
+  corvus_version: 1.0.1
+  notes: Nuevos targets de candidates.yaml no escaneados aun. Foco en alta descarga y superficie interesante.
+
+targets:
+# 32k/wk — slack integration, "no auth needed"
+- name: slack-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - slack-mcp-server
+
+# 17k/wk — web scraping actors, SSRF surface
+- name: apify-actors-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@apify/actors-mcp-server'
+
+# 13k/wk — blockchain API, injection surface
+- name: alchemy-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@alchemy/mcp-server'
+
+# 12k/wk — BrowserStack test automation
+- name: browserstack-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@browserstack/mcp-server'
+
+# 11k/wk — security tool (ironic to audit), likely has interesting permissions
+- name: aikidosec-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@aikidosec/mcp'
+
+# 7k/wk — ArgoCD K8s CI/CD, deployment commands surface
+- name: argocd-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - argocd-mcp
+
+# 7k/wk — feature flags, experiment injection
+- name: growthbook-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@growthbook/mcp'
+
+# 6k/wk — Heroku platform, deployment + env exposure
+- name: heroku-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@heroku/mcp-server'
+
+# 6k/wk — SEO data API, large schema surface
+- name: dataforseo-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - dataforseo-mcp-server
+
+# 4k/wk — Shopify Polaris docs, likely works without auth
+- name: polaris-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - polaris-mcp-server
+
+# 3.8k/wk — knowledge base retrieval
+- name: ragieai-mcp-server
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ragieai/mcp-server'
+
+# 3.2k/wk — Knip code analysis (offline tool, no auth)
+- name: knip-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@knip/mcp'
+
+# 2.3k/wk — Trello project management
+- name: mcp-server-trello
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@delorenj/mcp-server-trello'
+
+# 1.5k/wk — email IMAP/SMTP, credential exposure
+- name: agentmail-mcp
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agentmail-mcp
+
+# 1.5k/wk — generic "mcp-server" package, unknown surface
+- name: mcp-server-generic
+  tier: D
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server

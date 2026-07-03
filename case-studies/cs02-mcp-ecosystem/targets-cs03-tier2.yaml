@@ -1,0 +1,123 @@
+meta:
+  case_study: CS03
+  description: OWASP MCP Ecosystem Audit — CS03 High-Value targets (2026-07-03)
+  corvus_version: 1.0.1
+  notes: Nuevos targets de alta descarga descubiertos por investigacion. Mezcla auth/no-auth — static modules y proto attacks funcionan igual.
+
+targets:
+# 546k/wk — context7 docs retrieval, NO auth required
+- name: context7-mcp
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@upstash/context7-mcp'
+
+# 103k/wk — SAP Fiori enterprise dev tools, NO auth required
+- name: sap-fiori-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sap-ux/fiori-mcp-server'
+
+# 102k/wk — Microsoft Azure resources, auth requerida pero static modules OK
+- name: azure-mcp
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@azure/mcp'
+
+# 77k/wk — GitLab API proxy, auth parcial, grandes schema surface
+- name: gitlab-mcp
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@zereight/mcp-gitlab'
+
+# 73k/wk — Sentry error tracking, auth requerida pero tool schema visible
+- name: sentry-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sentry/mcp-server'
+
+# 64k/wk — Supabase PostgreSQL + auth bypass + SQL injection surface
+- name: supabase-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@supabase/mcp-server-supabase'
+
+# 22k/wk — Kubernetes management, shell injection surface
+- name: kubernetes-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kubernetes-mcp-server
+
+# 22k/wk — ClickUp task management
+- name: clickup-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@taazkareem/clickup-mcp-server'
+
+# 12k/wk — HubSpot CRM, 60+ tools, large attack surface
+- name: hubspot-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@hubspot/mcp-server'
+
+# 12k/wk — Kubernetes (second package, distinct implementation)
+- name: mcp-server-kubernetes
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-kubernetes
+
+# 7.4k/wk — Echo/reflection server, baseline proto testing, NO auth
+- name: mcp-echo-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-echo-server
+
+# 4.4k/wk — Atlassian Jira/Confluence, 40+ tools, JQL injection
+- name: mcp-atlassian
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-atlassian
+
+# 128k/wk — device automation (iOS/Android sim), NO cloud auth
+- name: agent-device
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agent-device

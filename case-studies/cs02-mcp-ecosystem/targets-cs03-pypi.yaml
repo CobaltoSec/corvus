@@ -1,0 +1,38 @@
+meta:
+  case_study: CS03-PyPI
+  description: OWASP MCP Ecosystem Audit — CS03 Python/uvx targets (2026-07-03)
+  corvus_version: 1.0.1
+  notes: Targets descubiertos en PyPI. markitdown-mcp (LFI/SSRF potencial) + AWS docs (SSRF) son prioridad.
+
+targets:
+# 337k/wk — AWS official docs server, NO auth, SSRF via read_documentation
+- name: aws-documentation-mcp-server
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.aws-documentation-mcp-server@latest'
+
+# 38k/wk — Microsoft markitdown, NO auth, LFI via file:// URI
+- name: markitdown-mcp
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - markitdown-mcp
+
+# 48k/wk — AWS CloudWatch, static modules OK sin credentials
+- name: cloudwatch-mcp-server
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.cloudwatch-mcp-server@latest'
+
+# 25k/wk — AWS EKS cluster management, static modules OK
+- name: eks-mcp-server
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.eks-mcp-server@latest'

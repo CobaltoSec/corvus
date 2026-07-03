@@ -193,3 +193,7 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-rqqv-9rxr-gj2h   | @get-technology-inc/jamf-docs-mcp-server | HIGH    | h1431532403240 ✅| draft            | 2026-08-01  |
 | GHSA-gpm5-mj27-94gp   | @notionhq/notion-mcp-server          | HIGH        | mquan ✅         | draft            | 2026-08-01  |
 | GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅      | draft            | 2026-08-01  |
+| GHSA-vrmg-6pw3-qwfg   | @sap-ux/fiori-mcp-server             | HIGH        | IainSAP + mikicvi-SAP ✅ | draft CS03  | 2026-10-03  |
+| GHSA-frqj-945w-4qp2   | markitdown-mcp                       | HIGH        | afourney ✅              | draft CS03  | 2026-10-03  |
+| GHSA-8ggf-fm7g-7pxf   | @upstash/context7-mcp                | MEDIUM      | enesgules + fahreddinozcan ✅ | draft CS03 | 2026-10-03  |
+| GHSA-4r48-4m95-6rm8   | @heroku/mcp-server                   | HIGH        | justinwilaby + sbosio ✅     | draft CS03 | 2026-10-03  |

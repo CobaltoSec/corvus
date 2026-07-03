@@ -626,3 +626,140 @@ targets:
   last_scanned: '2026-07-02'
   findings_summary: 1H 3M 1L
   curation: pending
+
+# CS03 — Expansion batch (2026-07-03)
+- name: heroku-mcp-server
+  tier: E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@heroku/mcp-server'
+  status: done
+  notes: 'Heroku platform MCP 6,309/wk. 33 tools. pg_psql scope creep (credential field
+    in inputSchema). deploy_one_off_dyno shadow tool (arbitrary shell exec via Heroku
+    dyno). 3x proto crash (oversized/nested/string). EXT14 cancellation crash.'
+  last_scanned: '2026-07-03'
+  findings_summary: 4H 2M 1L 2I
+  risk_score: 56
+  curation: pending
+
+- name: knip-mcp
+  tier: E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@knip/mcp'
+  status: done
+  notes: 'Knip code analysis tool 3,174/wk. 2 tools, 15 resources, 1 prompt. Oversized
+    descriptions (1020 + 1760 chars) — potential hidden instruction injection. Protocol
+    version downgrade, null ID accepted, string params crash, EXT14 cancellation crash.'
+  last_scanned: '2026-07-03'
+  findings_summary: 1H 4M 1L 2I
+  risk_score: 28
+  curation: pending
+
+- name: agentmail-mcp
+  tier: E
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agentmail-mcp
+  status: done
+  notes: 'AgentMail email agent 1,461/wk. 11 tools. Protocol version downgrade, null
+    ID accepted, string params crash, EXT14 cancellation crash. Surface minimal pero
+    sistemática.'
+  last_scanned: '2026-07-03'
+  findings_summary: 1H 2M 1L 2I
+  risk_score: 20
+  curation: pending
+
+# CS03 — Tier 2 high-value expansion (2026-07-03)
+- name: context7-mcp
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@upstash/context7-mcp'
+  status: done
+  notes: 'Upstash Context7 documentation retrieval 546,432/wk — NO AUTH. 2 tools.
+    query-docs.libraryId reflects SQL injection payload (HIGH, conf=85%). Oversized
+    description 2006 chars. Protocol downgrade, EXT14 crash. GHSA candidate.'
+  last_scanned: '2026-07-03'
+  findings_summary: 2H 3M 5L 1I
+  risk_score: 40
+  curation: pending
+
+- name: sap-fiori-mcp-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sap-ux/fiori-mcp-server'
+  status: done
+  notes: 'SAP Fiori dev tools 103,715/wk — NO AUTH. 9 tools. SSRF timeout via download_odata_service_metadata.servicePath
+    → 169.254.169.254 (AWS metadata). Injection reflected: execute_functionality.functionalityId
+    (cmd "; id"), get_functionality_details.functionalityId ("${7*7}"). Tool chaining
+    forzado 3-step (list→get→execute). 5 tool chaining findings. 4 injection HIGH.
+    Score 100/100. GHSA candidate CRÍTICO.'
+  last_scanned: '2026-07-03'
+  findings_summary: 7H 21M 21L 1I
+  risk_score: 100
+  curation: pending
+
+- name: mcp-echo-server
+  tier: CS03
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-echo-server
+  status: done
+  notes: 'Echo/reflection baseline server 7,399/wk. Prompt injection reflected (by
+    design). Protocol downgrade, null ID, EXT14 crash. Baseline reference para Corvus
+    injection detection validation.'
+  last_scanned: '2026-07-03'
+  findings_summary: 2H 2M 2L 1I
+  risk_score: 34
+  curation: pending
+
+# CS03 — PyPI batch (2026-07-03)
+- name: aws-documentation-mcp-server
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.aws-documentation-mcp-server@latest'
+  status: done
+  notes: 'AWS Documentation MCP 337k/wk — NO AUTH. 4 tools. CALIBRATION NOTE: 2 CRITICALs
+    son FP — CORVUS-007 (SQL injection) y CORVUS-011 (SSRF) son falsos positivos porque
+    search_documentation retorna docs textuales que contienen keywords SQL/metadata,
+    no ejecuta SQL ni hace requests externos. Real: 2H (proto crash oversized method
+    + EXT14), 4M (desc length + proto downgrade), 7L. Score real ~30. Revela gap de
+    calibración Corvus en contextos de search/documentation APIs.'
+  last_scanned: '2026-07-03'
+  findings_summary: 2CRIT(FP) 2H 4M 7L 1I
+  risk_score: 30
+  curation: pending
+  fp_notes: 'CORVUS-007(SQL-FP) CORVUS-011(SSRF-FP) — search results contain keywords,
+    no outbound requests confirmed'
+
+- name: markitdown-mcp
+  tier: CS03-PyPI
+  transport: stdio
+  cmd:
+  - uvx
+  - markitdown-mcp
+  status: done
+  notes: 'Microsoft markitdown 38k/wk — NO AUTH. 1 tool (convert_to_markdown). SSRF
+    timeout confirmado: convert_to_markdown.uri → http://169.254.169.254/latest/meta-data/
+    timed out 12s (server hace el request). LFI via file:// potencial (library soporta
+    file:// URIs) — no verificado. Proto crash x3 + EXT14. GHSA candidate HIGH.'
+  last_scanned: '2026-07-03'
+  findings_summary: 3H 2M 1L 1I
+  risk_score: 38
+  curation: pending
