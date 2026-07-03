@@ -1,0 +1,423 @@
+{
+  "target": "npx -y @jpisnice/shadcn-ui-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "shadcn-ui-mcp-server",
+    "server_version": "2.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_component",
+        "description": "Get the source code for a specific shadcn/ui v4 component",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentName": {
+              "type": "string",
+              "description": "Name of the shadcn/ui component (e.g., \"accordion\", \"button\")"
+            }
+          },
+          "required": [
+            "componentName"
+          ]
+        }
+      },
+      {
+        "name": "get_component_demo",
+        "description": "Get demo code illustrating how a shadcn/ui v4 component should be used",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentName": {
+              "type": "string",
+              "description": "Name of the shadcn/ui component (e.g., \"accordion\", \"button\")"
+            }
+          },
+          "required": [
+            "componentName"
+          ]
+        }
+      },
+      {
+        "name": "list_components",
+        "description": "Get all available shadcn/ui v4 components",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_component_metadata",
+        "description": "Get metadata for a specific shadcn/ui v4 component",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "componentName": {
+              "type": "string",
+              "description": "Name of the shadcn/ui component (e.g., \"accordion\", \"button\")"
+            }
+          },
+          "required": [
+            "componentName"
+          ]
+        }
+      },
+      {
+        "name": "get_directory_structure",
+        "description": "Get the directory structure of the shadcn-ui v4 repository",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path within the repository (default: v4 registry)"
+            },
+            "owner": {
+              "type": "string",
+              "description": "Repository owner (default: \"shadcn-ui\")"
+            },
+            "repo": {
+              "type": "string",
+              "description": "Repository name (default: \"ui\")"
+            },
+            "branch": {
+              "type": "string",
+              "description": "Branch name (default: \"main\")"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_block",
+        "description": "Get source code for a specific shadcn/ui v4 block (e.g., calendar-01, dashboard-01)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "blockName": {
+              "type": "string",
+              "description": "Name of the block (e.g., \"calendar-01\", \"dashboard-01\", \"login-02\")"
+            },
+            "includeComponents": {
+              "type": "boolean",
+              "description": "Whether to include component files for complex blocks (default: true)"
+            }
+          },
+          "required": [
+            "blockName"
+          ]
+        }
+      },
+      {
+        "name": "list_blocks",
+        "description": "Get all available shadcn/ui v4 blocks with categorization",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Filter by category (calendar, dashboard, login, sidebar, products)"
+            }
+          }
+        }
+      },
+      {
+        "name": "apply_theme",
+        "description": "Apply a TweakCN theme preset to the project",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query for theme (e.g., 'cyberpunk', 'modern')"
+            },
+            "presetId": {
+              "type": "string",
+              "description": "Specific preset ID if known"
+            },
+            "tailwindVersion": {
+              "type": "string",
+              "enum": [
+                "3",
+                "4"
+              ],
+              "description": "Tailwind CSS version (default: '4')"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "description": "If true, returns preview instead of writing files"
+            }
+          }
+        }
+      },
+      {
+        "name": "list_themes",
+        "description": "List available tweakcn themes",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_theme",
+        "description": "Get details of a specific tweakcn theme",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "themeName": {
+              "type": "string",
+              "description": "Name or ID of the theme to retrieve"
+            }
+          },
+          "required": [
+            "themeName"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "resource:get_components",
+        "name": "get_components",
+        "description": "List of available shadcn/ui components that can be used in the project",
+        "mime_type": null
+      },
+      {
+        "uri": "resource:get_theme_metadata",
+        "name": "get_theme_metadata",
+        "description": "Returns metadata about the currently configured theme",
+        "mime_type": null
+      }
+    ],
+    "prompts": [
+      {
+        "name": "build-shadcn-page",
+        "description": "Generate a complete shadcn/ui page using v4 components and blocks",
+        "arguments": [
+          {
+            "name": "pageType",
+            "description": "Type of page to build (dashboard, login, calendar, sidebar, products, custom)",
+            "required": true
+          },
+          {
+            "name": "features",
+            "description": "Specific features or components needed (comma-separated)"
+          },
+          {
+            "name": "layout",
+            "description": "Layout preference (sidebar, header, full-width, centered)"
+          },
+          {
+            "name": "style",
+            "description": "Design style (minimal, modern, enterprise, creative)"
+          }
+        ]
+      },
+      {
+        "name": "create-dashboard",
+        "description": "Create a comprehensive dashboard using shadcn/ui v4 blocks and components",
+        "arguments": [
+          {
+            "name": "dashboardType",
+            "description": "Type of dashboard (analytics, admin, user, project, sales)",
+            "required": true
+          },
+          {
+            "name": "widgets",
+            "description": "Dashboard widgets needed (charts, tables, cards, metrics)"
+          },
+          {
+            "name": "navigation",
+            "description": "Navigation style (sidebar, top-nav, breadcrumbs)"
+          }
+        ]
+      },
+      {
+        "name": "create-auth-flow",
+        "description": "Generate authentication pages using shadcn/ui v4 login blocks",
+        "arguments": [
+          {
+            "name": "authType",
+            "description": "Authentication type (login, register, forgot-password, two-factor)",
+            "required": true
+          },
+          {
+            "name": "providers",
+            "description": "Auth providers (email, google, github, apple)"
+          },
+          {
+            "name": "features",
+            "description": "Additional features (remember-me, social-login, validation)"
+          }
+        ]
+      },
+      {
+        "name": "optimize-shadcn-component",
+        "description": "Optimize or enhance existing shadcn/ui components with best practices",
+        "arguments": [
+          {
+            "name": "component",
+            "description": "Component name to optimize",
+            "required": true
+          },
+          {
+            "name": "optimization",
+            "description": "Type of optimization (performance, accessibility, responsive, animations)"
+          },
+          {
+            "name": "useCase",
+            "description": "Specific use case or context for the component"
+          }
+        ]
+      },
+      {
+        "name": "create-data-table",
+        "description": "Create advanced data tables with shadcn/ui components",
+        "arguments": [
+          {
+            "name": "dataType",
+            "description": "Type of data to display (users, products, orders, analytics)",
+            "required": true
+          },
+          {
+            "name": "features",
+            "description": "Table features (sorting, filtering, pagination, search, selection)"
+          },
+          {
+            "name": "actions",
+            "description": "Row actions (edit, delete, view, custom)"
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP04",
+      "severity": "medium",
+      "title": "Supply Chain — 'uuid' has moderate vulnerability (no CVE assigned)",
+      "description": "Package 'uuid' (dependency of '@jpisnice/shadcn-ui-mcp-server') has a known moderate vulnerability. Solo aplicable a servidores npm vía stdio. HTTP transport: no analizable.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "uuid@<11.1.1 — no CVE assigned — fix: 1.0.2",
+      "remediation": "Update 'uuid' to 1.0.2.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'apply_theme' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "apply_theme",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "8 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 56.51600000000326,
+  "exchanges": []
+}

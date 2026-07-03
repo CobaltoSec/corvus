@@ -1,0 +1,504 @@
+{
+  "target": "npx -y faker-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "faker-mcp-server",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "generate-person",
+        "description": "Generates fake person data including names, emails, phone numbers, and addresses",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "description": "Number of person records to generate"
+            },
+            "locale": {
+              "type": "string",
+              "enum": [
+                "en",
+                "fr",
+                "de",
+                "es",
+                "ja"
+              ],
+              "default": "en",
+              "description": "Locale for generated data"
+            },
+            "seed": {
+              "type": "number",
+              "description": "Optional seed for reproducible generation"
+            },
+            "includeAddress": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to include address information"
+            },
+            "includePhone": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to include phone number"
+            },
+            "includeDateOfBirth": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to include date of birth"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "generate-company",
+        "description": "Generates fake company data including names, industries, contact information, and addresses",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "description": "Number of company records to generate"
+            },
+            "locale": {
+              "type": "string",
+              "enum": [
+                "en",
+                "fr",
+                "de",
+                "es",
+                "ja"
+              ],
+              "default": "en",
+              "description": "Locale for generated data"
+            },
+            "seed": {
+              "type": "number",
+              "description": "Optional seed for reproducible generation"
+            },
+            "includeAddress": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to include address information"
+            },
+            "includeWebsite": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to include website URL"
+            },
+            "includePhone": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to include phone number"
+            },
+            "includeFoundedYear": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to include founded year"
+            },
+            "includeEmployeeCount": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to include employee count"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "generate-dataset",
+        "description": "Generate a structured dataset with multiple related entities and referential integrity. Supports person, company, and custom entity types with one-to-many and many-to-many relationships. Perfect for creating test databases, mock APIs, and complex data scenarios.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "count": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10000
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "person",
+                          "company",
+                          "custom"
+                        ]
+                      },
+                      "fields": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "relationships": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "references": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "one-to-many",
+                                "many-to-many"
+                              ]
+                            },
+                            "nullable": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "references",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "count",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "entities"
+              ],
+              "additionalProperties": false
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "locale": {
+              "type": "string",
+              "enum": [
+                "en",
+                "fr",
+                "de",
+                "es",
+                "ja"
+              ],
+              "default": "en"
+            }
+          },
+          "required": [
+            "schema"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "generate-custom",
+        "description": "Generates fake data following custom patterns, including regex patterns, enums, formats, and ranges",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "description": "Number of records to generate"
+            },
+            "patterns": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "regex",
+                      "enum",
+                      "format",
+                      "range"
+                    ],
+                    "description": "Pattern type"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "number",
+                            "description": "Minimum value"
+                          },
+                          "max": {
+                            "type": "number",
+                            "description": "Maximum value"
+                          },
+                          "precision": {
+                            "type": "number",
+                            "description": "Decimal precision (0 for integers)"
+                          }
+                        },
+                        "required": [
+                          "min",
+                          "max"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ],
+                    "description": "Pattern value (type depends on pattern type)"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Map of field names to pattern definitions"
+            },
+            "locale": {
+              "type": "string",
+              "enum": [
+                "en",
+                "fr",
+                "de",
+                "es",
+                "ja"
+              ],
+              "default": "en",
+              "description": "Locale for generated data (affects format-based patterns)"
+            },
+            "seed": {
+              "type": "number",
+              "description": "Optional seed for reproducible generation"
+            }
+          },
+          "required": [
+            "patterns"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'generate-person' inputSchema requests PII fields",
+      "description": "Tool 'generate-person' inputSchema declares field(s) associated with PII: includeDateOfBirth. Collecting PII through MCP tools may violate data minimization principles and privacy regulations.",
+      "tool_name": "generate-person",
+      "parameter": null,
+      "payload": null,
+      "evidence": "inputSchema properties: includeDateOfBirth",
+      "remediation": "Review whether collecting this PII is strictly necessary. Apply data minimization and ensure appropriate consent and handling.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP04",
+      "severity": "high",
+      "title": "Supply Chain — '@modelcontextprotocol/sdk' has high vulnerability (no CVE assigned)",
+      "description": "Package '@modelcontextprotocol/sdk' (dependency of 'faker-mcp-server') has a known high vulnerability. Solo aplicable a servidores npm vía stdio. HTTP transport: no analizable.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "@modelcontextprotocol/sdk@<=1.25.1 — no CVE assigned",
+      "remediation": "Update '@modelcontextprotocol/sdk' to a patched version.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'generate-person' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "generate-person",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'generate-company' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "generate-company",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'generate-person' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "generate-person",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'generate-company' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "generate-company",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 55.95300000000134,
+  "exchanges": []
+}

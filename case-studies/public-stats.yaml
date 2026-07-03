@@ -65,13 +65,13 @@ case_studies:
     false_positives: 3
   cs04:
     servers: 44  # new unique servers (excludes 3 duplicates from CS01/CS02)
-    raw_findings: 1100  # preliminary — full curation pending (2026-07-03)
+    raw_findings: 979  # confirmed from report.json (47 OK servers incl. 3 dups); curation pending (2026-07-03)
     true_positives: null  # not yet curated
     false_positives: null
-    note: "Batches B/C/D/E/F/G/H/I. Categories: academia, UI frameworks, news APIs, crypto, food, books, dictionary, NASA, weather, dev-utils, web-search"
+    note: "Batches B/C/D/E/F/G/H/I. Categories: academia, UI frameworks, news APIs, crypto, food, books, dictionary, NASA, weather, dev-utils, web-search, design systems. Top finding servers: sveltejs-mcp (209), mcp-devutils (168), lunar-mcp-server (78)"
   totals:
     servers: 101
-    raw_findings: 1388  # 288 (CS01-03) + 1100 (CS04 preliminary)
+    raw_findings: 1267  # 288 (CS01-03) + 979 (CS04 confirmed)
     true_positives: 191  # CS01-03 curated only; CS04 curation pending
 
 # Key ecosystem findings (update manually as new data accumulates)

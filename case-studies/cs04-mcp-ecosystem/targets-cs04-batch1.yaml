@@ -1,0 +1,643 @@
+meta:
+  case_study: CS04
+  description: OWASP MCP Ecosystem Audit — CS04 batch 1 (objetivo 100 servers total)
+  corvus_version: 1.0.1
+  notes: >
+    57 servers actuales (CS01:20 + CS02:29 + CS03:8). Objetivo: llegar a 100.
+    Batch A = queued targets de CS03 files no escaneados aun.
+    Batch B = nuevos candidatos de candidates.yaml no intentados.
+    Expected ~65% success rate → ~45 nuevos servers → total ~102.
+
+targets:
+# ─────────────────────────────────────────────────────────────────────────────
+# BATCH A — Targets ya en yaml files pero no escaneados aun (24 targets)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# === CS03-tier2 remaining (10) ===
+
+# 128k/wk — device automation iOS/Android, NO cloud auth, huge tool surface
+- name: agent-device
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agent-device
+
+# 102k/wk — Azure resources, auth requerida pero static modules OK
+- name: azure-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@azure/mcp'
+
+# 77k/wk — GitLab API proxy, auth parcial, grandes tool schema
+- name: gitlab-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@zereight/mcp-gitlab'
+
+# 73k/wk — Sentry error tracking, auth requerida, rich tool schema surface
+- name: sentry-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sentry/mcp-server'
+
+# 64k/wk — Supabase PostgreSQL + auth bypass + SQL injection surface
+- name: supabase-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@supabase/mcp-server-supabase'
+
+# 22k/wk — Kubernetes management, shell injection surface
+- name: kubernetes-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kubernetes-mcp-server
+
+# 22k/wk — ClickUp task management, token exposure
+- name: clickup-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@taazkareem/clickup-mcp-server'
+
+# 12k/wk — HubSpot CRM, 60+ tools, large attack surface
+- name: hubspot-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@hubspot/mcp-server'
+
+# 12k/wk — Kubernetes (second package, distinct implementation)
+- name: mcp-server-kubernetes
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-kubernetes
+
+# 4.4k/wk — Atlassian Jira/Confluence, JQL injection surface
+- name: mcp-atlassian
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-atlassian
+
+# === CS03-expansion remaining (12) ===
+
+# 32k/wk — Slack workspace integration, SSE + stdio, NO bot approval needed
+- name: slack-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - slack-mcp-server
+
+# 17k/wk — Apify actors, web scraping, SSRF surface via actor runs
+- name: apify-actors-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@apify/actors-mcp-server'
+
+# 12k/wk — Alchemy blockchain API, injection surface
+- name: alchemy-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@alchemy/mcp-server'
+
+# 12k/wk — BrowserStack test automation, credential scope
+- name: browserstack-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@browserstack/mcp-server'
+
+# 11k/wk — Aikido security tool (ironic to audit), likely interesting permissions
+- name: aikidosec-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@aikidosec/mcp'
+
+# 7k/wk — ArgoCD K8s CI/CD, deployment command surface
+- name: argocd-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - argocd-mcp
+
+# 6k/wk — GrowthBook feature flags, experiment injection
+- name: growthbook-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@growthbook/mcp'
+
+# 6k/wk — DataForSEO API, large schema surface
+- name: dataforseo-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - dataforseo-mcp-server
+
+# 3.9k/wk — Shopify Polaris UI docs, works without auth
+- name: polaris-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - polaris-mcp-server
+
+# 3.8k/wk — Ragie knowledge base retrieval
+- name: ragieai-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ragieai/mcp-server'
+
+# 2.3k/wk — Trello project management
+- name: mcp-server-trello
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@delorenj/mcp-server-trello'
+
+# 1.5k/wk — Generic mcp-server package
+- name: mcp-server-generic
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server
+
+# === CS03-PyPI remaining (2) ===
+
+# 48k/wk — AWS CloudWatch, static modules OK sin credentials
+- name: cloudwatch-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.cloudwatch-mcp-server@latest'
+
+# 25k/wk — AWS EKS cluster management, static modules OK
+- name: eks-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - uvx
+  - 'awslabs.eks-mcp-server@latest'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BATCH B — Nuevos candidatos de candidates.yaml no intentados (45 targets)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 23k/wk — Microsoft 365 Copilot, M365 integration, large enterprise surface
+- name: microsoft-workiq
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@microsoft/workiq'
+
+# 22k/wk — Hostinger API, hosting management, credential exposure
+- name: hostinger-api-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - hostinger-api-mcp
+
+# 13k/wk — Shortcut (formerly Clubhouse) project management
+- name: shortcut-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@shortcut/mcp'
+
+# 13k/wk — Brave Search, web + image + AI summaries
+- name: brave-search-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@brave/brave-search-mcp-server'
+
+# 11k/wk — SmartBear (Swagger/Bugsnag/Zephyr), multi-tool QA surface
+- name: smartbear-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@smartbear/mcp'
+
+# 10k/wk — IronBee browser devtools MCP bridge
+- name: ironbee-devtools
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ironbee-ai/devtools'
+
+# 10k/wk — Z.AI MCP server, AI capabilities + vision
+- name: zai-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@z_ai/mcp-server'
+
+# 9k/wk — Lara translation API (Translated.com)
+- name: lara-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@translated/lara-mcp'
+
+# 8k/wk — Docusaurus plugin exposing MCP server endpoint, doc retrieval
+- name: docusaurus-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - docusaurus-plugin-mcp-server
+
+# 7k/wk — Dynatrace observability, auth required, rich schema
+- name: dynatrace-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@dynatrace-oss/dynatrace-mcp-server'
+
+# 7k/wk — esa.io knowledge base, doc search surface
+- name: esa-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@esaio/esa-mcp-server'
+
+# 6k/wk — Hero design system components, NO auth, doc search
+- name: hero-fe-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ehrocks/fe-mcp-server'
+
+# 5k/wk — Storybook AI assistant, component + screenshot access
+- name: storybook-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - storybook-mcp-server
+
+# 3.3k/wk — Microsoft Clarity behavior analytics, session recording API
+- name: clarity-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@microsoft/clarity-mcp-server'
+
+# 2.9k/wk — Kapture browser automation via Chrome extension
+- name: kapture-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kapture-mcp
+
+# 2.5k/wk — PaPut memo output MCP server
+- name: paput-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - paput-mcp
+
+# 2.3k/wk — DoiT cloud cost + billing management
+- name: doit-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@doitintl/doit-mcp-server'
+
+# 2.2k/wk — React Native app automation and monitoring
+- name: react-native-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ohah/react-native-mcp-server'
+
+# 2k/wk — Qase test management platform
+- name: qase-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@qase/mcp-server'
+
+# 1.9k/wk — RunPod GPU cloud, model deployment + exec surface
+- name: runpod-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@runpod/mcp-server'
+
+# 1.9k/wk — VibeFrame AI-native video editing
+- name: vibeframe-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vibeframe/mcp-server'
+
+# 1.9k/wk — LINE Official Account messaging, webhook surface
+- name: line-bot-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@line/line-bot-mcp-server'
+
+# 1.7k/wk — Extentos Meta glasses app builder
+- name: extentos-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@extentos/mcp-server'
+
+# 1.7k/wk — Glean enterprise search, local MCP
+- name: glean-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@gleanwork/local-mcp-server'
+
+# 1.6k/wk — Azure Data Explorer / Kusto queries
+- name: kusto-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mcp-apps/kusto-mcp-server'
+
+# 1.5k/wk — Rosetta/PyRosetta protein modeling, NO auth, bioinformatics
+- name: rosetta-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - rosetta-mcp-server
+
+# 1.5k/wk — Kibana / Elastic Stack observability + analytics
+- name: kibana-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@tocharianou/mcp-server-kibana'
+
+# 1.4k/wk — Slite knowledge base / docs search
+- name: slite-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - slite-mcp-server
+
+# 1.4k/wk — Social Neuron AI content creation + scheduling
+- name: socialneuron-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@socialneuron/mcp-server'
+
+# 1.3k/wk — Serper web search + scraping
+- name: serper-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - serper-search-scrape-mcp-server
+
+# 1.2k/wk — Anytype personal knowledge graph
+- name: anytype-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@anyproto/anytype-mcp'
+
+# 1.2k/wk — n8n workflow automation MCP wrapper
+- name: n8n-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@leonardsellem/n8n-mcp-server'
+
+# 1k/wk — Codex CLI wrapper via MCP, code generation surface
+- name: codex-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - codex-mcp-server
+
+# 914/wk — Unthread Slack-based support ticketing
+- name: unthread-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@unthread-io/mcp-server'
+
+# 887/wk — Kintone business platform, records + apps API
+- name: kintone-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@kintone/mcp-server'
+
+# 791/wk — Mapbox maps + geocoding + directions API
+- name: mapbox-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mapbox/mcp-server'
+
+# 758/wk — Targetprocess Agile project management
+- name: targetprocess-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - targetprocess-mcp-server
+
+# 639/wk — Strava fitness activity API
+- name: strava-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@r-huijts/strava-mcp-server'
+
+# 590/wk — Transloadit media processing + transcoding pipeline
+- name: transloadit-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transloadit/mcp-server'
+
+# 556/wk — Email IMAP + SMTP (needs creds but schema surface interesting)
+- name: email-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@codefuturist/email-mcp'
+
+# 437/wk — Vapi voice AI API
+- name: vapi-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vapi-ai/mcp-server'
+
+# 416/wk — Redmine issue tracking
+- name: redmine-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@onozaty/redmine-mcp-server'
+
+# 346/wk — Convert.com A/B testing experimentation
+- name: convertcom-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@convertcom/mcp-server'
+
+# 221/wk — DeepL translation API
+- name: deepl-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - deepl-mcp-server
+
+# MG Tickets bridge (Cursor → HTTP MCP), token surface
+- name: mgsoftware-mcp-bridge
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mgsoftwarebv/mcp-server-bridge'

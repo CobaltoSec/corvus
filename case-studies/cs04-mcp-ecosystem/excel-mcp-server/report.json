@@ -1,0 +1,556 @@
+{
+  "target": "npx -y @negokaz/excel-mcp-server@latest",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "excel-mcp-server",
+    "server_version": "0.12.0-SNAPSHOT-1ff4340",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "excel_copy_sheet",
+        "description": "Copy existing sheet to a new sheet",
+        "input_schema": {
+          "properties": {
+            "dstSheetName": {
+              "description": "Sheet name to be copied",
+              "type": "string"
+            },
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "srcSheetName": {
+              "description": "Source sheet name in the Excel file",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "srcSheetName",
+            "dstSheetName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_create_table",
+        "description": "Create a table in the Excel sheet",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "range": {
+              "description": "Range to be a table (e.g., \"A1:C10\")",
+              "type": "string"
+            },
+            "sheetName": {
+              "description": "Sheet name where the table is created",
+              "type": "string"
+            },
+            "tableName": {
+              "description": "Table name to be created",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "sheetName",
+            "tableName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_describe_sheets",
+        "description": "List all sheet information of specified Excel file",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileAbsolutePath"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_format_range",
+        "description": "Format cells in the Excel sheet with style information",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "range": {
+              "description": "Range of cells in the Excel sheet (e.g., \"A1:C3\")",
+              "type": "string"
+            },
+            "sheetName": {
+              "description": "Sheet name in the Excel file",
+              "type": "string"
+            },
+            "styles": {
+              "description": "2D array of style objects for each cell. If a cell does not change style, use null. The number of items of the array must match the range size.",
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "description": "Style object for the cell",
+                      "properties": {
+                        "border": {
+                          "items": {
+                            "properties": {
+                              "color": {
+                                "pattern": "^#[0-9A-Fa-f]{6}$",
+                                "type": "string"
+                              },
+                              "style": {
+                                "enum": [
+                                  "none",
+                                  "continuous",
+                                  "dash",
+                                  "dot",
+                                  "double",
+                                  "dashDot",
+                                  "dashDotDot",
+                                  "slantDashDot",
+                                  "mediumDashDot",
+                                  "mediumDashDotDot"
+                                ],
+                                "type": "string"
+                              },
+                              "type": {
+                                "enum": [
+                                  "left",
+                                  "right",
+                                  "top",
+                                  "bottom",
+                                  "diagonalDown",
+                                  "diagonalUp"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "decimalPlaces": {
+                          "maximum": 30,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "fill": {
+                          "properties": {
+                            "color": {
+                              "items": {
+                                "pattern": "^#[0-9A-Fa-f]{6}$",
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "pattern": {
+                              "enum": [
+                                "none",
+                                "solid",
+                                "mediumGray",
+                                "darkGray",
+                                "lightGray",
+                                "darkHorizontal",
+                                "darkVertical",
+                                "darkDown",
+                                "darkUp",
+                                "darkGrid",
+                                "darkTrellis",
+                                "lightHorizontal",
+                                "lightVertical",
+                                "lightDown",
+                                "lightUp",
+                                "lightGrid",
+                                "lightTrellis",
+                                "gray125",
+                                "gray0625"
+                              ],
+                              "type": "string"
+                            },
+                            "shading": {
+                              "enum": [
+                                "horizontal",
+                                "vertical",
+                                "diagonalDown",
+                                "diagonalUp",
+                                "fromCenter",
+                                "fromCorner"
+                              ],
+                              "type": "string"
+                            },
+                            "type": {
+                              "enum": [
+                                "gradient",
+                                "pattern"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "pattern",
+                            "color"
+                          ],
+                          "type": "object"
+                        },
+                        "font": {
+                          "properties": {
+                            "bold": {
+                              "type": "boolean"
+                            },
+                            "color": {
+                              "pattern": "^#[0-9A-Fa-f]{6}$",
+                              "type": "string"
+                            },
+                            "italic": {
+                              "type": "boolean"
+                            },
+                            "size": {
+                              "maximum": 409,
+                              "minimum": 1,
+                              "type": "number"
+                            },
+                            "strike": {
+                              "type": "boolean"
+                            },
+                            "underline": {
+                              "enum": [
+                                "none",
+                                "single",
+                                "double",
+                                "singleAccounting",
+                                "doubleAccounting"
+                              ],
+                              "type": "string"
+                            },
+                            "vertAlign": {
+                              "enum": [
+                                "baseline",
+                                "superscript",
+                                "subscript"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "numFmt": {
+                          "description": "Custom number format string",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    {
+                      "description": "No style applied to this cell",
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "sheetName",
+            "range",
+            "styles"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_read_sheet",
+        "description": "Read values from Excel sheet with pagination.",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "range": {
+              "description": "Range of cells to read in the Excel sheet (e.g., \"A1:C10\"). [default: first paging range]",
+              "type": "string"
+            },
+            "sheetName": {
+              "description": "Sheet name in the Excel file",
+              "type": "string"
+            },
+            "showFormula": {
+              "description": "Show formula instead of value",
+              "type": "boolean"
+            },
+            "showStyle": {
+              "description": "Show style information for cells",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "sheetName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_screen_capture",
+        "description": "[Windows only] Take a screenshot of the Excel sheet with pagination.",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "range": {
+              "description": "Range of cells to read in the Excel sheet (e.g., \"A1:C10\"). [default: first paging range]",
+              "type": "string"
+            },
+            "sheetName": {
+              "description": "Sheet name in the Excel file",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "sheetName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "excel_write_to_sheet",
+        "description": "Write values to the Excel sheet",
+        "input_schema": {
+          "properties": {
+            "fileAbsolutePath": {
+              "description": "Absolute path to the Excel file",
+              "type": "string"
+            },
+            "newSheet": {
+              "description": "Create a new sheet if true, otherwise write to the existing sheet",
+              "type": "boolean"
+            },
+            "range": {
+              "description": "Range of cells in the Excel sheet (e.g., \"A1:C10\")",
+              "type": "string"
+            },
+            "sheetName": {
+              "description": "Sheet name in the Excel file",
+              "type": "string"
+            },
+            "values": {
+              "description": "Values to write to the Excel sheet. If the value is a formula, it should start with \"=\"",
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "fileAbsolutePath",
+            "sheetName",
+            "newSheet",
+            "range",
+            "values"
+          ],
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "7 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts oversized cursor value without validation",
+      "description": "tools/list accepted a 4096-character cursor string without returning an error.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'A' * 4096",
+      "evidence": null,
+      "remediation": "Enforce maximum cursor length and reject oversized values.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Server correctly ignores cancellation of unknown request",
+      "description": "The server remained responsive after receiving notifications/cancelled for a non-existent request.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — correct behavior.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT14",
+      "severity": "info",
+      "title": "Cancellation race condition timing detected — server responded normally",
+      "description": "The request/cancel race did not cause a hang; the server responded to one of the two messages.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "No action required — server handled the race gracefully.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 33.0630000000001,
+  "exchanges": []
+}

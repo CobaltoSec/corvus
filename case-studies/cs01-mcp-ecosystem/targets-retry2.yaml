@@ -1,0 +1,16 @@
+meta:
+  description: Retry server-everything and server-github
+targets:
+- name: server-everything
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-everything'
+
+- name: server-github
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-github'

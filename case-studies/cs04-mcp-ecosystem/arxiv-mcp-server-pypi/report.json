@@ -1,0 +1,554 @@
+{
+  "target": "uvx arxiv-mcp-server",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "arxiv-mcp-server",
+    "server_version": "0.5.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_papers",
+        "description": "Search for papers on arXiv with advanced filtering and query optimization.\n\nQUERY CONSTRUCTION GUIDELINES:\n- Use QUOTED PHRASES for exact matches: \"multi-agent systems\", \"neural networks\", \"machine learning\"\n- Combine related concepts with OR: \"AI agents\" OR \"software agents\" OR \"intelligent agents\"  \n- Use field-specific searches for precision:\n  - ti:\"exact title phrase\" - search in titles only\n  - au:\"author name\" - search by author\n  - abs:\"keyword\" - search in abstracts only\n- Use ANDNOT to exclude unwanted results: \"machine learning\" ANDNOT \"survey\"\n- For best results, use 2-4 core concepts rather than long keyword lists\n\nADVANCED SEARCH PATTERNS:\n- Field + phrase: ti:\"transformer architecture\" for papers with exact title phrase\n- Multiple fields: au:\"Smith\" AND ti:\"quantum\" for author Smith's quantum papers  \n- Exclusions: \"deep learning\" ANDNOT (\"survey\" OR \"review\") to exclude survey papers\n- Broad + narrow: \"artificial intelligence\" AND (robotics OR \"computer vision\")\n\nCATEGORY FILTERING (highly recommended for relevance):\nComputer Science:\n- cs.AI: Artificial Intelligence\n- cs.LG: Machine Learning\n- cs.CL: Computation and Language (NLP)\n- cs.CV: Computer Vision\n- cs.MA: Multi-Agent Systems\n- cs.RO: Robotics\n- cs.NE: Neural and Evolutionary Computing\n- cs.IR: Information Retrieval\n- cs.HC: Human-Computer Interaction\n- cs.CR: Cryptography and Security\n- cs.DB: Databases\nStatistics & Math:\n- stat.ML: Machine Learning (Statistics)\n- stat.AP: Applications\n- math.OC: Optimization and Control\n- math.ST: Statistics Theory\nPhysics & Other:\n- quant-ph: Quantum Physics\n- eess.SP: Signal Processing\n- eess.AS: Audio and Speech Processing\n- physics.data-an: Data Analysis and Statistics\n\nEXAMPLES OF EFFECTIVE QUERIES:\n- ti:\"reinforcement learning\" with categories: [\"cs.LG\", \"cs.AI\"] - for RL papers by title\n- au:\"Hinton\" AND \"deep learning\" with categories: [\"cs.LG\"] - for Hinton's deep learning work\n- \"multi-agent\" ANDNOT \"survey\" with categories: [\"cs.MA\"] - exclude survey papers\n- abs:\"transformer\" AND ti:\"attention\" with categories: [\"cs.CL\"] - attention papers with transformer abstracts\n\nDATE FILTERING: Use YYYY-MM-DD format for historical research:\n- date_to: \"2015-12-31\" - for foundational/classic work (pre-2016)\n- date_from: \"2020-01-01\" - for recent developments (post-2020)\n- Both together for specific time periods\n\nRESULT QUALITY: Default sort is RELEVANCE (most pertinent results first). Use sort_by: \"date\" to get newest papers first.\nChoose relevance for focused topic searches; choose date for monitoring recent developments.\n\nRATE LIMITING: arXiv enforces a 3-second minimum between requests. This server handles that automatically.\nIf you see a rate limit error, wait 60 seconds before retrying — do not call the tool repeatedly in a loop.\n\nTIPS FOR FOUNDATIONAL RESEARCH:\n- Use date_to: \"2010-12-31\" to find classic papers on BDI, SOAR, ACT-R\n- Combine with field searches: ti:\"BDI\" AND abs:\"belief desire intention\"  \n- Try author searches: au:\"Rao\" AND \"BDI\" for Anand Rao's foundational BDI work",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query using quoted phrases for exact matches (e.g., '\"machine learning\" OR \"deep learning\"') or specific technical terms. Avoid overly broad or generic terms."
+            },
+            "max_results": {
+              "type": "integer",
+              "description": "Maximum number of results to return (default: 10, max: 50). Use 15-20 for comprehensive searches."
+            },
+            "date_from": {
+              "type": "string",
+              "description": "Start date for papers (YYYY-MM-DD format). Use to find recent work, e.g., '2023-01-01' for last 2 years."
+            },
+            "date_to": {
+              "type": "string",
+              "description": "End date for papers (YYYY-MM-DD format). Use with date_from to find historical work, e.g., '2020-12-31' for older research."
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Strongly recommended: arXiv categories to focus search (e.g., ['cs.AI', 'cs.MA'] for agent research, ['cs.LG'] for ML, ['cs.CL'] for NLP, ['cs.CV'] for vision). Greatly improves relevance."
+            },
+            "sort_by": {
+              "type": "string",
+              "enum": [
+                "relevance",
+                "date"
+              ],
+              "description": "Sort results by 'relevance' (most relevant first, default) or 'date' (newest first). Use 'relevance' for focused searches, 'date' for recent developments."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "download_paper",
+        "description": "Download a paper from arXiv and return its full text content. Tries the HTML version first for clean extraction; falls back to PDF conversion if HTML is unavailable. Returns the paper content directly so you can read it immediately.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "paper_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper to download (e.g. '2103.12345')"
+            }
+          },
+          "required": [
+            "paper_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "list_papers",
+        "description": "List all papers that have been downloaded and stored locally via download_paper. Returns arXiv IDs only — use read_paper to access content. Returns an empty list if no papers have been downloaded yet. Workflow: search_papers -> download_paper -> list_papers -> read_paper.",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "read_paper",
+        "description": "Read the full text content of a paper that was previously downloaded via download_paper. Returns the paper in markdown format. Will fail with a clear error if the paper has not been downloaded yet — call download_paper first. Workflow: search_papers -> download_paper -> read_paper.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "paper_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper to read"
+            }
+          },
+          "required": [
+            "paper_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_abstract",
+        "description": "Fetch the abstract and metadata of an arXiv paper by ID, WITHOUT downloading the full paper. Use this before download_paper to assess relevance and save tokens. Returns: title, authors, abstract, categories, published date, and PDF URL. Workflow tip: search_papers -> get_abstract (check relevance) -> download_paper (if needed) -> read_paper.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "paper_id": {
+              "type": "string",
+              "description": "The arXiv paper ID (e.g. '2401.12345' or '2404.19756')"
+            }
+          },
+          "required": [
+            "paper_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "semantic_search",
+        "description": "Semantic similarity search over papers you have already downloaded locally via download_paper. Supports free-text queries (e.g. 'attention mechanisms for long sequences') or finding papers similar to a given paper_id. IMPORTANT: only searches your local downloaded collection — will return empty results if no papers have been downloaded yet. Use search_papers to find papers on arXiv, then download_paper to add them to the local index before using this tool. Requires pro dependencies: uv pip install -e \".[pro]\"",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text semantic query."
+            },
+            "paper_id": {
+              "type": "string",
+              "description": "Find papers semantically similar to this arXiv paper ID."
+            },
+            "max_results": {
+              "type": "integer",
+              "description": "Maximum number of results to return (default: 10).",
+              "default": 10
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "reindex",
+        "description": "Rebuild the local semantic index for downloaded papers.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "clear_existing": {
+              "type": "boolean",
+              "description": "If true, clear the existing index before rebuilding.",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "citation_graph",
+        "description": "Return papers citing an arXiv paper and papers that it references using Semantic Scholar's citation graph.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "paper_id": {
+              "type": "string",
+              "description": "arXiv ID (for example: 2401.12345)."
+            }
+          },
+          "required": [
+            "paper_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "watch_topic",
+        "description": "Save or update a persistent research topic watch. When checked via check_alerts, returns only papers published since the last check — acting as a standing alert for new work on a topic. The topic string uses the same query syntax as search_papers (quoted phrases, field specifiers, boolean operators). Examples: '\"diffusion models\" AND ti:\"video generation\"', 'au:\"LeCun\" AND cs.LG'. Calling watch_topic with the same topic string updates the existing watch rather than creating a duplicate. Pair with check_alerts to poll for new papers.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Query string to monitor. Uses arXiv search syntax — quoted phrases for exact matches, field specifiers (ti:, au:, abs:), and boolean operators (AND, OR, ANDNOT). Example: '\"reinforcement learning\" AND \"robotics\"'."
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional arXiv category filter (e.g. ['cs.LG', 'cs.AI']). Narrows results to specific fields."
+            },
+            "max_results": {
+              "type": "integer",
+              "description": "Maximum papers to return per alert check (default: 10).",
+              "default": 10
+            }
+          },
+          "required": [
+            "topic"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "check_alerts",
+        "description": "Check all saved topic watches for newly published papers since the last check. Omitting the topic parameter runs ALL saved watches and returns new papers for each. Passing a topic string checks only that specific watch. Updates each watch's last_checked timestamp after running, so subsequent calls only return newer papers. Use watch_topic to register topics before calling this. Returns a summary with new paper counts and full paper metadata per topic.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Optional: check only this specific watched topic (must match the topic string used in watch_topic exactly). Omit to check all saved watches."
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": [
+      {
+        "name": "research-discovery",
+        "description": "Begin research exploration on a specific topic",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "Research topic or question",
+            "required": true
+          },
+          {
+            "name": "expertise_level",
+            "description": "User's familiarity (beginner/intermediate/expert)",
+            "required": false
+          },
+          {
+            "name": "time_period",
+            "description": "Time period for search (e.g., '2023-present')",
+            "required": false
+          },
+          {
+            "name": "domain",
+            "description": "Academic domain (e.g., computer_science/physics/biology)",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "deep-paper-analysis",
+        "description": "Analyze a specific paper in detail",
+        "arguments": [
+          {
+            "name": "paper_id",
+            "description": "arXiv paper ID",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "summarize_paper",
+        "description": "Summarize a paper with key methods, results, and limits",
+        "arguments": [
+          {
+            "name": "paper_id",
+            "description": "arXiv paper ID",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compare_papers",
+        "description": "Compare two or more papers on methods and results",
+        "arguments": [
+          {
+            "name": "paper_ids",
+            "description": "Comma-separated list of arXiv paper IDs",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "literature_review",
+        "description": "Synthesize a literature review for a topic and paper set",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "Research topic or question",
+            "required": true
+          },
+          {
+            "name": "paper_ids",
+            "description": "Comma-separated list of arXiv paper IDs",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "literature-synthesis",
+        "description": "Synthesize findings across multiple papers",
+        "arguments": [
+          {
+            "name": "paper_ids",
+            "description": "Comma-separated list of arXiv paper IDs",
+            "required": true
+          },
+          {
+            "name": "synthesis_type",
+            "description": "Synthesis type (themes/methods/timeline/gaps/comprehensive)",
+            "required": false
+          },
+          {
+            "name": "domain",
+            "description": "Academic domain (e.g., computer_science/physics/biology)",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "research-question",
+        "description": "Formulate research questions based on literature",
+        "arguments": [
+          {
+            "name": "paper_ids",
+            "description": "Comma-separated list of arXiv paper IDs",
+            "required": true
+          },
+          {
+            "name": "topic",
+            "description": "Research topic or question",
+            "required": true
+          },
+          {
+            "name": "domain",
+            "description": "Academic domain (e.g., computer_science/physics/biology)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'read_paper' is named read-only but description implies write access",
+      "description": "Tool 'read_paper' has a read-only prefix but its description mentions write operations ('clear'), creating a scope mismatch that callers and LLMs may be unable to detect.",
+      "tool_name": "read_paper",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Read the full text content of a paper that was previously downloaded via download_paper. Returns the paper in markdown format. Will fail with a clear error if the paper has not been downloaded yet — call download_paper first. Workflow: search_papers -> download_paper -> read_paper.",
+      "remediation": "Separate read and write operations into distinct tools. Ensure tool names accurately reflect their full capabilities.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'search_papers'",
+      "description": "Description is 3053 chars (limit 1000). May contain hidden content.",
+      "tool_name": "search_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_papers'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'reindex' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "reindex",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'check_alerts' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "check_alerts",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'semantic_search' directs LLM to call search_papers",
+      "description": "Tool 'semantic_search' description references tool(s) 'search_papers', 'download_paper' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "semantic_search",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Semantic similarity search over papers you have already downloaded locally via download_paper. Supports free-text queries (e.g. 'attention mechanisms for long sequences') or finding papers similar to a given paper_id. IMPORTANT: only searches your local downloaded collection — will return empty resu",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'check_alerts' directs LLM to call watch_topic",
+      "description": "Tool 'check_alerts' description references tool(s) 'watch_topic' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "check_alerts",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Check all saved topic watches for newly published papers since the last check. Omitting the topic parameter runs ALL saved watches and returns new papers for each. Passing a topic string checks only that specific watch. Updates each watch's last_checked timestamp after running, so subsequent calls o",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'watch_topic.topic'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "watch_topic",
+      "parameter": "topic",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"status\": \"success\",\n  \"message\": \"Topic watch saved\",\n  \"topic\": {\n    \"topic\": \"' OR '1'='1\",\n    \"categories\": [],\n    \"max_results\": 10,\n    \"last_checked\": null,\n    \"created_at\": \"2026-07-03T16:20:42.110615+00:00\",\n    \"updated_at\": \"2026-07-03T16:20:42.110634+00:00\"\n  }\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "9 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 151.53100000000086,
+  "exchanges": []
+}

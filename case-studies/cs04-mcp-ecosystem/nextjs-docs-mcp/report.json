@@ -1,0 +1,190 @@
+{
+  "target": "npx -y @taiyokimura/nextjs-docs-mcp@latest",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "nextjs-docs-mcp",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_all_docs",
+        "description": "Provide all Next.js documentation URLs for AI agents.\n\nAuto-trigger guidance (for clients):\n- Run when the user asks about 'Next.js', 'Nextjs', 'Next', or mentions topics like 'App Router', 'Pages Router', 'Route Handlers', 'data fetching', 'deployment', 'turbopack', 'Vercel'.\n- Run when the user reports errors containing keywords like 'Next.js error', 'build error', 'routing error', 'hydration error', 'module not found', 'next.config.js', 'middleware', 'Image', 'Link', 'Route Handler'.\n- Run when an active file path suggests a Next.js app, e.g. 'next.config.js', 'app/**', 'pages/**', 'middleware.ts/js', or imports starting with 'next/'.\n\nPost-call agent instructions (MUST DO):\n- After receiving the list, FETCH the content of the top relevant URLs (at least the first 3–5) to ground answers in the actual docs.\n- Use standard HTTP GET with a 10s timeout, follow redirects, and limit concurrency to 3 to be polite.\n- Prefer pages whose title/URL matches the user's query or error message; summarize only after fetching.\n- If fetching fails, try the next candidate URL and report which ones were fetched.\nThis tool returns a comprehensive list so the agent can pick and fetch the most relevant docs.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "type": "string",
+              "description": "Optional user query, error message, or code snippet used by the client to decide invocation"
+            },
+            "filePath": {
+              "type": "string",
+              "description": "Optional current file path used by the client to decide invocation"
+            }
+          }
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'get_all_docs'",
+      "description": "Description is 1207 chars (limit 1000). May contain hidden content.",
+      "tool_name": "get_all_docs",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_all_docs' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_all_docs",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP10",
+      "severity": "high",
+      "title": "Response Flooding — 'get_all_docs' returns oversized response",
+      "description": "Tool 'get_all_docs' returned 28,433 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines.",
+      "tool_name": "get_all_docs",
+      "parameter": null,
+      "payload": null,
+      "evidence": "28,433 bytes — preview: 📚 **Next.js Documentation - All Available Documents**\n\nTotal documents: 170\n\n以下は全てのNext.jsドキュメントURLです。あなたのクエリに関連するドキュメントをこれらの中から選んでください：\n\n1. **Quick Start**\n   📁 Category: gettingStarted\n   🔗 https://",
+      "remediation": "Paginate or cap tool responses. Never return unbounded data. Aim for responses under 4 KB to preserve LLM context budget.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'get_all_docs' returns highly repetitive content",
+      "description": "Tool 'get_all_docs' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "get_all_docs",
+      "parameter": null,
+      "payload": null,
+      "evidence": "📚 **Next.js Documentation - All Available Documents**\n\nTotal documents: 170\n\n以下は全てのNext.jsドキュメントURLです。あなたのクエリに関連するドキュメントをこれらの中から選んでください：\n\n1. **Quick Start**\n   📁 Category: gettingStarted\n   🔗 https://nextjs.org/docs/getting-started\n   📝 Get started with Next.js\n\n2. **Installation**\n   📁 Category: ge",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "1 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 58.39099999999962,
+  "exchanges": []
+}

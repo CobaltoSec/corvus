@@ -1,0 +1,1253 @@
+{
+  "target": "uvx --from tradingview-mcp-server tradingview-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "TradingView Multi-Market Screener",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "top_gainers",
+        "description": "Return top gainers for an exchange and timeframe using Bollinger Band analysis.\n\nArgs:\n    exchange: Exchange name — crypto: KUCOIN, BINANCE, BYBIT, MEXC; stocks: EGX, BIST, NASDAQ, NYSE, BURSA, HKEX, SSE, SZSE\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M\n    limit: Number of rows to return (max 50)\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "limit": {
+              "default": 25,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "top_gainersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "top_losers",
+        "description": "Return top losers for an exchange and timeframe. Supports crypto (KUCOIN, BINANCE, MEXC) and stocks (EGX, BIST, NASDAQ).",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "limit": {
+              "default": 25,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "top_losersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "bollinger_scan",
+        "description": "Scan for assets with low Bollinger Band Width (squeeze detection). Works with crypto and stocks.\n\nArgs:\n    exchange: Exchange — crypto: KUCOIN, BINANCE, BYBIT, MEXC; stocks: EGX, BIST, NASDAQ, NYSE, BURSA, HKEX, SSE, SZSE\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M\n    bbw_threshold: Maximum BBW value to filter (default 0.04)\n    limit: Number of rows to return (max 100)\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "4h",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "bbw_threshold": {
+              "default": 0.04,
+              "title": "Bbw Threshold",
+              "type": "number"
+            },
+            "limit": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "bollinger_scanArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "rating_filter",
+        "description": "Filter coins by Bollinger Band rating.\n\nArgs:\n    exchange: Exchange name like KUCOIN, BINANCE, BYBIT, MEXC, etc.\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M\n    rating: BB rating (-3 to +3): -3=Strong Sell, -2=Sell, -1=Weak Sell, 1=Weak Buy, 2=Buy, 3=Strong Buy\n    limit: Number of rows to return (max 50)\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "5m",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "rating": {
+              "default": 2,
+              "title": "Rating",
+              "type": "integer"
+            },
+            "limit": {
+              "default": 25,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "rating_filterArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "coin_analysis",
+        "description": "Get detailed analysis for a specific asset (coin or stock) on specified exchange and timeframe.\n\nArgs:\n    symbol: Symbol — crypto: \"BTCUSDT\", \"ETHUSDT\"; stocks: \"COMI\" (EGX), \"THYAO\" (BIST), \"600519\" (SSE), \"300251\" (SZSE)\n    exchange: Exchange — crypto: KUCOIN, BINANCE, MEXC; stocks: EGX, BIST, NASDAQ, NYSE, BURSA, HKEX, SSE, SZSE\n    timeframe: Time interval (5m, 15m, 1h, 4h, 1D, 1W, 1M)\n\nReturns:\n    Detailed analysis with all indicators and metrics\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "coin_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "consecutive_candles_scan",
+        "description": "Scan for coins with consecutive growing/shrinking candles pattern.\n\nArgs:\n    exchange: Exchange name (BINANCE, KUCOIN, etc.)\n    timeframe: Time interval (5m, 15m, 1h, 4h)\n    pattern_type: \"bullish\" (growing candles) or \"bearish\" (shrinking candles)\n    candle_count: Number of consecutive candles to check (2-5)\n    min_growth: Minimum growth percentage for each candle\n    limit: Maximum number of results to return\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "pattern_type": {
+              "default": "bullish",
+              "title": "Pattern Type",
+              "type": "string"
+            },
+            "candle_count": {
+              "default": 3,
+              "title": "Candle Count",
+              "type": "integer"
+            },
+            "min_growth": {
+              "default": 2.0,
+              "title": "Min Growth",
+              "type": "number"
+            },
+            "limit": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "consecutive_candles_scanArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "advanced_candle_pattern",
+        "description": "Advanced candle pattern analysis using multi-timeframe data.\n\nArgs:\n    exchange: Exchange name (BINANCE, KUCOIN, etc.)\n    base_timeframe: Base timeframe for analysis (5m, 15m, 1h, 4h)\n    pattern_length: Number of consecutive periods to analyse (2-4)\n    min_size_increase: Minimum percentage increase in candle size\n    limit: Maximum number of results to return\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "base_timeframe": {
+              "default": "15m",
+              "title": "Base Timeframe",
+              "type": "string"
+            },
+            "pattern_length": {
+              "default": 3,
+              "title": "Pattern Length",
+              "type": "integer"
+            },
+            "min_size_increase": {
+              "default": 10.0,
+              "title": "Min Size Increase",
+              "type": "number"
+            },
+            "limit": {
+              "default": 15,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "advanced_candle_patternArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "volume_breakout_scanner",
+        "description": "Detect coins with volume breakout + price breakout.\n\nArgs:\n    exchange: Exchange name like KUCOIN, BINANCE, BYBIT, MEXC, etc.\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M\n    volume_multiplier: How many times the volume should be above normal level (default 2.0)\n    price_change_min: Minimum price change percentage (default 3.0)\n    limit: Number of rows to return (max 50)\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "volume_multiplier": {
+              "default": 2.0,
+              "title": "Volume Multiplier",
+              "type": "number"
+            },
+            "price_change_min": {
+              "default": 3.0,
+              "title": "Price Change Min",
+              "type": "number"
+            },
+            "limit": {
+              "default": 25,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "volume_breakout_scannerArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "volume_confirmation_analysis",
+        "description": "Detailed volume confirmation analysis for a specific coin.\n\nArgs:\n    symbol: Coin symbol (e.g., BTCUSDT)\n    exchange: Exchange name\n    timeframe: Time frame for analysis\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "volume_confirmation_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "smart_volume_scanner",
+        "description": "Smart volume + technical analysis combination scanner.\n\nArgs:\n    exchange: Exchange name\n    min_volume_ratio: Minimum volume multiplier (default 2.0)\n    min_price_change: Minimum price change percentage (default 2.0)\n    rsi_range: \"oversold\" (<30), \"overbought\" (>70), \"neutral\" (30-70), \"any\"\n    limit: Number of results (max 30)\n",
+        "input_schema": {
+          "properties": {
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "min_volume_ratio": {
+              "default": 2.0,
+              "title": "Min Volume Ratio",
+              "type": "number"
+            },
+            "min_price_change": {
+              "default": 2.0,
+              "title": "Min Price Change",
+              "type": "number"
+            },
+            "rsi_range": {
+              "default": "any",
+              "title": "Rsi Range",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "smart_volume_scannerArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "multi_agent_analysis",
+        "description": "Run a multi-agent debate (Technical, Sentiment, Risk) for a specific symbol.\n\nArgs:\n    symbol: Symbol — crypto: \"BTCUSDT\"; stocks: \"COMI\" (EGX), \"THYAO\" (BIST), \"600519\" (SSE), \"300251\" (SZSE)\n    exchange: Exchange — crypto: KUCOIN, BINANCE, MEXC; stocks: EGX, BIST, NASDAQ, NYSE, SSE, SZSE\n    timeframe: Time interval (5m, 15m, 1h, 4h, 1D, 1W)\n\nReturns:\n    A structured debate between 3 AI agents culminating in a final trading decision.\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "15m",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "multi_agent_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_market_overview",
+        "description": "Get a comprehensive overview of the Egyptian Exchange (EGX) market.\n\nArgs:\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M (default 1D for stocks)\n    limit: Number of stocks per category (max 20)\n",
+        "input_schema": {
+          "properties": {
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "egx_market_overviewArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_sector_scan",
+        "description": "Scan EGX stocks by sector. Shows available sectors if none specified.\n\nArgs:\n    sector: Sector name (banks, healthcare_and_pharma, real_estate, etc.)\n            Leave empty to list all sectors.\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M\n    limit: Max results per sector (max 50)\n",
+        "input_schema": {
+          "properties": {
+            "sector": {
+              "default": "",
+              "title": "Sector",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "egx_sector_scanArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_sector_scanner",
+        "description": "Sector rotation scanner for EGX — identifies hot/cold sectors and top picks.\n\nArgs:\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M (default 1D)\n    top_n_sectors: Number of top sectors to show stock picks for (1-18, default 5)\n    top_n_stocks: Number of top stocks per highlighted sector (1-10, default 3)\n    min_stock_score: Minimum stock score for picks (0-100, default 60)\n",
+        "input_schema": {
+          "properties": {
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "top_n_sectors": {
+              "default": 5,
+              "title": "Top N Sectors",
+              "type": "integer"
+            },
+            "top_n_stocks": {
+              "default": 3,
+              "title": "Top N Stocks",
+              "type": "integer"
+            },
+            "min_stock_score": {
+              "default": 60,
+              "title": "Min Stock Score",
+              "type": "integer"
+            }
+          },
+          "title": "egx_sector_scannerArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_index_analysis",
+        "description": "Analyse an EGX index showing constituent performance with full indicators.\n\nArgs:\n    index: EGX30, EGX70, EGX100, SHARIAH33, EGX35LV, TAMAYUZ\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M (default 1D)\n    limit: Number of stocks to show in detail (max 100)\n",
+        "input_schema": {
+          "properties": {
+            "index": {
+              "default": "EGX30",
+              "title": "Index",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "limit": {
+              "default": 30,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "egx_index_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_stock_screener",
+        "description": "Production stock ranking engine for EGX — finds strong stocks with actionable setups.\n\nArgs:\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M (default 1D)\n    min_score: Minimum stock score to include (0-100, default 55)\n    index_filter: Filter by index — EGX30, EGX70, EGX100, SHARIAH33, EGX35LV, TAMAYUZ\n    limit: Number of results (max 50)\n",
+        "input_schema": {
+          "properties": {
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            },
+            "min_score": {
+              "default": 55,
+              "title": "Min Score",
+              "type": "integer"
+            },
+            "index_filter": {
+              "default": "",
+              "title": "Index Filter",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "egx_stock_screenerArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_trade_plan",
+        "description": "Generate a full trade plan for a specific EGX stock.\n\nArgs:\n    symbol: EGX stock symbol (e.g., \"COMI\", \"TMGH\", \"FWRY\")\n    timeframe: One of 5m, 15m, 1h, 4h, 1D, 1W, 1M (default 1D)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "egx_trade_planArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "egx_fibonacci_retracement",
+        "description": "Fibonacci retracement analysis for EGX stocks.\n\nArgs:\n    symbol: EGX stock symbol (e.g., \"COMI\", \"TMGH\", \"FWRY\")\n    lookback: Period for swing high/low — \"1M\", \"3M\", \"6M\", \"52W\", \"ALL\" (default 52W)\n    timeframe: Analysis timeframe (5m, 15m, 1h, 4h, 1D, 1W, 1M — default 1D)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "lookback": {
+              "default": "52W",
+              "title": "Lookback",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "egx_fibonacci_retracementArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "multi_timeframe_analysis",
+        "description": "Multi-timeframe alignment analysis (Weekly → Daily → 4H → 1H → 15m).\n\nArgs:\n    symbol: Symbol — crypto: \"BTCUSDT\"; stocks: \"COMI\" (EGX), \"THYAO\" (BIST), \"600519\" (SSE), \"300251\" (SZSE)\n    exchange: Exchange — crypto: KUCOIN, BINANCE, MEXC; stocks: EGX, BIST, NASDAQ, NYSE, SSE, SZSE\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "exchange": {
+              "default": "KUCOIN",
+              "title": "Exchange",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "multi_timeframe_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "market_sentiment",
+        "description": "Real-time Reddit sentiment analysis for stocks and crypto.\n\nArgs:\n    symbol: Asset symbol (\"AAPL\", \"BTC\", \"ETH\", \"TSLA\")\n    category: Subreddit group to search (\"crypto\", \"stocks\", \"all\")\n    limit: Number of posts to analyse\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "category": {
+              "default": "all",
+              "title": "Category",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "market_sentimentArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "financial_news",
+        "description": "Real-time financial news from RSS feeds (Reuters, CoinDesk, etc.)\n\nArgs:\n    symbol: Optional symbol filter (\"AAPL\", \"BTC\"). None = all news.\n    category: Feed category (\"crypto\", \"stocks\", \"all\")\n    limit: Max number of news items\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "default": null,
+              "title": "Symbol",
+              "type": "string"
+            },
+            "category": {
+              "default": "stocks",
+              "title": "Category",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "financial_newsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "combined_analysis",
+        "description": "POWER TOOL: TradingView technical analysis + Reddit sentiment + Financial news.\n\nArgs:\n    symbol: Asset symbol (\"AAPL\", \"BTCUSDT\", \"THYAO\")\n    exchange: Exchange (NASDAQ, NYSE, BINANCE, KUCOIN, MEXC, BIST, EGX)\n    timeframe: Analysis timeframe (5m, 15m, 1h, 4h, 1D, 1W)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "exchange": {
+              "default": "NASDAQ",
+              "title": "Exchange",
+              "type": "string"
+            },
+            "timeframe": {
+              "default": "1D",
+              "title": "Timeframe",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "combined_analysisArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "backtest_strategy",
+        "description": "Backtest a trading strategy on historical data with institutional-grade metrics.\n\nArgs:\n    symbol: Yahoo Finance symbol (AAPL, BTC-USD, THYAO.IS, ^GSPC)\n    strategy: rsi | bollinger | macd | ema_cross | supertrend | donchian\n    period: '1mo', '3mo', '6mo', '1y', '2y'\n    initial_capital: Starting capital in USD (default $10,000)\n    commission_pct: Per-trade commission % (default 0.1%)\n    slippage_pct: Per-trade slippage % (default 0.05%)\n    interval: '1d' (daily) or '1h' (hourly)\n    include_trade_log: Include full per-trade log (default False)\n    include_equity_curve: Include equity curve data points (default False)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "strategy": {
+              "title": "Strategy",
+              "type": "string"
+            },
+            "period": {
+              "default": "1y",
+              "title": "Period",
+              "type": "string"
+            },
+            "initial_capital": {
+              "default": 10000.0,
+              "title": "Initial Capital",
+              "type": "number"
+            },
+            "commission_pct": {
+              "default": 0.1,
+              "title": "Commission Pct",
+              "type": "number"
+            },
+            "slippage_pct": {
+              "default": 0.05,
+              "title": "Slippage Pct",
+              "type": "number"
+            },
+            "interval": {
+              "default": "1d",
+              "title": "Interval",
+              "type": "string"
+            },
+            "include_trade_log": {
+              "default": false,
+              "title": "Include Trade Log",
+              "type": "boolean"
+            },
+            "include_equity_curve": {
+              "default": false,
+              "title": "Include Equity Curve",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "symbol",
+            "strategy"
+          ],
+          "title": "backtest_strategyArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "compare_strategies",
+        "description": "Run all 6 strategies (RSI, Bollinger, MACD, EMA Cross, Supertrend, Donchian) and return a ranked leaderboard.\n\nArgs:\n    symbol: Yahoo Finance symbol (AAPL, BTC-USD, SPY…)\n    period: '1mo', '3mo', '6mo', '1y', '2y'\n    initial_capital: Starting capital in USD (default $10,000)\n    interval: '1d' (daily) or '1h' (hourly)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "period": {
+              "default": "1y",
+              "title": "Period",
+              "type": "string"
+            },
+            "initial_capital": {
+              "default": 10000.0,
+              "title": "Initial Capital",
+              "type": "number"
+            },
+            "interval": {
+              "default": "1d",
+              "title": "Interval",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "compare_strategiesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "walk_forward_backtest_strategy",
+        "description": "Walk-forward backtest to detect overfitting — validates strategy on unseen data.\n\nArgs:\n    symbol: Yahoo Finance symbol (AAPL, BTC-USD, SPY…)\n    strategy: rsi | bollinger | macd | ema_cross | supertrend | donchian\n    period: '1mo', '3mo', '6mo', '1y', '2y' (recommend '2y')\n    initial_capital: Starting capital per fold in USD (default $10,000)\n    commission_pct: Per-trade commission % (default 0.1%)\n    slippage_pct: Per-trade slippage % (default 0.05%)\n    n_splits: Number of walk-forward folds (default 3, max 10)\n    train_ratio: Fraction of each fold used for training (default 0.7)\n    interval: '1d' (daily) or '1h' (hourly)\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            },
+            "strategy": {
+              "title": "Strategy",
+              "type": "string"
+            },
+            "period": {
+              "default": "2y",
+              "title": "Period",
+              "type": "string"
+            },
+            "initial_capital": {
+              "default": 10000.0,
+              "title": "Initial Capital",
+              "type": "number"
+            },
+            "commission_pct": {
+              "default": 0.1,
+              "title": "Commission Pct",
+              "type": "number"
+            },
+            "slippage_pct": {
+              "default": 0.05,
+              "title": "Slippage Pct",
+              "type": "number"
+            },
+            "n_splits": {
+              "default": 3,
+              "title": "N Splits",
+              "type": "integer"
+            },
+            "train_ratio": {
+              "default": 0.7,
+              "title": "Train Ratio",
+              "type": "number"
+            },
+            "interval": {
+              "default": "1d",
+              "title": "Interval",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol",
+            "strategy"
+          ],
+          "title": "walk_forward_backtest_strategyArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "yahoo_price",
+        "description": "Real-time price quote from Yahoo Finance for any stock, crypto, ETF or index.\n\nArgs:\n    symbol: Yahoo Finance symbol — e.g. AAPL, BTC-USD, SPY, ^GSPC, EURUSD=X, THYAO.IS\n",
+        "input_schema": {
+          "properties": {
+            "symbol": {
+              "title": "Symbol",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "title": "yahoo_priceArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "market_snapshot",
+        "description": "Global market overview: major indices, top crypto, FX rates, and key ETFs.\nPowered by Yahoo Finance.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "market_snapshotArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "exchanges://list",
+        "name": "exchanges_list",
+        "description": "List available exchanges from the coinlist directory.",
+        "mime_type": "text/plain"
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'top_gainers'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "top_gainers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'bollinger_scan'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "bollinger_scan",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'coin_analysis'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "coin_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'multi_agent_analysis'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "multi_agent_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'egx_stock_screener'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "egx_stock_screener",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'egx_fibonacci_retracement'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "egx_fibonacci_retracement",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'multi_timeframe_analysis'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "multi_timeframe_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'combined_analysis'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "combined_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'top_gainers' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "top_gainers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'top_losers' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "top_losers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'bollinger_scan' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "bollinger_scan",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'rating_filter' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "rating_filter",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'consecutive_candles_scan' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "consecutive_candles_scan",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'advanced_candle_pattern' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "advanced_candle_pattern",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'volume_breakout_scanner' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "volume_breakout_scanner",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'smart_volume_scanner' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "smart_volume_scanner",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'egx_sector_scan' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "egx_sector_scan",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'egx_sector_scanner' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "egx_sector_scanner",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'egx_index_analysis' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "egx_index_analysis",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'egx_stock_screener' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "egx_stock_screener",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'financial_news' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "financial_news",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'top_gainers.exchange'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "top_gainers",
+      "parameter": "exchange",
+      "payload": "null",
+      "evidence": "{\n  \"symbol\": \"KUCOIN:NFPUSDT\",\n  \"changePercent\": 9.996,\n  \"indicators\": {\n    \"open\": null,\n    \"close\": 0.0284,\n    \"SMA20\": 0.024366499999999996,\n    \"BB_upper\": 0.03176391921213076,\n    \"BB_lower\": 0.016969080787869233,\n    \"EMA50\": 0.024857923843159484,\n    \"RSI\": 54.819056125185895,\n    \"volu",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'coin_analysis.symbol'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "coin_analysis",
+      "parameter": "symbol",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"error\": \"Analysis failed: Expecting value: line 1 column 1 (char 0)\",\n  \"symbol\": \"<script>alert(1)</script>\",\n  \"exchange\": \"kucoin\",\n  \"timeframe\": \"15m\"\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "26 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 89.625,
+  "exchanges": []
+}

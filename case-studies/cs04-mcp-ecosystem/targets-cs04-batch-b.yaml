@@ -1,0 +1,287 @@
+meta:
+  case_study: CS04-B
+  description: OWASP MCP Ecosystem Audit — CS04 Batch B (new no-auth servers 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Targets seleccionados por confirmación explícita de no-auth.
+    Categorías:
+    - Linters/análisis local (ESLint, MemLab)
+    - Doc servers (SAP CAP, Apple docs, Grafana design, Taiga UI, Vuetify)
+    - File processors (Excel, PDF)
+    - Public APIs sin key (@cyanheads/* → arXiv, PubChem, HN, SEC, EU Law, BLS, CDC...)
+    - Weather (Open-Meteo — múltiple versiones npm+PyPI)
+    - PyPI (arxiv, weather, multi-search)
+
+targets:
+
+# ─── LINTERS / LOCAL ANALYSIS ─────────────────────────────────────────────
+
+# 25,173/wk — Official ESLint MCP, local analysis, no auth, confirmed
+- name: eslint-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@eslint/mcp@latest'
+
+# MemLab JS heap snapshot analysis — local, no auth, Meta OSS
+- name: memlab-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@memlab/mcp-server'
+
+# ─── DOCUMENTATION SERVERS ────────────────────────────────────────────────
+
+# 64,786/wk — SAP CAP framework docs, local embeddings, no auth, confirmed
+- name: cap-js-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cap-js/mcp-server@latest'
+
+# 67,200/wk — Official MCP PDF reader, no auth, confirmed (local files + public URLs)
+- name: mcp-server-pdf
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-pdf@latest'
+  - --stdio
+
+# 2,666/wk — Apple Developer Documentation, public JSON APIs, no auth, confirmed
+- name: apple-docs-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@kimsungwhee/apple-docs-mcp@latest'
+
+# 4,022/wk — Grafana design system docs, no auth, confirmed
+- name: grafana-design-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@grafana/design-mcp@latest'
+
+# 2,388/wk — Taiga UI component docs, public URL, no auth, confirmed
+- name: taiga-ui-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@taiga-ui/mcp@latest'
+  - '--source-url=https://taiga-ui.dev/llms-full.txt'
+
+# 799/wk — Vuetify component docs, optional auth, no auth for basic features, confirmed
+- name: vuetify-mcp
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@vuetify/mcp@latest'
+
+# ─── FILE PROCESSORS ──────────────────────────────────────────────────────
+
+# 14,583/wk — Excel file operations, no auth, confirmed (local file processing)
+- name: excel-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@negokaz/excel-mcp-server@latest'
+
+# ─── PUBLIC APIS — CYANHEADS FAMILY ──────────────────────────────────────
+
+# 665/wk — arXiv academic paper search, public API, no auth
+- name: arxiv-mcp-server-cyanheads
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/arxiv-mcp-server@latest'
+
+# 487/wk — PubChem chemistry database, public API, no auth
+- name: pubchem-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/pubchem-mcp-server@latest'
+
+# 492/wk — Hacker News, public Firebase API, no auth
+- name: hn-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/hn-mcp-server@latest'
+
+# 701/wk — OpenAlex academic search, public API, no auth
+- name: openalex-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/openalex-mcp-server@latest'
+
+# 413/wk — Crossref DOI/citation search, public API, no auth
+- name: crossref-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/crossref-mcp-server@latest'
+
+# 699/wk — ORCID researcher identity, public API, no auth
+- name: orcid-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/orcid-mcp-server@latest'
+
+# 1,865/wk — EUR-Lex EU law database, public API, no auth
+- name: eur-lex-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/eur-lex-mcp-server@latest'
+
+# 292/wk — SEC EDGAR financial filings, public API, no auth
+- name: secedgar-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/secedgar-mcp-server@latest'
+
+# 375/wk — CDC health data, public API, no auth
+- name: cdc-health-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/cdc-health-mcp-server@latest'
+
+# 353/wk — Smithsonian Open Access, public API, no auth
+- name: smithsonian-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/smithsonian-mcp-server@latest'
+
+# 362/wk — Open Library (Internet Archive), public API, no auth
+- name: openlibrary-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/openlibrary-mcp-server@latest'
+
+# 268/wk — USA Spending federal data, public API, no auth
+- name: usaspending-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/usaspending-mcp-server@latest'
+
+# 268/wk — National Weather Service, public API, no auth
+- name: nws-weather-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/nws-weather-mcp-server@latest'
+
+# 326/wk — US Bureau of Labor Statistics, public API, no auth
+- name: bls-labor-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/bls-labor-mcp-server@latest'
+
+# 353/wk — Washington State DOT traffic/ferry data, public API
+- name: wsdot-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/wsdot-mcp-server@latest'
+
+# ─── PUBLIC APIS — OTROS ──────────────────────────────────────────────────
+
+# 2,248/wk — ClinicalTrials.gov v2 REST API, public, no auth, confirmed
+- name: clinicaltrialsgov-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - clinicaltrialsgov-mcp-server@latest
+
+# 677/wk — Open-Meteo weather API, public, no auth, confirmed
+- name: open-meteo-mcp-server
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - open-meteo-mcp-server@latest
+
+# ─── PYPI (uvx) ───────────────────────────────────────────────────────────
+
+# PyPI — arXiv paper search, public API, no auth (Python implementation)
+- name: arxiv-mcp-server-pypi
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - uvx
+  - arxiv-mcp-server
+
+# PyPI — Open-Meteo weather, public API, no auth (Python implementation)
+- name: mcp-weather-server-pypi
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-weather-server
+
+# PyPI — multi-search: arXiv + PubMed + web, 27 tools, no API key required
+- name: mcp-search-server-pypi
+  tier: CS04-B
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-search-server

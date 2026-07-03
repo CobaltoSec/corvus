@@ -1,0 +1,177 @@
+meta:
+  case_study: CS04
+  description: CS04 Batch A - 24 queued targets (CS03-tier2 + CS03-expansion + CS03-pypi)
+  corvus_version: 1.0.1
+  notes: '57 servers actuales (CS01:20 + CS02:29 + CS03:8). Objetivo: llegar a 100.
+    Batch A = queued targets de CS03 files no escaneados aun. Batch B = nuevos candidatos
+    de candidates.yaml no intentados. Expected ~65% success rate → ~45 nuevos servers
+    → total ~102.
+
+    '
+targets:
+- name: agent-device
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agent-device
+- name: azure-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@azure/mcp'
+- name: gitlab-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@zereight/mcp-gitlab'
+- name: sentry-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sentry/mcp-server'
+- name: supabase-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@supabase/mcp-server-supabase'
+- name: kubernetes-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kubernetes-mcp-server
+- name: clickup-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@taazkareem/clickup-mcp-server'
+- name: hubspot-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@hubspot/mcp-server'
+- name: mcp-server-kubernetes
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-kubernetes
+- name: mcp-atlassian
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-atlassian
+- name: slack-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - slack-mcp-server
+- name: apify-actors-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@apify/actors-mcp-server'
+- name: alchemy-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@alchemy/mcp-server'
+- name: browserstack-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@browserstack/mcp-server'
+- name: aikidosec-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@aikidosec/mcp'
+- name: argocd-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - argocd-mcp
+- name: growthbook-mcp
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@growthbook/mcp'
+- name: dataforseo-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - dataforseo-mcp-server
+- name: polaris-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - polaris-mcp-server
+- name: ragieai-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@ragieai/mcp-server'
+- name: mcp-server-trello
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@delorenj/mcp-server-trello'
+- name: mcp-server-generic
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server
+- name: cloudwatch-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.cloudwatch-mcp-server@latest
+- name: eks-mcp-server
+  tier: CS04-A
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.eks-mcp-server@latest

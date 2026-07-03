@@ -1,0 +1,271 @@
+{
+  "target": "npx -y @geobio/mcp-open-library",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "open-library-server",
+    "server_version": "0.1.5",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_book_by_title",
+        "description": "Search for a book by its title on Open Library.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "The title of the book to search for."
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      },
+      {
+        "name": "get_authors_by_name",
+        "description": "Search for author information on Open Library.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the author to search for."
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "get_author_info",
+        "description": "Get detailed information for a specific author using their Open Library Author Key (e.g. OL23919A).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "author_key": {
+              "type": "string",
+              "description": "The Open Library key for the author (e.g., OL23919A)."
+            }
+          },
+          "required": [
+            "author_key"
+          ]
+        }
+      },
+      {
+        "name": "get_author_photo",
+        "description": "Get the URL for an author's photo using their Open Library Author ID (OLID e.g. OL23919A).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "olid": {
+              "type": "string",
+              "description": "The Open Library Author ID (OLID) for the author (e.g. OL23919A)."
+            }
+          },
+          "required": [
+            "olid"
+          ]
+        }
+      },
+      {
+        "name": "get_book_cover",
+        "description": "Get the URL for a book's cover image using a key (ISBN, OCLC, LCCN, OLID, ID) and value.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "ISBN",
+                "OCLC",
+                "LCCN",
+                "OLID",
+                "ID"
+              ],
+              "description": "The type of identifier used (ISBN, OCLC, LCCN, OLID, ID)."
+            },
+            "value": {
+              "type": "string",
+              "description": "The value of the identifier."
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "S",
+                "M",
+                "L"
+              ],
+              "description": "The desired size of the cover (S, M, or L)."
+            }
+          },
+          "required": [
+            "key",
+            "value"
+          ]
+        }
+      },
+      {
+        "name": "get_book_by_id",
+        "description": "Get detailed information about a book using its identifier (ISBN, LCCN, OCLC, OLID).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "idType": {
+              "type": "string",
+              "enum": [
+                "isbn",
+                "lccn",
+                "oclc",
+                "olid"
+              ],
+              "description": "The type of identifier used (ISBN, LCCN, OCLC, OLID)."
+            },
+            "idValue": {
+              "type": "string",
+              "description": "The value of the identifier."
+            }
+          },
+          "required": [
+            "idType",
+            "idValue"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_book_by_title.title'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "get_book_by_title",
+      "parameter": "title",
+      "payload": "'; DROP TABLE users; --",
+      "evidence": "No books found matching title: \"'; DROP TABLE users; --\"",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_authors_by_name.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "get_authors_by_name",
+      "parameter": "name",
+      "payload": "'; DROP TABLE users; --",
+      "evidence": "No authors found matching name: \"'; DROP TABLE users; --\"",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "6 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 57.92199999999866,
+  "exchanges": []
+}

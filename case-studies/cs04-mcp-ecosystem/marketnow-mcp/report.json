@@ -1,0 +1,247 @@
+{
+  "target": "npx -y marketnow-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "marketnow",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_skills",
+        "description": "Search the MarketNow marketplace for MCP-compatible skills. Returns matching skills with price, category, and install command. Use this when an agent or user needs to find a tool for a specific task.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Natural language or keyword search (e.g. \"scrape website\", \"discord bot\", \"database query\")"
+            },
+            "category": {
+              "type": "string",
+              "description": "Filter by category (optional). One of: AI/ML, Data, Web/API, Security, DevOps, Communication, etc."
+            },
+            "max_price": {
+              "type": "number",
+              "description": "Maximum price in USD (optional, e.g. 2.99)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max results to return (default 10, max 50)",
+              "default": 10
+            }
+          }
+        }
+      },
+      {
+        "name": "get_skill",
+        "description": "Get full details of a specific skill by ID or slug.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "skill_id": {
+              "type": "string",
+              "description": "Skill ID (e.g. mn-ai-00001) or slug"
+            }
+          },
+          "required": [
+            "skill_id"
+          ]
+        }
+      },
+      {
+        "name": "list_categories",
+        "description": "List all skill categories with counts.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_manifest",
+        "description": "Get marketplace metadata: total skills, pricing tiers, API endpoints.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_install_command",
+        "description": "Get the install command for a skill (to run after purchasing).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "skill_id": {
+              "type": "string",
+              "description": "Skill ID or slug"
+            }
+          },
+          "required": [
+            "skill_id"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP04",
+      "severity": "high",
+      "title": "Supply Chain — '@modelcontextprotocol/sdk' has high vulnerability (no CVE assigned)",
+      "description": "Package '@modelcontextprotocol/sdk' (dependency of 'marketnow-mcp') has a known high vulnerability. Solo aplicable a servidores npm vía stdio. HTTP transport: no analizable.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "@modelcontextprotocol/sdk@<=1.25.1 — no CVE assigned",
+      "remediation": "Update '@modelcontextprotocol/sdk' to a patched version.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_skills' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "search_skills",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP10",
+      "severity": "high",
+      "title": "Response Flooding — 'list_categories' returns oversized response",
+      "description": "Tool 'list_categories' returned 14,214 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines.",
+      "tool_name": "list_categories",
+      "parameter": null,
+      "payload": null,
+      "evidence": "14,214 bytes — preview: [\n  {\n    \"name\": \"AI/ML\",\n    \"slug\": \"ai-ml\",\n    \"count\": 1980,\n    \"url\": \"https://marketnow.site/registry?cat=ai-ml\",\n    \"bulk_imported\": false,\n    \"disclosure\": null\n  },\n  {\n    \"name\": \"Deve",
+      "remediation": "Paginate or cap tool responses. Never return unbounded data. Aim for responses under 4 KB to preserve LLM context budget.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'list_categories' returns highly repetitive content",
+      "description": "Tool 'list_categories' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "list_categories",
+      "parameter": null,
+      "payload": null,
+      "evidence": "[\n  {\n    \"name\": \"AI/ML\",\n    \"slug\": \"ai-ml\",\n    \"count\": 1980,\n    \"url\": \"https://marketnow.site/registry?cat=ai-ml\",\n    \"bulk_imported\": false,\n    \"disclosure\": null\n  },\n  {\n    \"name\": \"Developer Tools\",\n    \"slug\": \"developer-tools\",\n    \"count\": 1882,\n    \"url\": \"https://marketnow.site/r",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 58.54699999999866,
+  "exchanges": []
+}

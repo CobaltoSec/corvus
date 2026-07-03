@@ -1,0 +1,692 @@
+{
+  "target": "npx -y mcp-mathtools",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-mathtools",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "calc",
+        "description": "Evaluate a mathematical expression with precise arithmetic. Supports +, -, *, /, **, %, parentheses, and common functions (sqrt, abs, ceil, floor, round, sin, cos, tan, log, log2, log10, exp, min, max, PI, E).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Math expression to evaluate, e.g. '(3.14 * 2) + sqrt(16)'"
+            }
+          },
+          "required": [
+            "expression"
+          ]
+        }
+      },
+      {
+        "name": "statistics",
+        "description": "Calculate statistics for a set of numbers: mean, median, mode, min, max, range, standard deviation, variance, sum, count.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "numbers": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "description": "Array of numbers to analyze"
+            }
+          },
+          "required": [
+            "numbers"
+          ]
+        }
+      },
+      {
+        "name": "percentage",
+        "description": "Percentage calculations: find percentage of a number, find what percentage A is of B, or find percentage change between two values.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "type": "string",
+              "enum": [
+                "of",
+                "is_what_percent",
+                "change"
+              ],
+              "description": "of: X% of Y. is_what_percent: X is what % of Y. change: % change from X to Y."
+            },
+            "x": {
+              "type": "number",
+              "description": "First value"
+            },
+            "y": {
+              "type": "number",
+              "description": "Second value"
+            }
+          },
+          "required": [
+            "operation",
+            "x",
+            "y"
+          ]
+        }
+      },
+      {
+        "name": "base_convert",
+        "description": "Convert a number between bases (binary, octal, decimal, hex, or any base 2-36).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "The number to convert (as string)"
+            },
+            "from_base": {
+              "type": "number",
+              "description": "Source base (2-36, default: 10)"
+            },
+            "to_base": {
+              "type": "number",
+              "description": "Target base (2-36, default: 16)"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      },
+      {
+        "name": "unit_convert",
+        "description": "Convert between common units: length (mm/cm/m/km/in/ft/yd/mi), weight (mg/g/kg/oz/lb), temperature (C/F/K), data (B/KB/MB/GB/TB), time (ms/s/min/hr/day).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "number",
+              "description": "Value to convert"
+            },
+            "from": {
+              "type": "string",
+              "description": "Source unit (e.g. 'km', 'lb', 'C', 'GB')"
+            },
+            "to": {
+              "type": "string",
+              "description": "Target unit (e.g. 'mi', 'kg', 'F', 'MB')"
+            }
+          },
+          "required": [
+            "value",
+            "from",
+            "to"
+          ]
+        }
+      },
+      {
+        "name": "compound_interest",
+        "description": "Calculate compound interest. Returns final amount, total interest earned, and period-by-period breakdown.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "principal": {
+              "type": "number",
+              "description": "Initial amount"
+            },
+            "rate": {
+              "type": "number",
+              "description": "Annual interest rate as percentage (e.g. 5 for 5%)"
+            },
+            "years": {
+              "type": "number",
+              "description": "Number of years"
+            },
+            "compounds_per_year": {
+              "type": "number",
+              "description": "Compounding frequency per year (default: 12 for monthly)"
+            },
+            "monthly_contribution": {
+              "type": "number",
+              "description": "Additional monthly contribution (default: 0)"
+            }
+          },
+          "required": [
+            "principal",
+            "rate",
+            "years"
+          ]
+        }
+      },
+      {
+        "name": "loan_payment",
+        "description": "Calculate monthly loan/mortgage payment, total payment, and total interest.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "principal": {
+              "type": "number",
+              "description": "Loan amount"
+            },
+            "annual_rate": {
+              "type": "number",
+              "description": "Annual interest rate as percentage (e.g. 6.5 for 6.5%)"
+            },
+            "years": {
+              "type": "number",
+              "description": "Loan term in years"
+            }
+          },
+          "required": [
+            "principal",
+            "annual_rate",
+            "years"
+          ]
+        }
+      },
+      {
+        "name": "proportion",
+        "description": "Solve proportions: if A:B = C:X, find X. Also handles inverse proportions.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "number",
+              "description": "First value of known ratio"
+            },
+            "b": {
+              "type": "number",
+              "description": "Second value of known ratio"
+            },
+            "c": {
+              "type": "number",
+              "description": "Known value to find proportion for"
+            },
+            "inverse": {
+              "type": "boolean",
+              "description": "If true, solve inverse proportion (default: false)"
+            }
+          },
+          "required": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      },
+      {
+        "name": "prime_check",
+        "description": "Check if a number is prime. For composite numbers, returns the prime factorization.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "number": {
+              "type": "number",
+              "description": "Number to check (positive integer)"
+            }
+          },
+          "required": [
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "gcd_lcm",
+        "description": "Calculate the Greatest Common Divisor (GCD) and Least Common Multiple (LCM) of two or more numbers.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "numbers": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "description": "Array of positive integers"
+            }
+          },
+          "required": [
+            "numbers"
+          ]
+        }
+      },
+      {
+        "name": "random_number",
+        "description": "Generate random numbers (integers or floats) within a range.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number",
+              "description": "Minimum value (default: 0)"
+            },
+            "max": {
+              "type": "number",
+              "description": "Maximum value (default: 100)"
+            },
+            "count": {
+              "type": "number",
+              "description": "How many numbers to generate (default: 1, max: 100)"
+            },
+            "integer": {
+              "type": "boolean",
+              "description": "If true, generate integers only (default: true)"
+            }
+          }
+        }
+      },
+      {
+        "name": "matrix",
+        "description": "Matrix operations: add, multiply, transpose, determinant (2x2 and 3x3).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "type": "string",
+              "enum": [
+                "add",
+                "multiply",
+                "transpose",
+                "determinant"
+              ],
+              "description": "Matrix operation"
+            },
+            "a": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "description": "First matrix (2D array)"
+            },
+            "b": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "description": "Second matrix (for add/multiply)"
+            }
+          },
+          "required": [
+            "operation",
+            "a"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'random_number' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "random_number",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'percentage' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['operation', 'x', 'y']",
+      "tool_name": "percentage",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'percentage.operation' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "percentage",
+      "parameter": "operation",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'percentage' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "percentage",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'base_convert.value' silently accepts wrong type",
+      "description": "Expected type 'string', sent int value '12345' — no error returned.",
+      "tool_name": "base_convert",
+      "parameter": "value",
+      "payload": "12345",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'compound_interest' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['principal', 'rate', 'years']",
+      "tool_name": "compound_interest",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'compound_interest.principal' silently accepts wrong type",
+      "description": "Expected type 'number', sent NoneType value 'None' — no error returned.",
+      "tool_name": "compound_interest",
+      "parameter": "principal",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'compound_interest' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "compound_interest",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'loan_payment' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['principal', 'annual_rate', 'years']",
+      "tool_name": "loan_payment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'loan_payment.principal' silently accepts wrong type",
+      "description": "Expected type 'number', sent NoneType value 'None' — no error returned.",
+      "tool_name": "loan_payment",
+      "parameter": "principal",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'loan_payment' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "loan_payment",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'proportion' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['a', 'b', 'c']",
+      "tool_name": "proportion",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'proportion.a' silently accepts wrong type",
+      "description": "Expected type 'number', sent NoneType value 'None' — no error returned.",
+      "tool_name": "proportion",
+      "parameter": "a",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'proportion' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "proportion",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'prime_check' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['number']",
+      "tool_name": "prime_check",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'prime_check.number' silently accepts wrong type",
+      "description": "Expected type 'number', sent NoneType value 'None' — no error returned.",
+      "tool_name": "prime_check",
+      "parameter": "number",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'prime_check' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "prime_check",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'random_number' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "random_number",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "12 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 52.43700000000172,
+  "exchanges": []
+}

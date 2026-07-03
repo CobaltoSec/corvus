@@ -1,0 +1,531 @@
+{
+  "target": "npx -y @pinkpixel/npm-helper-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "npm-helper-mcp",
+    "server_version": "2.0.5",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_npm",
+        "description": "Search for npm packages",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string"
+            },
+            "maxResults": {
+              "type": "number",
+              "default": 10
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "fetch_package_content",
+        "description": "Fetch detailed content from an npm package page URL",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      },
+      {
+        "name": "get_package_versions",
+        "description": "Get available versions for an npm package",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "name": "get_package_details",
+        "description": "Get detailed information about an npm package",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "name": "check_updates",
+        "description": "Scan package.json for outdated dependencies",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "reject": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "newest",
+                "greatest",
+                "minor",
+                "patch",
+                "semver"
+              ]
+            },
+            "peer": {
+              "type": "boolean"
+            },
+            "minimal": {
+              "type": "boolean"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "upgrade_packages",
+        "description": "Upgrade dependencies in package.json",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "upgradeType": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "newest",
+                "greatest",
+                "minor",
+                "patch",
+                "semver"
+              ]
+            },
+            "peer": {
+              "type": "boolean"
+            },
+            "minimal": {
+              "type": "boolean"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "filter_updates",
+        "description": "Check/upgrade updates for specific packages",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "upgrade": {
+              "type": "boolean"
+            },
+            "minimal": {
+              "type": "boolean"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          },
+          "required": [
+            "filter"
+          ]
+        }
+      },
+      {
+        "name": "resolve_conflicts",
+        "description": "Handle dependency conflicts (uses 'peer' strategy)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "upgrade": {
+              "type": "boolean"
+            },
+            "minimal": {
+              "type": "boolean"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "set_version_constraints",
+        "description": "Configure version upgrade rules for dependencies",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "newest",
+                "greatest",
+                "minor",
+                "patch",
+                "semver"
+              ]
+            },
+            "removeRange": {
+              "type": "boolean"
+            },
+            "upgrade": {
+              "type": "boolean"
+            },
+            "minimal": {
+              "type": "boolean"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      },
+      {
+        "name": "run_doctor",
+        "description": "Iteratively install upgrades and run tests",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "packagePath": {
+              "type": "string"
+            },
+            "doctorInstall": {
+              "type": "string"
+            },
+            "doctorTest": {
+              "type": "string"
+            },
+            "packageManager": {
+              "type": "string",
+              "enum": [
+                "npm",
+                "yarn",
+                "pnpm",
+                "deno",
+                "bun",
+                "staticRegistry"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'check_updates' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "check_updates",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'upgrade_packages' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "upgrade_packages",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'resolve_conflicts' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "resolve_conflicts",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_package_versions.packageName'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_package_versions",
+      "parameter": "packageName",
+      "payload": "null",
+      "evidence": "📦 null\nAvailable versions (newest first):\n2.0.0, 1.0.1, 0.0.0",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_package_details.packageName'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_package_details",
+      "parameter": "packageName",
+      "payload": "null",
+      "evidence": "{\n  \"name\": \"null\",\n  \"description\": \"Null generator library\",\n  \"dist-tags\": {\n    \"latest\": \"2.0.0\"\n  },\n  \"maintainers\": [\n    {\n      \"name\": \"qodeninja\",\n      \"email\": \"qodeninja@outlook.com\"\n    }\n  ],\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"git@qodeparty-gh:qodeparty/null.git\"\n  },\n",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_npm' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "search_npm",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_package_versions' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_package_versions",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_package_details' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_package_details",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "10 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 68.07900000000154,
+  "exchanges": []
+}

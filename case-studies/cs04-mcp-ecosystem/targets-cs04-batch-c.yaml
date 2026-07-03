@@ -1,0 +1,158 @@
+meta:
+  case_study: CS04-C
+  description: OWASP MCP Ecosystem Audit — CS04 Batch C (more public APIs + PyPI 2026-07-03)
+  corvus_version: 1.0.1
+  strategy: |
+    Continuación del esfuerzo de expansión hacia 100 servers.
+    Batería adicional de @cyanheads/* servers (public APIs sin auth)
+    + servidores PyPI (Wikipedia, clinical, multi-search variants)
+    + otros descubiertos post Batch B.
+
+targets:
+
+# ─── CYANHEADS ADICIONALES (público sin auth) ─────────────────────────────
+
+# 218/wk — OpenFEC campaign finance (US FEC), public API
+- name: openfec-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/openfec-mcp-server@latest'
+
+# 358/wk — World Bank development data, public API
+- name: worldbank-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/worldbank-mcp-server@latest'
+
+# 323/wk — WHO Global Health Observatory, public API
+- name: who-gho-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/who-gho-mcp-server@latest'
+
+# 407/wk — BrAPI plant biology data (Breeding API), public API
+- name: brapi-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/brapi-mcp-server@latest'
+
+# 172/wk — GBIF biodiversity data, public API
+- name: gbif-biodiversity-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/gbif-biodiversity-mcp-server@latest'
+
+# 214/wk — Congress.gov legislative data, public API
+- name: congressgov-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/congressgov-mcp-server@latest'
+
+# 191/wk — Ensembl genome database, public API (EBI)
+- name: ensembl-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/ensembl-mcp-server@latest'
+
+# 76/wk — Protein Data Bank (RCSB), public API
+- name: protein-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/protein-mcp-server@latest'
+
+# 366/wk — US Census Bureau data, public API
+- name: census-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/census-mcp-server@latest'
+
+# ─── PYPI ADICIONALES ─────────────────────────────────────────────────────
+
+# PyPI — Wikipedia, public API, confirmed no auth
+- name: wikipedia-mcp-server-pypi
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - uvx
+  - wikipedia-mcp-server
+
+# PyPI — Lunar calendar info, public calculation, no auth
+- name: lunar-mcp-server-pypi
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - uvx
+  - lunar-mcp-server
+
+# PyPI — PubMed biomedical search, NCBI public API (optional email param)
+- name: pubmed-search-mcp-pypi
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - uvx
+  - pubmed-search-mcp
+
+# PyPI — Academic multi-search (Semantic Scholar, arXiv, CrossRef)
+- name: academic-mcp-pypi
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - uvx
+  - academic-mcp
+
+# ─── NPM ADICIONALES ──────────────────────────────────────────────────────
+
+# 4,608/wk — @cyanheads git MCP (diferente de mcp-server-git CS01)
+# Nota: mcp-server-git (official Python pip) != @cyanheads/git-mcp-server (npm)
+- name: cyanheads-git-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cyanheads/git-mcp-server@latest'
+
+# 2,248/wk — ClinicalTrials.gov (si Batch B falla por npx cache)
+# skip si ya exitoso en Batch B
+
+# 4,507/wk — Postman API testing — might need API key, try anyway
+- name: postman-mcp-server
+  tier: CS04-C
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@postman/postman-mcp-server@latest'
+
+# 1,865/wk — EUR-Lex extra (si eur-lex falla en Batch B)
+# skip si ya exitoso en Batch B
+
+# @cyanheads/wsdot variant for redundancy if Batch B wsdot fails
+# skip if wsdot OK in Batch B

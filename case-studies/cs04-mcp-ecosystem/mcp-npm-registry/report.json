@@ -1,0 +1,702 @@
+{
+  "target": "npx -y mcp-npm-registry",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-npm-registry",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_packages",
+        "description": "Search for npm packages by keyword. Returns name, description, version, downloads and quality score.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query, e.g. 'csv parser' or 'react animation'"
+            },
+            "limit": {
+              "default": 5,
+              "description": "Number of results to return (1-20)",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "get_package_info",
+        "description": "Get detailed info about an npm package: description, latest version, license, maintainers, repository, dependencies and more.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Exact package name, e.g. 'express' or '@types/node'"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "get_package_versions",
+        "description": "List all published versions of an npm package with their publish dates.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name"
+            },
+            "limit": {
+              "default": 10,
+              "description": "How many recent versions to show",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "get_download_stats",
+        "description": "Get download statistics for an npm package over a given period.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name"
+            },
+            "period": {
+              "default": "last-month",
+              "description": "Time period for download stats",
+              "type": "string",
+              "enum": [
+                "last-day",
+                "last-week",
+                "last-month",
+                "last-year"
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "check_vulnerabilities",
+        "description": "Check if a specific version of an npm package has known security vulnerabilities.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name"
+            },
+            "version": {
+              "type": "string",
+              "description": "Package version, e.g. '4.17.21'"
+            }
+          },
+          "required": [
+            "name",
+            "version"
+          ]
+        }
+      },
+      {
+        "name": "compare_packages",
+        "description": "Compare two npm packages side by side: downloads, maintenance, quality, dependencies and more.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "package1": {
+              "type": "string",
+              "description": "First package name"
+            },
+            "package2": {
+              "type": "string",
+              "description": "Second package name"
+            }
+          },
+          "required": [
+            "package1",
+            "package2"
+          ]
+        }
+      },
+      {
+        "name": "get_changelog",
+        "description": "Get release notes for an npm package. Optionally filter between two versions. Falls back to CHANGELOG.md if no GitHub releases exist.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name, e.g. 'express'"
+            },
+            "from_version": {
+              "description": "Start version (exclusive), e.g. '4.18.0'",
+              "type": "string"
+            },
+            "to_version": {
+              "description": "End version (inclusive), e.g. '5.0.0'",
+              "type": "string"
+            },
+            "limit": {
+              "default": 5,
+              "description": "Max releases to show when no version range is given",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "get_dependents",
+        "description": "Find packages that depend on a given npm package, ranked by popularity. Shows total dependent count and top dependents.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name, e.g. 'lodash'"
+            },
+            "limit": {
+              "default": 10,
+              "description": "Number of top dependents to show",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      {
+        "name": "get_package_readme",
+        "description": "Fetch the full README of an npm package. Useful for understanding how to install, configure and use a package.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Package name, e.g. 'express' or '@types/node'"
+            },
+            "version": {
+              "description": "Specific version to fetch README for. Defaults to latest.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'search_packages.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "search_packages",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "Found 1425775 packages for \"' OR '1'='1\". Top 5:\n\n📦 **ieee754** v1.2.1\n   Read/write IEEE754 floating point numbers from/to a Buffer or array-like object\n   🔗 https://www.npmjs.com/package/ieee754\n   Score — quality: 100%  maintenance: 100%  popularity: 100%\n   Last published: 27/10/2020\n\n📦 **wbuf**",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_package_info.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_package_info",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_package_versions.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_package_versions",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_download_stats.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_download_stats",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found or has no download stats.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'check_vulnerabilities.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "check_vulnerabilities",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>@test\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'check_vulnerabilities.version'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "check_vulnerabilities",
+      "parameter": "version",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"test@<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'compare_packages.package1'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "compare_packages",
+      "parameter": "package1",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "## Package Comparison\n\n❌ <script>alert(1)</script> not found\n\n────────────────────────────────────────\n\n**test** v3.3.0\n  License: MIT\n  Downloads/month: 269.556\n  Dependencies: 3\n  Last published: 8/2/2023\n  Quality: 85%  Maintenance: 100%  Popularity: 15%",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'compare_packages.package2'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "compare_packages",
+      "parameter": "package2",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "## Package Comparison\n\n**test** v3.3.0\n  License: MIT\n  Downloads/month: 269.556\n  Dependencies: 3\n  Last published: 8/2/2023\n  Quality: 85%  Maintenance: 100%  Popularity: 15%\n\n────────────────────────────────────────\n\n❌ <script>alert(1)</script> not found",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_changelog.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_changelog",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_changelog.from_version'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_changelog",
+      "parameter": "from_version",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Changelog for **test** after v<script>alert(1)</script>:\n\n### v3.3.0 — 8/2/2023\n## [3.3.0](https://github.com/nodejs/node-core-test/compare/v3.2.1...v3.3.0) (2023-02-08)\n\n\n### Features\n\n* add --test-name-pattern CLI flag ([c5fd64c](https://github.com/nodejs/node-core-test/commit/c5fd64cc2e2e22b35fd6",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_changelog.to_version'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_changelog",
+      "parameter": "to_version",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "No releases found for **test** up to v<script>alert(1)</script>.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_dependents.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_dependents",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'get_package_readme.name'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "get_package_readme",
+      "parameter": "name",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Package \"<script>alert(1)</script>\" not found on npm.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_package_readme.version'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_package_readme",
+      "parameter": "version",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Version \"<script>alert(1)</script>\" not found for \"test\".",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_packages' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "search_packages",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_package_info' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_package_info",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_package_versions' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_package_versions",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_download_stats' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_download_stats",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'check_vulnerabilities' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "check_vulnerabilities",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'compare_packages' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "compare_packages",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_changelog' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_changelog",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_dependents' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_dependents",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_package_readme' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "get_package_readme",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "MCP10",
+      "severity": "high",
+      "title": "Response Flooding — 'get_package_readme' returns oversized response",
+      "description": "Tool 'get_package_readme' returned 12,112 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines.",
+      "tool_name": "get_package_readme",
+      "parameter": null,
+      "payload": null,
+      "evidence": "12,112 bytes — preview: # test@3.3.0\n📦 https://www.npmjs.com/package/test\n\n---\n\n# The `test` npm package\n\n[![CI](https://github.com/nodejs/node-core-test/actions/workflows/ci.yml/badge.svg)](https://github.com/nodejs/node-co",
+      "remediation": "Paginate or cap tool responses. Never return unbounded data. Aim for responses under 4 KB to preserve LLM context budget.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'get_package_readme' returns highly repetitive content",
+      "description": "Tool 'get_package_readme' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "get_package_readme",
+      "parameter": null,
+      "payload": null,
+      "evidence": "# test@3.3.0\n📦 https://www.npmjs.com/package/test\n\n---\n\n# The `test` npm package\n\n[![CI](https://github.com/nodejs/node-core-test/actions/workflows/ci.yml/badge.svg)](https://github.com/nodejs/node-core-test/actions/workflows/ci.yml)\n\nThis is a user-land port of [`node:test`](https://nodejs.org/api/",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-028",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-029",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "9 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 101.70400000000154,
+  "exchanges": []
+}

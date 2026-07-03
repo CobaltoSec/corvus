@@ -1,0 +1,23 @@
+meta:
+  description: Retry 3 failed targets from batch
+targets:
+- name: server-everything
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-everything'
+
+- name: server-github
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@modelcontextprotocol/server-github'
+
+- name: playwright-mcp
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@playwright/mcp'
