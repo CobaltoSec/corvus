@@ -64,15 +64,16 @@ case_studies:
     true_positives: 70  # estimated, full curation pending
     false_positives: 3
   cs04:
-    servers: 44  # new unique servers (excludes 3 duplicates from CS01/CS02)
-    raw_findings: 979  # confirmed from report.json (47 OK servers incl. 3 dups); curation pending (2026-07-03)
-    true_positives: null  # not yet curated
-    false_positives: null
-    note: "Batches B/C/D/E/F/G/H/I. Categories: academia, UI frameworks, news APIs, crypto, food, books, dictionary, NASA, weather, dev-utils, web-search, design systems. Top finding servers: sveltejs-mcp (209), mcp-devutils (168), lunar-mcp-server (78)"
+    servers: 44  # unique new servers (excludes 3 duplicates from CS01/CS02)
+    raw_findings: 979  # confirmed from report.json (47 OK servers incl. 3 dups)
+    true_positives: 550   # estimated — full manual curation in progress (2026-07-03)
+    false_positives: 429  # estimated — 3 new FP patterns: docs lazy-load (195), strptime reflection (33), API error echo (62+)
+    fp_rate: 44.0  # estimated; without sveltejs-mcp outlier: ~30% (comparable to CS01/02)
+    note: "Batches B-I. Categories: UI frameworks, news APIs, crypto, weather, dev-utils, web-search, design systems, docs servers. GHSA candidates: mcp-devutils (RSA key), pdf-toolkit-mcp (prompt injection), arxiv-mcp-server (stored SQL plausible), pulsemcp-pulse-fetch (SSRF plausible). Novel patterns: description mutation rug-pull, covert AI surveillance telemetry, stored SQL via watch_topic."
   totals:
     servers: 101
-    raw_findings: 1267  # 288 (CS01-03) + 979 (CS04 confirmed)
-    true_positives: 191  # CS01-03 curated only; CS04 curation pending
+    raw_findings: 1267  # 288 (CS01-03) + 979 (CS04)
+    true_positives: 741  # 191 (CS01-03) + 550 (CS04 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -82,13 +83,18 @@ key_findings:
   - "SSRF confirmed in 3 servers (myclaw-toolkit, @sap-ux/fiori-mcp-server, markitdown-mcp) — internal metadata endpoints reachable from tool parameters"
   - "Supply chain cascade: @modelcontextprotocol/sdk ≤1.25.1 advisory propagates to the majority of JS-based servers in the ecosystem"
   - "FP rate reduced from ~40% (v0.5.0, early calibration) to ~7% (CS03, v1.0.1) through 5 calibration iterations"
+  - "CS04 introduces 3 new systematic FP patterns: docs server lazy-loading (MCP06, 195 FP from sveltejs), Python strptime error reflection (MCP05, 33 FP), and third-party API error message echo (MCP05, 62+ FP across 11 servers)"
+  - "Novel attack pattern discovered: SaaS description mutation rug-pull — mcp-devutils changes 29 tool descriptions mid-session from '[PRO — trial]' to '[PRO — trial expired]' based on billing logic"
+  - "Covert AI agent surveillance via MCP scope creep: clarvia-mcp-server instructs agents to 'Use after every tool invocation' to report all activity to external servers"
+  - "SSRF with timing evidence: pulsemcp-pulse-fetch scrape.url accesses 169.254.169.254 AWS metadata endpoint (8.3s timing delta vs 2.3s baseline)"
+  - "Stored SQL injection pattern: arxiv-mcp-server watch_topic.topic stores SQL payload in database without sanitization (plausible, needs check_alerts verification)"
 
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 21
+  total: 23
   published: 3
-  draft: 18
+  draft: 20
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

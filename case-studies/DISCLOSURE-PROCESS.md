@@ -197,3 +197,5 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-frqj-945w-4qp2   | markitdown-mcp                       | HIGH        | afourney ✅              | draft CS03  | 2026-10-03  |
 | GHSA-8ggf-fm7g-7pxf   | @upstash/context7-mcp                | MEDIUM      | enesgules + fahreddinozcan ✅ | draft CS03 | 2026-10-03  |
 | GHSA-4r48-4m95-6rm8   | @heroku/mcp-server                   | HIGH        | justinwilaby + sbosio ✅     | draft CS03 | 2026-10-03  |
+| GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                  | draft CS04 | 2026-08-03  |
+| GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                   | draft CS04 | 2026-08-03  |

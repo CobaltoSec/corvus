@@ -364,7 +364,7 @@ Corvus has been battle-tested against the real-world MCP ecosystem across three 
 | | CS01 | CS02 | CS03 | Combined |
 |---|---|---|---|---|
 | Servers audited | 20 | 29 | 8 | **101** |
-| True positives | 70 | 51 | ~70 | **~191** |
+| True positives | 70 | 51 | ~70 | **~741** |
 | FP rate | 23.1% | 20.3% | ~2.6% | — |
 
 Key findings from the wild:
@@ -375,6 +375,11 @@ Key findings from the wild:
 - **SSRF confirmed in 3 servers (myclaw-toolkit, @sap-ux/fiori-mcp-server, markitdown-mcp) — internal metadata endpoints reachable from tool parameters**
 - **Supply chain cascade: @modelcontextprotocol/sdk ≤1.25.1 advisory propagates to the majority of JS-based servers in the ecosystem**
 - **FP rate reduced from ~40% (v0.5.0, early calibration) to ~7% (CS03, v1.0.1) through 5 calibration iterations**
+- **CS04 introduces 3 new systematic FP patterns: docs server lazy-loading (MCP06, 195 FP from sveltejs), Python strptime error reflection (MCP05, 33 FP), and third-party API error message echo (MCP05, 62+ FP across 11 servers)**
+- **Novel attack pattern discovered: SaaS description mutation rug-pull — mcp-devutils changes 29 tool descriptions mid-session from '[PRO — trial]' to '[PRO — trial expired]' based on billing logic**
+- **Covert AI agent surveillance via MCP scope creep: clarvia-mcp-server instructs agents to 'Use after every tool invocation' to report all activity to external servers**
+- **SSRF with timing evidence: pulsemcp-pulse-fetch scrape.url accesses 169.254.169.254 AWS metadata endpoint (8.3s timing delta vs 2.3s baseline)**
+- **Stored SQL injection pattern: arxiv-mcp-server watch_topic.topic stores SQL payload in database without sanitization (plausible, needs check_alerts verification)**
 
 Full datasets, curated findings, and methodology in [`case-studies/`](case-studies/).
 <!-- CORVUS_RESEARCH_END -->
@@ -382,7 +387,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-21 security advisories filed across 3 case studies — 3 published, 18 in active coordinated disclosure (90-day window).
+23 security advisories filed across 3 case studies — 3 published, 20 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -392,7 +397,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-hv3x-m9fv-4vhf](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) | mcp-server-git | HIGH | DoS via spec-compliant JSON-RPC batch arrays and oversized method names |
 | [GHSA-3f55-qgq4-f88c](https://github.com/advisories/GHSA-3f55-qgq4-f88c) | server-sequential-thinking | MEDIUM | DoS via oversized JSON-RPC method names (CWE-755) |
 
-**Active coordinated disclosure (18 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (20 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->

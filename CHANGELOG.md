@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-CS04-CURATION] — 2026-07-03 — Curación completa CS04 · FP rate ~44% · 2 GHSAs
+
+- **Curación completa CS04** — 979 raw findings (47 servidores) clasificados manualmente. 47 IDs asignados (CS04-F01–F47). FP rate global ~44%: CRITICAL 86.8% FP (195 sveltejs lazy-load + 3 otros), HIGH ~61% FP (strptime 33 + API echo 62+ + dict 10), M/L/I ~26% FP (protocol TPs dominan). Sin sveltejs outlier: **~30%** — comparable a CS01 (23.1%) y CS02 (20.3%).
+- **Nuevos patrones FP documentados** — 4 patrones nuevos no vistos en CS01-CS03: docs server lazy-loading (MCP06, 195 FP de sveltejs), Python strptime error reflection (MCP05, 33 FP de lunar), API error echo third-party (MCP05, 62+ FP en 11 servers), env var NAME en error message (MCP01, FP-downgrade a INFO).
+- **Nuevos patrones TP para CFP** — 5 patrones únicos CS04: SaaS description mutation rug-pull (F08, ×29 tools, billing logic), prompt arg interpolation en `prompts/get` (F11, ×5 prompts), covert AI agent surveillance tool (F30, clarvia), stored SQL injection via `watch_topic` (F32, plausible), SSRF a AWS IMDSv1 via timing delta 8.3s (F41, plausible).
+- **2 GHSAs CS04 creados** — GHSA-2g9w-p2x3-97pp (`mcp-devutils` CRITICAL: RSA key + description mutation, hlteoh37 invitado) · GHSA-w5c8-hjv7-p95r (`@aryanbv/pdf-toolkit-mcp` MEDIUM: prompt injection ×5 prompts, AryanBV invitado). Portfolio: **23 GHSAs** (3 published, 20 draft).
+- **public-stats.yaml actualizado** — CS04: TP ~550, FP ~429, FP rate 44.0. 6 nuevos key_findings (description mutation, covert surveillance, stored SQL, SSRF timing). README + CobaltoSec-Web sincronizados.
+
 ## [RT-CORVUS-CS04] — 2026-07-03 — Dataset expansion 57→101 unique servers
 
 - **101 MCP servers auditados** — CS04 añade 44 servers únicos nuevos (47 OK, 3 dups de CS01/CS02) via batches D/E/F/G/H/I. Categorías: UI frameworks (Svelte, Flowbite, DaisyUI, Chakra, Taiga, Mantine, ShadCN CLI, Synergy, SAP UI5), news APIs (HN×3, PulseMCP×2), academia (arxiv, pubmed, academic-mcp, Open Library), crypto (CoinGecko), dev-utils (mcp-devutils, devutils-mcp-server, npm-registry, npm-helper), weather (open-meteo×2, dangahagan), finanzas (TradingView, MarketNow, Frankfurter), datos (DuckDB, Excel, pdf-toolkit, mathtools), misc (mcp-web-search, eslint, wiki×2, clarvia, rosetta, cyanheads-git, hero-fe, faker).

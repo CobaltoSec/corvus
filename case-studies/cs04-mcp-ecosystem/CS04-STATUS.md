@@ -8,7 +8,7 @@
 | Servidores únicos nuevos | **44** (47 - 3 duplicados de CS01/CS02) |
 | Servidores con ERROR | 73 (batches A/B/C con auth requerida) |
 | Raw findings CS04 | **979** |
-| Curación pendiente | ❌ (0 findings curados a 2026-07-03) |
+| Curación completada | ✅ 47 IDs asignados (CS04-F01–F47) · FP rate ~44% · 2 GHSAs filed |
 | Total acumulado (CS01-CS04) | 101 unique servers, ~1288 raw findings |
 
 ---
