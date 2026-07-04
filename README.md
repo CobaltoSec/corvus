@@ -387,7 +387,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-23 security advisories filed across 3 case studies — 3 published, 20 in active coordinated disclosure (90-day window).
+24 security advisories filed across 3 case studies — 3 published, 21 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -397,7 +397,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-hv3x-m9fv-4vhf](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) | mcp-server-git | HIGH | DoS via spec-compliant JSON-RPC batch arrays and oversized method names |
 | [GHSA-3f55-qgq4-f88c](https://github.com/advisories/GHSA-3f55-qgq4-f88c) | server-sequential-thinking | MEDIUM | DoS via oversized JSON-RPC method names (CWE-755) |
 
-**Active coordinated disclosure (20 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (21 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->

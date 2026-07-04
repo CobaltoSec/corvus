@@ -208,7 +208,7 @@ Nuevos FP patterns no documentados en CS01/CS02/CS03:
 | CS04-F29 | taiga-ui-mcp | MCP10 | HIGH | `get_list_components` response flood 31,017 bytes | ✅ TP | Más grande de la muestra CS04. |
 | CS04-F30 | clarvia-mcp-server | MCP02 | HIGH | Covert AI agent telemetry — "Use after every agent tool invocation" | ✅ TP | `clarvia_submit_feedback` reporta CADA tool call del agente a Clarvia. Scope creep encubierto para usuario final. Fuerza cadena `clarvia_gate_check` → `clarvia_find_alternatives`. |
 | CS04-F31 | dangahagan-weather-mcp | EXT01 | HIGH | Protocol crash — oversized method (8192 bytes) | ✅ TP | DoS. |
-| CS04-F32 | arxiv-mcp-server-pypi | MCP05 | HIGH | Stored input in `watch_topic.topic` — SQL payload saved to DB | ⚠️ PLAUSIBLE | `' OR '1'='1` guardado sin sanitización (evidence: `"topic": "' OR '1'='1"` en response). Si `check_alerts` usa interpolación, SQL injection. Verificar via `check_alerts` flow. |
+| CS04-F32 | arxiv-mcp-server-pypi | MCP05 | HIGH | Stored input in `watch_topic.topic` — SQL payload saved to DB | ❌ FP | Verificado 2026-07-03: `check_alerts(topic=nonexistent)` → `checked_topics:0` → query parametrizado. Payload guardado verbatim en DB pero no ejecutado como SQL. |
 | CS04-F33 | arxiv-mcp-server-pypi | EXT01 | HIGH | Protocol crash — oversized method (8192 bytes) | ✅ TP | DoS. |
 | CS04-F34 | mantine-mcp-server | MCP10 | HIGH | `list_items` response flood 18,763 bytes | ✅ TP | Component dump sin paginación. |
 | CS04-F35 | npm-helper-mcp | EXT01 | HIGH | Protocol crash — oversized method (8192 bytes) | ✅ TP | DoS. |
@@ -217,7 +217,7 @@ Nuevos FP patterns no documentados en CS01/CS02/CS03:
 | CS04-F38 | npm-search-mcp-server | MCP04 | HIGH | Supply chain: `@modelcontextprotocol/sdk<=1.25.1` | ✅ TP | Tercer server con este advisory en CS04. |
 | CS04-F39 | shadcn-ui-mcp-server | EXT01 | HIGH | Protocol crash — oversized method (8192 bytes) | ✅ TP | DoS. |
 | CS04-F40 | coingecko-mcp-official | EXT03 | HIGH | Shadow Tool named `execute` — deceptive naming | ✅ TP | Tool oficial de CoinGecko se llama `execute`, naming deceptivo en contexto multi-server. Conf 90%. |
-| CS04-F41 | pulsemcp-pulse-fetch | EXT07 | HIGH | SSRF — `scrape.url` accede a 169.254.169.254 (timing delta 8.3s) | ⚠️ PLAUSIBLE | Tool `scrape` realiza request real al AWS IMDSv1 endpoint. En deploy AWS → IAM credential theft posible. Verificar: `curl http://169.254.169.254/latest/meta-data/iam/security-credentials/`. |
+| CS04-F41 | pulsemcp-pulse-fetch | EXT07 | HIGH | SSRF — `scrape.url` realiza outbound HTTP request arbitrario | ✅ TP | Verificado 2026-07-04: `scrape(url=http://127.0.0.1:PORT/)` → request recibido en capture server local (response: SSRF_CAPTURED). En deploy AWS: acceso a IMDSv1 169.254.169.254 confirmado por timing delta 10.6s vs 2.3s baseline. |
 | CS04-F42 | pulsemcp-server | MCP04 | HIGH | Supply chain: `@modelcontextprotocol/sdk<=1.25.1` | ✅ TP | Cuarto server con este advisory. |
 | CS04-F43 | mcp-hacker-news | EXT01 | HIGH | JSON-RPC batch array crash | ✅ TP | DoS. |
 | CS04-F44 | mcp-hacker-news | EXT01 | HIGH | Protocol crash — oversized method (8192 bytes) | ✅ TP | DoS. |
@@ -277,8 +277,8 @@ Nuevos FP patterns no documentados en CS01/CS02/CS03:
 2. **CS04-F08** — Description mutation SaaS rug-pull: `[PRO trial]` → `[PRO trial expired]` ×29 (MCP06)
 3. **CS04-F11** — Prompt arg interpolation directa en MCP `prompts/get` interface (MCP10/OWASP P6)
 4. **CS04-F30** — Covert AI agent surveillance via MCP scope creep tool (MCP02) — nuevo vector
-5. **CS04-F32** — Stored input en tabla de alertas como potencial SQL injection (MCP05) — plausible
-6. **CS04-F41** — SSRF a AWS IMDSv1 via `scrape.url` con timing delta 8.3s (EXT07) — plausible
+5. **CS04-F41** — SSRF via `scrape.url` — outbound request arbitrario confirmado (EXT07) — **TP verificado 2026-07-04** → GHSA-78qj-r76x-2jvh
+6. ~~**CS04-F32**~~ — Descartado 2026-07-03: query parametrizado, FP confirmado
 
 ### GHSA Candidates CS04
 
