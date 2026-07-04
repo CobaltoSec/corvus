@@ -284,10 +284,10 @@ Nuevos FP patterns no documentados en CS01/CS02/CS03:
 
 | # | Target | Package | Finding | Status |
 |---|--------|---------|---------|--------|
-| 1 | mcp-devutils | `mcp-devutils@2.9.16` (npm) | RSA private key retornada por `rsa_keygen` (MCP01 CRITICAL) | 🔴 GHSA pending disclosure |
-| 2 | pdf-toolkit-mcp | `@aryanbv/pdf-toolkit-mcp@0.3.1` (npm) | Prompt injection via `prompts/get` arg interpolation ×5 (MCP10) | 🔴 GHSA pending disclosure |
-| 3 | arxiv-mcp-server-pypi | `arxiv-mcp-server@0.5.0` (PyPI) | Stored SQL injection `watch_topic.topic` (plausible — verificar `check_alerts`) | 🟡 Needs verification |
-| 4 | pulsemcp-pulse-fetch | `@pulsemcp/server` (npm) | SSRF `scrape.url` sin bloqueo RFC-1918 (plausible — verificar en AWS) | 🟡 Needs verification |
+| 1 | mcp-devutils | `mcp-devutils@2.9.16` (npm) | RSA private key retornada por `rsa_keygen` (MCP01 CRITICAL) | ✅ GHSA-2g9w-p2x3-97pp (draft, hlteoh37 invitado) |
+| 2 | pdf-toolkit-mcp | `@aryanbv/pdf-toolkit-mcp@0.3.1` (npm) | Prompt injection via `prompts/get` arg interpolation ×5 (MCP10) | ✅ GHSA-w5c8-hjv7-p95r (draft, AryanBV invitado) |
+| 3 | ~~arxiv-mcp-server-pypi~~ | `arxiv-mcp-server@0.5.0` (PyPI) | ~~Stored SQL injection~~ | ❌ FP — query parametrizado (`checked_topics: 0` para topic inexistente, verificado 2026-07-03) |
+| 4 | pulsemcp-pulse-fetch | `@pulsemcp/pulse-fetch@0.3.3` (npm) | SSRF `scrape.url` — outbound HTTP request arbitrario (CWE-918) | ✅ GHSA-78qj-r76x-2jvh (draft, macoughl+tadasant invitados, verificado 2026-07-04) |
 
 ---
 
