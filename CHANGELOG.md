@@ -1,5 +1,11 @@
 # Changelog
 
+## [RT-CORVUS-CFP-EKO] — 2026-07-04 — CFP Ekoparty 2026 · draft completo
+
+- **CFP listo para submitear** — `case-studies/cfp-ekoparty-2026.md`: descripción en español (8 hallazgos principales), outline 30 min, bio del speaker. Título: *"Corvus: Seguridad en el Ecosistema MCP a Escala"*. Deadline Sessionize: 2026-08-14.
+- **Paper técnico adjunto** — `case-studies/technical-paper-ekoparty-2026.md`: 8 secciones cubriendo EXT14 crash universal, EXT08 sampling C2 encubierto, rug pull mid-session, vigilancia AI, SSRF con timing evidence, supply chain cascade, evolución FP rate 42%→7%, 24 GHSAs.
+- **Slide deck** — 18 slides, dark amber theme, navegación teclado/swipe, self-contained HTML. `Downloads/slides-ekoparty-2026.html`.
+
 ## [RT-CORVUS-CS04-CURATION] — 2026-07-03/04 — Curación completa CS04 · FP rate ~44% · 3 GHSAs
 
 - **Curación completa CS04** — 979 raw findings (47 servidores) clasificados manualmente. 47 IDs asignados (CS04-F01–F47). FP rate global ~44%: CRITICAL 86.8% FP (195 sveltejs lazy-load + 3 otros), HIGH ~61% FP (strptime 33 + API echo 62+ + dict 10), M/L/I ~26% FP (protocol TPs dominan). Sin sveltejs outlier: **~30%** — comparable a CS01 (23.1%) y CS02 (20.3%).
