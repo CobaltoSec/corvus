@@ -1,12 +1,13 @@
 # Changelog
 
-## [RT-CORVUS-CS04-CURATION] — 2026-07-03 — Curación completa CS04 · FP rate ~44% · 2 GHSAs
+## [RT-CORVUS-CS04-CURATION] — 2026-07-03/04 — Curación completa CS04 · FP rate ~44% · 3 GHSAs
 
 - **Curación completa CS04** — 979 raw findings (47 servidores) clasificados manualmente. 47 IDs asignados (CS04-F01–F47). FP rate global ~44%: CRITICAL 86.8% FP (195 sveltejs lazy-load + 3 otros), HIGH ~61% FP (strptime 33 + API echo 62+ + dict 10), M/L/I ~26% FP (protocol TPs dominan). Sin sveltejs outlier: **~30%** — comparable a CS01 (23.1%) y CS02 (20.3%).
 - **Nuevos patrones FP documentados** — 4 patrones nuevos no vistos en CS01-CS03: docs server lazy-loading (MCP06, 195 FP de sveltejs), Python strptime error reflection (MCP05, 33 FP de lunar), API error echo third-party (MCP05, 62+ FP en 11 servers), env var NAME en error message (MCP01, FP-downgrade a INFO).
-- **Nuevos patrones TP para CFP** — 5 patrones únicos CS04: SaaS description mutation rug-pull (F08, ×29 tools, billing logic), prompt arg interpolation en `prompts/get` (F11, ×5 prompts), covert AI agent surveillance tool (F30, clarvia), stored SQL injection via `watch_topic` (F32, plausible), SSRF a AWS IMDSv1 via timing delta 8.3s (F41, plausible).
-- **2 GHSAs CS04 creados** — GHSA-2g9w-p2x3-97pp (`mcp-devutils` CRITICAL: RSA key + description mutation, hlteoh37 invitado) · GHSA-w5c8-hjv7-p95r (`@aryanbv/pdf-toolkit-mcp` MEDIUM: prompt injection ×5 prompts, AryanBV invitado). Portfolio: **23 GHSAs** (3 published, 20 draft).
-- **public-stats.yaml actualizado** — CS04: TP ~550, FP ~429, FP rate 44.0. 6 nuevos key_findings (description mutation, covert surveillance, stored SQL, SSRF timing). README + CobaltoSec-Web sincronizados.
+- **Nuevos patrones TP para CFP** — 4 patrones únicos CS04 confirmados: SaaS description mutation rug-pull (F08, ×29 tools, billing logic), prompt arg interpolation en `prompts/get` (F11, ×5 prompts), covert AI agent surveillance tool (F30, clarvia), SSRF outbound arbitrario via `scrape.url` (F41, confirmado 2026-07-04). F32 (arxiv stored SQL) descartado como FP — query parametrizado verificado.
+- **3 GHSAs CS04 creados** — GHSA-2g9w-p2x3-97pp (`mcp-devutils` CRITICAL: RSA key + description mutation) · GHSA-w5c8-hjv7-p95r (`@aryanbv/pdf-toolkit-mcp` MEDIUM: prompt injection) · GHSA-78qj-r76x-2jvh (`@pulsemcp/pulse-fetch` HIGH: SSRF CWE-918, verificado con capture server). Portfolio: **24 GHSAs** (3 published, 21 draft).
+- **Verificación post-curación** — F32 (arxiv stored SQL): FP — `check_alerts(topic=inexistente)` → `checked_topics:0` confirma WHERE parametrizado. F41 (pulsemcp SSRF): TP — `scrape(url=http://127.0.0.1:PORT/)` → request recibido, response `SSRF_CAPTURED`.
+- **public-stats.yaml actualizado** — CS04: TP ~550, FP ~429, FP rate 44.0. 24 GHSAs. README + CobaltoSec-Web sincronizados.
 
 ## [RT-CORVUS-CS04] — 2026-07-03 — Dataset expansion 57→101 unique servers
 
