@@ -45,6 +45,11 @@ class StdioTransport(MCPTransport):
         self._req_id = 0
         self._exchanges: list[RawExchange] = []
         self._watchdog_timer: threading.Timer | None = None
+        # Multiplexed reader — routes responses to per-req_id Futures
+        self._pending: dict[int, asyncio.Future] = {}
+        self._reader_task: asyncio.Task | None = None
+        self._write_lock: asyncio.Lock | None = None  # created in connect() (needs running loop)
+        self._dead: bool = False  # set when the reader loop exits unexpectedly (server crash)
 
     @property
     def exchanges(self) -> list[RawExchange]:
@@ -105,6 +110,10 @@ class StdioTransport(MCPTransport):
         except asyncio.TimeoutError:
             pass  # Still running — startup OK
 
+        # Initialize write lock and start multiplexed reader
+        self._write_lock = asyncio.Lock()
+        self._reader_task = asyncio.create_task(self._reader_loop())
+
         # Startup watchdog: kills the process if it doesn't respond within startup_timeout.
         # Defends against npx hanging on workspace/config lookup before the MCP handshake.
         # threading.Timer runs in its own thread — not blocked by the event loop's readline().
@@ -114,6 +123,63 @@ class StdioTransport(MCPTransport):
             )
             self._watchdog_timer.daemon = True
             self._watchdog_timer.start()
+
+    async def _reader_loop(self) -> None:
+        """Background task: read all stdout lines and route responses to waiting Futures.
+
+        On EOF or pipe error (server crash), fails all pending Futures so callers
+        get an immediate exception instead of waiting for the per-request timeout.
+        On task cancellation (pause_reader), stops cleanly without touching Futures —
+        the caller guarantees no pending Futures at that point.
+        """
+        assert self._process is not None
+        _cancelled = False
+        try:
+            while True:
+                try:
+                    raw = await self._process.stdout.readline()
+                except asyncio.CancelledError:
+                    _cancelled = True
+                    raise  # re-raise so task.cancel() propagates correctly
+                except Exception:
+                    break  # pipe error — fall through to finally
+                if not raw:
+                    break  # EOF
+                try:
+                    response = json.loads(raw.decode())
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(response, dict):
+                    continue  # ignore batch arrays and other non-dict messages
+                req_id = response.get("id")
+                if req_id is not None:
+                    fut = self._pending.get(req_id)
+                    if fut is not None and not fut.done():
+                        fut.set_result(response)
+                # Notifications (no "id") are silently discarded
+        finally:
+            if not _cancelled:
+                # EOF or pipe error — mark transport dead and fail pending Futures immediately
+                self._dead = True
+                err = RuntimeError("Server closed stdout unexpectedly")
+                for fut in list(self._pending.values()):
+                    if not fut.done():
+                        fut.set_exception(err)
+
+    async def pause_reader(self) -> None:
+        """Stop the multiplexed reader so a module can access stdout directly (e.g. cancellation_probe)."""
+        if self._reader_task and not self._reader_task.done():
+            self._reader_task.cancel()
+            try:
+                await self._reader_task
+            except asyncio.CancelledError:
+                pass
+            self._reader_task = None
+
+    async def resume_reader(self) -> None:
+        """Restart the multiplexed reader after a pause."""
+        if self._process and self._process.returncode is None:
+            self._reader_task = asyncio.create_task(self._reader_loop())
 
     def _kill_process_tree(self) -> None:
         """Kill the subprocess and all descendants (sync-safe, callable from threads)."""
@@ -133,6 +199,20 @@ class StdioTransport(MCPTransport):
             pass
 
     async def disconnect(self) -> None:
+        # Cancel reader task and fail any pending requests
+        if self._reader_task and not self._reader_task.done():
+            self._reader_task.cancel()
+            try:
+                await self._reader_task
+            except asyncio.CancelledError:
+                pass
+            self._reader_task = None
+        err = RuntimeError("Transport disconnected")
+        for fut in list(self._pending.values()):
+            if not fut.done():
+                fut.set_exception(err)
+        self._pending.clear()
+
         if self._watchdog_timer is not None:
             self._watchdog_timer.cancel()
             self._watchdog_timer = None
@@ -154,6 +234,8 @@ class StdioTransport(MCPTransport):
                 pass
 
     async def send_request(self, method: str, params: dict[str, Any] | None = None) -> Any:
+        if self._dead:
+            raise RuntimeError("Transport is disconnected (server process died)")
         self._req_id += 1
         req_id = self._req_id
         msg: dict[str, Any] = {"jsonrpc": "2.0", "id": req_id, "method": method}
@@ -161,30 +243,49 @@ class StdioTransport(MCPTransport):
             msg["params"] = params
 
         t0 = time.monotonic()
-        await self._write(msg)
 
-        # Loop until we get the response matching req_id.
-        # Servers may emit notifications (no "id") or unrelated messages before
-        # the actual response — skip those rather than treating them as the result.
-        while True:
-            elapsed = time.monotonic() - t0
-            remaining = self.timeout - elapsed
-            if remaining <= 0:
-                raise asyncio.TimeoutError()
+        if self._reader_task is not None:
+            # Multiplexed mode: register a Future, write, and await the reader to resolve it
+            loop = asyncio.get_running_loop()
+            fut: asyncio.Future = loop.create_future()
+            self._pending[req_id] = fut
             try:
-                raw = await asyncio.wait_for(
-                    self._process.stdout.readline(), timeout=remaining
-                )
-            except asyncio.TimeoutError:
-                if self._process and self._process.returncode is None:
-                    self._kill_process_tree()
-                raise
-            if not raw:
-                raise RuntimeError("Server closed stdout unexpectedly")
-            response = json.loads(raw.decode())
-            if response.get("id") == req_id:
-                break
-            # Notification or out-of-order message — skip
+                lock = self._write_lock
+                if lock is not None:
+                    async with lock:
+                        await self._write(msg)
+                else:
+                    await self._write(msg)
+                try:
+                    response = await asyncio.wait_for(fut, timeout=self.timeout)
+                except asyncio.TimeoutError:
+                    if self._process and self._process.returncode is None:
+                        self._kill_process_tree()
+                    raise
+            finally:
+                self._pending.pop(req_id, None)
+        else:
+            # Fallback (reader paused or not started): legacy sequential readline loop
+            await self._write(msg)
+            while True:
+                elapsed = time.monotonic() - t0
+                remaining = self.timeout - elapsed
+                if remaining <= 0:
+                    raise asyncio.TimeoutError()
+                try:
+                    raw = await asyncio.wait_for(
+                        self._process.stdout.readline(), timeout=remaining
+                    )
+                except asyncio.TimeoutError:
+                    if self._process and self._process.returncode is None:
+                        self._kill_process_tree()
+                    raise
+                if not raw:
+                    raise RuntimeError("Server closed stdout unexpectedly")
+                response = json.loads(raw.decode())
+                if response.get("id") == req_id:
+                    break
+                # Notification or out-of-order message — skip
 
         duration_ms = (time.monotonic() - t0) * 1000
 

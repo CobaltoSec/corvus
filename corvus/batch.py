@@ -116,12 +116,13 @@ class BatchResult:
     def __init__(self):
         self.targets: list[dict[str, Any]] = []
 
-    def add(self, name: str, transport: str, finding_count: dict[str, int], risk_score: int | None = None) -> None:
+    def add(self, name: str, transport: str, finding_count: dict[str, int], risk_score: int | None = None, error_category: str | None = None) -> None:
         self.targets.append({
             "name": name,
             "transport": transport,
             "finding_count": finding_count,
             "risk_score": risk_score,
+            "error_category": error_category,
         })
 
     def summary_md(self) -> str:
@@ -131,7 +132,8 @@ class BatchResult:
         for t in self.targets:
             fc = t["finding_count"]
             if "error" in fc:
-                lines.append(f"| {t['name']} | ERROR | — | — | — | — | — | — |")
+                cat = t.get("error_category") or "unknown"
+                lines.append(f"| {t['name']} | ERROR ({cat}) | — | — | — | — | — | — |")
                 continue
             if "skipped" in fc:
                 lines.append(f"| {t['name']} | SKIP | — | — | — | — | — | — |")
@@ -200,6 +202,41 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
 
 _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-request timeouts
 
+# Modules that read stdout directly (bypass the multiplexed reader).
+# These must run with the reader paused to avoid race conditions on stdout.
+_DIRECT_IO_MODS = frozenset((BatchDosModule, ProtoFuzzModule, SamplingProbeModule, ElicitationProbeModule))
+
+# Modules that re-enumerate surface after all probes (needs reader active, must be serial).
+_SERIAL_POST_MODS = frozenset((RugPullModule,))
+
+# Modules that crash the server — must be last with reader paused.
+_CRASH_MODS = frozenset((CancellationProbeModule,))
+
+# All modules excluded from Group 1 (parallel gather).
+_POST_MODS = _DIRECT_IO_MODS | _SERIAL_POST_MODS | _CRASH_MODS
+
+
+def _classify_startup_error(e: Exception) -> str:
+    """Classify a scan startup/runtime error into a broad category for reporting."""
+    s = (getattr(e, "stderr", "") or str(e)).lower()
+    if any(k in s for k in ("aws", "api_key", "api key", "token", "auth", "credentials", "secret", "key required", "config")):
+        return "credentials"
+    if any(k in s for k in ("chrome", "playwright", "browser", "chromium")):
+        return "browser"
+    if any(k in s for k in ("enoent", "not found", "no such file", "cannot find", "modulenotfounderror")):
+        return "runtime"
+    if any(k in s for k in ("econnrefused", "connection refused", "timeout", "unreachable")):
+        return "network"
+    return "unknown"
+
+
+async def _run_mod(mod_cls: type, surface, xport, session) -> list:
+    """Run one module, swallowing exceptions so one crash doesn't abort the scan."""
+    try:
+        return await mod_cls().run(surface, xport, session)
+    except Exception:
+        return []
+
 
 def _resolve_batch_modules(modules: list[str] | None) -> list[type]:
     """Return the subset of _ALL_MODULES matching the given names (or all if None)."""
@@ -262,11 +299,49 @@ async def _scan_one(
                     )
                     surface = await MCPEnumerator(xport).enumerate()
 
-                    for mod_cls in active_modules:
-                        mod = mod_cls()
-                        findings = await mod.run(surface, xport, session)
-                        for f in findings:
-                            session.add_finding(f)
+                    # Split modules into four execution groups:
+                    # 1. parallel — most modules (reader active, asyncio.gather)
+                    # 2. direct_io — bypass reader loop (reader PAUSED, sequential)
+                    # 3. rug_pull — re-enumerates surface (reader RESUMED, serial)
+                    # 4. cancellation_probe — crashes server (reader PAUSED, last)
+                    parallel_mods  = [m for m in active_modules if m not in _POST_MODS]
+                    direct_io_mods = [m for m in active_modules if m in _DIRECT_IO_MODS]
+                    serial_mods    = [m for m in active_modules if m in _SERIAL_POST_MODS]
+                    crash_mods     = [m for m in active_modules if m in _CRASH_MODS]
+
+                    # Group 1: parallel (reader active)
+                    results = await asyncio.gather(
+                        *[_run_mod(m, surface, xport, session) for m in parallel_mods],
+                        return_exceptions=True,
+                    )
+                    for r in results:
+                        if isinstance(r, list):
+                            for f in r:
+                                session.add_finding(f)
+
+                    # Group 2: direct-IO modules (reader PAUSED — bypass reader loop)
+                    if direct_io_mods:
+                        if hasattr(xport, "pause_reader"):
+                            await xport.pause_reader()
+                        for mod_cls in direct_io_mods:
+                            for f in await _run_mod(mod_cls, surface, xport, session):
+                                session.add_finding(f)
+
+                    # Group 3: rug_pull (reader RESUMED — uses send_request)
+                    if serial_mods:
+                        if hasattr(xport, "resume_reader"):
+                            await xport.resume_reader()
+                        for mod_cls in serial_mods:
+                            for f in await mod_cls().run(surface, xport, session):
+                                session.add_finding(f)
+
+                    # Group 4: cancellation_probe (reader PAUSED — crashes server, must be last)
+                    if crash_mods:
+                        if hasattr(xport, "pause_reader"):
+                            await xport.pause_reader()
+                        for mod_cls in crash_mods:
+                            for f in await mod_cls().run(surface, xport, session):
+                                session.add_finding(f)
 
                     if min_confidence is not None:
                         session.findings = [f for f in session.findings if f.confidence >= min_confidence]
@@ -285,9 +360,10 @@ async def _scan_one(
                         })
                     return target.name, target.transport, scan_result.finding_count, risk_score, scan_result
         except Exception as e:
+            cat = _classify_startup_error(e)
             if on_status:
-                on_status(target.name, "error", {"error": str(e)})
-            return target.name, target.transport, {"error": str(e)}, None, None
+                on_status(target.name, "error", {"error": str(e), "error_category": cat})
+            return target.name, target.transport, {"error": str(e), "error_category": cat}, None, None
 
 
 async def run_batch(
@@ -330,7 +406,8 @@ async def run_batch(
     named_scans: list[tuple[str, ScanResult]] = []
 
     for name, transport, finding_count, risk_score, scan_result in gathered:
-        batch_result.add(name, transport, finding_count, risk_score=risk_score)
+        error_category = finding_count.get("error_category") if isinstance(finding_count, dict) else None
+        batch_result.add(name, transport, finding_count, risk_score=risk_score, error_category=error_category)
         if scan_result is not None:
             named_scans.append((name, scan_result))
 

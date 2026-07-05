@@ -9,7 +9,8 @@ from sys import executable
 import pytest
 import yaml
 
-from corvus.batch import BatchTarget, load_batch_targets, run_batch
+from corvus.batch import BatchTarget, load_batch_targets, run_batch, _classify_startup_error, BatchResult
+from corvus.transport.stdio import ServerStartupError
 
 _MOCK_SERVER_CMD = [executable, str(Path(__file__).parent / "mock_server.py")]
 _MUTATING_SERVER_CMD = [executable, str(Path(__file__).parent / "mock_mutating_server.py")]
@@ -107,6 +108,74 @@ async def test_batch_combined_sarif_not_written_without_flag(tmp_path: Path):
     targets = [BatchTarget("smoke", "stdio", _MOCK_SERVER_CMD, None)]
     await run_batch(targets, tmp_path, timeout=30, sarif=False)
     assert not (tmp_path / "combined.sarif").exists()
+
+
+# ---------------------------------------------------------------------------
+# S0 — Error categorization
+# ---------------------------------------------------------------------------
+
+def test_classify_startup_error_credentials():
+    e = ServerStartupError("startup failed", stderr="AWS_ACCESS_KEY_ID required")
+    assert _classify_startup_error(e) == "credentials"
+
+def test_classify_startup_error_browser():
+    e = ServerStartupError("startup failed", stderr="playwright chromium not installed")
+    assert _classify_startup_error(e) == "browser"
+
+def test_classify_startup_error_runtime():
+    e = ServerStartupError("startup failed", stderr="ModuleNotFoundError: no module named foo")
+    assert _classify_startup_error(e) == "runtime"
+
+def test_classify_startup_error_network():
+    e = ServerStartupError("startup failed", stderr="Connection refused on 127.0.0.1:3000")
+    assert _classify_startup_error(e) == "network"
+
+def test_classify_startup_error_unknown():
+    e = RuntimeError("something weird happened")
+    assert _classify_startup_error(e) == "unknown"
+
+def test_batch_result_error_category_in_summary():
+    r = BatchResult()
+    r.add("broken-server", "stdio", {"error": "crash"}, error_category="browser")
+    summary = r.summary_md()
+    assert "ERROR (browser)" in summary, f"Expected 'ERROR (browser)' in:\n{summary}"
+
+def test_batch_result_unknown_category_fallback():
+    r = BatchResult()
+    r.add("broken-server", "stdio", {"error": "crash"})  # no error_category
+    summary = r.summary_md()
+    assert "ERROR (unknown)" in summary
+
+
+@pytest.mark.asyncio
+async def test_batch_error_target_shows_category(tmp_path: Path):
+    """An uninstallable target must produce an error row with error_category in summary."""
+    targets = [
+        BatchTarget("missing-pkg", "stdio", ["npx", "@totally-nonexistent-pkg/server-xyz-abc"], None),
+    ]
+    result = await run_batch(targets, tmp_path, timeout=15)
+    assert len(result.targets) == 1
+    t = result.targets[0]
+    assert "error" in t["finding_count"]
+    assert t.get("error_category") is not None
+    summary = result.summary_md()
+    assert "ERROR (" in summary
+
+
+# ---------------------------------------------------------------------------
+# S1 — Parallel module execution
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_parallel_scan_completes(tmp_path: Path):
+    """Scan via the new gather path must produce the same results as before."""
+    targets = [BatchTarget("mock", "stdio", _MOCK_SERVER_CMD, None)]
+    result = await run_batch(targets, tmp_path, timeout=30)
+    assert len(result.targets) == 1
+    fc = result.targets[0]["finding_count"]
+    # Must have some findings (not just error/skip)
+    assert "error" not in fc
+    assert "skipped" not in fc
 
 
 @pytest.mark.asyncio

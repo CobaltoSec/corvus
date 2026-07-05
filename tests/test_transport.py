@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import pytest
 from .conftest import MOCK_SERVER_CMD
@@ -104,3 +105,48 @@ async def test_notification_before_response_skipped():
     tools = result.get("tools", [])
     assert len(tools) == 1
     assert tools[0]["name"] == "probe"
+
+
+# ---------------------------------------------------------------------------
+# S1-A — Multiplexed reader: concurrent send_request
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_concurrent_requests_all_resolved():
+    """Five concurrent send_request calls must all return without hanging."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        await t.initialize()
+        results = await asyncio.gather(
+            *[t.send_request("tools/list") for _ in range(5)],
+            return_exceptions=True,
+        )
+    for r in results:
+        assert not isinstance(r, Exception), f"Concurrent request raised: {r}"
+        assert "tools" in r
+
+
+@pytest.mark.asyncio
+async def test_concurrent_echo_routing():
+    """Concurrent echo calls must return the correct payload to each caller."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        await t.initialize()
+        results = await asyncio.gather(
+            t.send_request("tools/call", {"name": "echo", "arguments": {"message": "A"}}),
+            t.send_request("tools/call", {"name": "echo", "arguments": {"message": "B"}}),
+            t.send_request("tools/call", {"name": "echo", "arguments": {"message": "C"}}),
+        )
+    texts = {r["content"][0]["text"] for r in results}
+    assert texts == {"A", "B", "C"}, f"Responses got mixed: {texts}"
+
+
+@pytest.mark.asyncio
+async def test_pause_resume_reader():
+    """pause_reader / resume_reader must not crash and transport stays functional after."""
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        await t.initialize()
+        await t.pause_reader()
+        assert t._reader_task is None
+        await t.resume_reader()
+        assert t._reader_task is not None
+        result = await t.send_request("tools/list")
+        assert "tools" in result
