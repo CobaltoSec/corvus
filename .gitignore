@@ -27,3 +27,4 @@ test
 SIGUIENTE.md
 .claude/
 scripts/discover-output/
+scripts/discover.py
