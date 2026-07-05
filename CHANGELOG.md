@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-SCALE-A] — 2026-07-05 — Batch UX: inline targets + concurrency + Rich progress
+
+- **S2 — Inline targets sin YAML** — `corvus batch --stdio "npx foo" --stdio "npx bar" --http "http://localhost:3000/mcp"`. YAML sigue soportado; ambos son mutuamente excluyentes. Helpers `_name_from_cmd` (strip `npx`/`uvx`/`python -m` → nombre corto) y `_name_from_url` (host:port). Deduplicación automática de nombres (`foo`, `foo-2`).
+- **S3 — `--concurrency N` / `-j N`** — reemplaza el `_BATCH_CONCURRENCY = 5` hardcodeado en `batch.py`. El semáforo async ahora toma el valor del flag; `run_batch()` expone `concurrency: int = 5`.
+- **S4 — Rich live progress panel** — `_run_batch_with_progress()` activo en TTY; non-TTY cae al modo plano. Columnas: spinner, nombre del target, status (`·  queued` → `scanning…` → `✓  2C 1H (72/100)` / `✗  error`), elapsed. Callback `on_status(name, status, detail)` en `_scan_one` y `run_batch` (opcionalmente inyectable desde tests). Panel con `transient=True` → limpia al terminar y muestra tabla summary final.
+- **+18 tests** — `tests/test_batch_ux.py`: `_name_from_cmd`, `_name_from_url`, `_build_inline_targets` (incluyendo dedup y mixed), `concurrency` param, `on_status` callbacks (start/done/skipped). **689 tests pass**.
+
 ## [RT-CORVUS-CS05] — 2026-07-05 — CS05 scan + FP calibration v2
 
 - **CS05 scan completo** — 30 targets (20 CS05-A + 10 CS05-B). 12 servers OK / 16 startup ERROR (57%) / 2 skipped (browser automation). ~105 raw findings → ~50 TP / ~55 FP. Alta tasa ERROR: mayoría requieren contexto externo (TouchDesigner, Storybook, Terraform, ioBroker). Security tools mcpwall/mcp-guard crashearon sin config — blind spot en la cadena de auditoría.

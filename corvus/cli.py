@@ -150,6 +150,131 @@ _SEV_COLOR = {
     "info":     "dim",
 }
 
+# ── S2: inline target helpers ─────────────────────────────────────────────────
+
+_RUNNERS = {"npx", "uvx", "python", "python3", "node", "deno", "bun", "py"}
+
+
+def _name_from_cmd(cmd_str: str) -> str:
+    """Derive a short target name from a stdio command string."""
+    parts = shlex.split(cmd_str, posix=(sys.platform != "win32"))
+    if not parts:
+        return "target"
+    i = 0
+    while i < len(parts) and parts[i].lower() in _RUNNERS:
+        i += 1
+    if i < len(parts) and parts[i] == "-m" and i + 1 < len(parts):
+        return parts[i + 1].split(".")[0]
+    while i < len(parts) and parts[i].startswith("-"):
+        i += 1
+    token = parts[i] if i < len(parts) else parts[0]
+    # Strip @scope/pkg → pkg and path separators
+    return token.rsplit("/", 1)[-1].split("\\")[-1]
+
+
+def _name_from_url(url: str) -> str:
+    """Derive a short target name from an HTTP URL."""
+    from urllib.parse import urlparse
+    p = urlparse(url)
+    host = p.hostname or "target"
+    return f"{host}-{p.port}" if p.port else host
+
+
+def _build_inline_targets(stdio_cmds: list[str], http_urls: list[str]) -> list:
+    """Convert --stdio / --http CLI strings to BatchTarget objects."""
+    from .batch import BatchTarget
+
+    seen: dict[str, int] = {}
+
+    def unique(raw: str) -> str:
+        if raw not in seen:
+            seen[raw] = 1
+            return raw
+        seen[raw] += 1
+        return f"{raw}-{seen[raw]}"
+
+    targets = []
+    for cmd_str in stdio_cmds:
+        name = unique(_name_from_cmd(cmd_str))
+        cmd = shlex.split(cmd_str, posix=(sys.platform != "win32"))
+        targets.append(BatchTarget(name=name, transport="stdio", cmd=cmd, url=None))
+    for url in http_urls:
+        name = unique(_name_from_url(url))
+        targets.append(BatchTarget(name=name, transport="http", cmd=None, url=url))
+    return targets
+
+
+# ── S4: Rich live progress for batch ─────────────────────────────────────────
+
+async def _run_batch_with_progress(
+    targets: list,
+    output_dir: Path,
+    *,
+    timeout: int,
+    target_timeout: int,
+    min_confidence: int | None,
+    sarif: bool,
+    modules: list[str] | None,
+    concurrency: int,
+):
+    from .batch import run_batch
+    from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+
+    with Progress(
+        SpinnerColumn(finished_text=" "),
+        TextColumn("[bold]{task.description}"),
+        TextColumn("{task.fields[status]}"),
+        TimeElapsedColumn(),
+        console=console,
+        transient=True,
+    ) as progress:
+        task_ids: dict[str, int] = {}
+        for t in targets:
+            tid = progress.add_task(t.name, total=1, status="[dim]·  queued[/dim]")
+            task_ids[t.name] = tid
+
+        def on_status(name: str, status: str, detail: dict) -> None:
+            tid = task_ids.get(name)
+            if tid is None:
+                return
+            if status == "start":
+                progress.update(tid, status="[cyan]scanning…[/cyan]")
+            elif status == "done":
+                fc = detail.get("finding_count", {})
+                parts = []
+                for sev, abbr, color in [
+                    ("critical", "C", "bold red"),
+                    ("high", "H", "red"),
+                    ("medium", "M", "yellow"),
+                    ("low", "L", "blue"),
+                    ("info", "I", "dim"),
+                ]:
+                    n = fc.get(sev, 0)
+                    if n:
+                        parts.append(f"[{color}]{n}{abbr}[/{color}]")
+                findings_str = " ".join(parts) if parts else "[dim]clean[/dim]"
+                score = detail.get("risk_score")
+                score_str = f"  [dim]({score}/100)[/dim]" if score is not None else ""
+                progress.update(tid, completed=1, status=f"[green]✓[/green]  {findings_str}{score_str}")
+            elif status == "error":
+                err = str(detail.get("error", ""))[:60]
+                progress.update(tid, completed=1, status=f"[red]✗  {err}[/red]")
+            elif status == "skipped":
+                progress.update(tid, completed=1, status="[dim]—  skipped[/dim]")
+
+        result = await run_batch(
+            targets, output_dir,
+            timeout=timeout,
+            target_timeout=target_timeout,
+            min_confidence=min_confidence,
+            sarif=sarif,
+            modules=modules,
+            concurrency=concurrency,
+            on_status=on_status,
+        )
+
+    return result
+
 
 @app.command()
 def scan(
@@ -475,7 +600,14 @@ def _print_summary(result) -> None:
 
 @app.command()
 def batch(
-    config: Annotated[Path, typer.Argument(help="Path to targets YAML file")],
+    config: Annotated[Optional[Path], typer.Argument(
+        help="Path to targets YAML file (optional when --stdio/--http are used)")] = None,
+    stdio: Annotated[Optional[List[str]], typer.Option(
+        "--stdio", help='Add stdio target inline: "npx @pkg/server" (repeatable)')] = None,
+    http: Annotated[Optional[List[str]], typer.Option(
+        "--http", help='Add HTTP target inline: "http://localhost:3000/mcp" (repeatable)')] = None,
+    concurrency: Annotated[int, typer.Option(
+        "--concurrency", "-j", help="Max concurrent scans (default: 5)")] = 5,
     output_dir: Annotated[Optional[Path], typer.Option("--output-dir", "-o")] = None,
     fail_on: Annotated[Optional[str], typer.Option(
         "--fail-on",
@@ -491,12 +623,15 @@ def batch(
         "--module", "-m",
         help="all | static | dynamic | <module-name> (repeatable)")] = None,
 ):
-    """Scan multiple MCP servers from a targets YAML file."""
-    asyncio.run(_batch(config, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module))
+    """Scan multiple MCP servers from a targets YAML file or inline --stdio/--http flags."""
+    asyncio.run(_batch(config, stdio, http, concurrency, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module))
 
 
 async def _batch(
-    config_path: Path,
+    config_path: Path | None,
+    stdio_cmds: list[str] | None,
+    http_urls: list[str] | None,
+    concurrency: int,
     output_dir: Path | None,
     fail_on: str | None,
     timeout: int | None,
@@ -507,11 +642,30 @@ async def _batch(
 ) -> None:
     from .batch import load_batch_targets, run_batch
 
-    try:
-        targets = load_batch_targets(config_path)
-    except (FileNotFoundError, ValueError) as e:
-        console.print(f"[red]Error loading batch config: {e}[/red]")
+    # --- Resolve targets ---
+    has_inline = bool(stdio_cmds or http_urls)
+    if config_path and has_inline:
+        console.print("[red]Use a YAML config file or --stdio/--http flags, not both.[/red]")
         raise typer.Exit(1)
+    if not config_path and not has_inline:
+        console.print("[red]Provide a targets YAML file or at least one --stdio/--http target.[/red]")
+        raise typer.Exit(1)
+
+    if config_path:
+        try:
+            targets = load_batch_targets(config_path)
+        except FileNotFoundError:
+            console.print(f"[red]File not found: {config_path}[/red]")
+            raise typer.Exit(1)
+        except ValueError as e:
+            console.print(f"[red]Error loading batch config: {e}[/red]")
+            raise typer.Exit(1)
+    else:
+        targets = _build_inline_targets(stdio_cmds or [], http_urls or [])
+
+    if not targets:
+        console.print("[yellow]No targets to scan.[/yellow]")
+        raise typer.Exit(0)
 
     import datetime
     if output_dir is None:
@@ -520,24 +674,35 @@ async def _batch(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     _print_banner()
-    console.print(Panel(
-        f"[bold]Targets[/bold]   {len(targets)}\n"
-        f"[bold]Output[/bold]    {output_dir}",
-        title="Batch Scan",
-        border_style="dim",
-        padding=(0, 1),
-    ))
+    panel_lines = [
+        f"[bold]Targets[/bold]     {len(targets)}",
+        f"[bold]Output[/bold]      {output_dir}",
+        f"[bold]Concurrency[/bold] {concurrency}",
+    ]
+    console.print(Panel("\n".join(panel_lines), title="Batch Scan", border_style="dim", padding=(0, 1)))
     console.print()
 
-    result = await run_batch(
-        targets,
-        output_dir,
-        timeout=timeout or 30,
-        target_timeout=target_timeout or 600,
-        min_confidence=min_confidence,
-        sarif=sarif,
-        modules=modules,
-    )
+    # S4: Rich live progress in TTY; plain run otherwise
+    if console.is_terminal:
+        result = await _run_batch_with_progress(
+            targets, output_dir,
+            timeout=timeout or 30,
+            target_timeout=target_timeout or 600,
+            min_confidence=min_confidence,
+            sarif=sarif,
+            modules=modules,
+            concurrency=concurrency,
+        )
+    else:
+        result = await run_batch(
+            targets, output_dir,
+            timeout=timeout or 30,
+            target_timeout=target_timeout or 600,
+            min_confidence=min_confidence,
+            sarif=sarif,
+            modules=modules,
+            concurrency=concurrency,
+        )
 
     summary_path = output_dir / "summary.md"
     summary_path.write_text(result.summary_md())

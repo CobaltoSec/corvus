@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import shlex
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -229,11 +230,14 @@ async def _scan_one(
     sem: asyncio.Semaphore,
     skip_existing: bool,
     modules: list[str] | None = None,
+    on_status: Callable[[str, str, dict], None] | None = None,
 ) -> tuple[str, str, dict, int | None, ScanResult | None]:
     """Scan one target. Returns (name, transport, finding_count, risk_score, scan_result)."""
     target_dir = output_dir / target.name
 
     if skip_existing and (target_dir / "report.json").exists():
+        if on_status:
+            on_status(target.name, "skipped", {})
         return target.name, target.transport, {"skipped": True}, None, None
 
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -246,6 +250,8 @@ async def _scan_one(
     active_modules = _resolve_batch_modules(modules)
 
     async with sem:
+        if on_status:
+            on_status(target.name, "start", {})
         try:
             async with asyncio.timeout(target_timeout):
                 async with xport:
@@ -272,8 +278,15 @@ async def _scan_one(
                         gen.write_sarif(scan_result)
 
                     risk_score = compute_risk_score(scan_result.findings)
+                    if on_status:
+                        on_status(target.name, "done", {
+                            "finding_count": scan_result.finding_count,
+                            "risk_score": risk_score,
+                        })
                     return target.name, target.transport, scan_result.finding_count, risk_score, scan_result
         except Exception as e:
+            if on_status:
+                on_status(target.name, "error", {"error": str(e)})
             return target.name, target.transport, {"error": str(e)}, None, None
 
 
@@ -287,12 +300,14 @@ async def run_batch(
     sarif: bool = False,
     skip_existing: bool = False,
     modules: list[str] | None = None,
+    concurrency: int = _BATCH_CONCURRENCY,
+    on_status: Callable[[str, str, dict], None] | None = None,
 ) -> BatchResult:
     if sys.platform == "win32":
         sys.unraisablehook = _filtered_unraisablehook
         asyncio.get_running_loop().set_exception_handler(_filtered_exception_handler)
 
-    sem = asyncio.Semaphore(_BATCH_CONCURRENCY)
+    sem = asyncio.Semaphore(concurrency)
 
     coros = [
         _scan_one(
@@ -304,6 +319,7 @@ async def run_batch(
             sem=sem,
             skip_existing=skip_existing,
             modules=modules,
+            on_status=on_status,
         )
         for target in targets
     ]
