@@ -366,6 +366,37 @@ async def _scan_one(
             return target.name, target.transport, {"error": str(e), "error_category": cat}, None, None
 
 
+def _record_to_history(
+    name: str,
+    finding_count: dict | int,
+    error_category: str | None,
+    scan_result: "ScanResult | None",
+    case_study: str | None,
+) -> None:
+    try:
+        from . import __version__
+        from .history import record_scan
+        if error_category or (isinstance(finding_count, dict) and "error" in finding_count):
+            status, raw_count = "error", 0
+        elif scan_result is None:
+            status, raw_count = "skip", 0
+        else:
+            status = "ok"
+            raw_count = (
+                sum(finding_count.values()) if isinstance(finding_count, dict) else finding_count
+            )
+        record_scan(
+            pkg_name=name,
+            status=status,
+            raw_count=raw_count,
+            error_category=error_category,
+            corvus_version=__version__,
+            case_study=case_study,
+        )
+    except Exception:
+        pass  # history errors must never break the batch
+
+
 async def run_batch(
     targets: list[BatchTarget],
     output_dir: Path,
@@ -378,6 +409,7 @@ async def run_batch(
     modules: list[str] | None = None,
     concurrency: int = _BATCH_CONCURRENCY,
     on_status: Callable[[str, str, dict], None] | None = None,
+    case_study: str | None = None,
 ) -> BatchResult:
     if sys.platform == "win32":
         sys.unraisablehook = _filtered_unraisablehook
@@ -410,6 +442,7 @@ async def run_batch(
         batch_result.add(name, transport, finding_count, risk_score=risk_score, error_category=error_category)
         if scan_result is not None:
             named_scans.append((name, scan_result))
+        _record_to_history(name, finding_count, error_category, scan_result, case_study)
 
     if sarif and named_scans:
         from .reporting.report import write_combined_sarif

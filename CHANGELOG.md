@@ -1,5 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-SCALE-C] — 2026-07-05 — Scan history DB + discovery fixes · v1.3.0
+
+- **SCALE-C: SQLite scan history** — `corvus/history.py`: módulo con `record_scan()`, `is_recently_scanned()`, `get_scanned_packages()`, `list_scans()`, `aggregate_stats()`. DB en `~/.corvus/history.db` (override: `CORVUS_HISTORY_DB`). Auto-recording en `batch.py` vía `_record_to_history()` (hook post-scan por target, nunca propaga errores al batch). `run_batch()` acepta `case_study: str | None` para tagging. `discover.py` carga `get_scanned_packages()` al inicio y los agrega a `existing` — evita re-descubrir targets ya escaneados.
+- **`corvus history` CLI** — nuevo subcomando: tabla paginada con ID/fecha/paquete/status/raw-count/case-study/versión. Flags: `--limit N`, `--cs TIER`, `--pkg substr`, `--stats` (resumen agregado + breakdown de error categories). `STATUS_STYLE` coloring: ok=green, error=red, skip=yellow.
+- **Discover fix: GitHub npm sin filtro "mcp"** — `github_repo_to_npm_pkg()`: removido `"mcp" not in name` — repos `topic:mcp-server` son MCP servers por definición, el nombre del paquete npm no necesita contener "mcp". Antes: 2/210 candidatos. Después: 15/210.
+- **Discover nuevo: GitHub uvx packages** — `github_repo_to_uvx_pkg()`: extrae nombre PyPI via `pyproject.toml` (`name = "..."`) para repos Python sin `package.json`. `check_github_repo` intenta npm → uvx en cascada. `build_target_entry` genera `["uvx", pkg]` cuando `_transport == "uvx"`.
+- **Discover: `--output-file` flag** — stem del archivo de salida separado de la fecha. Permite `--output-file candidates-cs07-github-2026-07-05` para no sobreescribir la corrida PyPI del mismo día.
+- **Discover: dedup desde scan history** — `run()` importa `get_scanned_packages()` de `corvus.history` y agrega el set a `existing`. Discovery automáticamente skipea targets ya escaneados en corridas anteriores.
+- **+9 tests** — `tests/test_history.py`: record/retrieve, is_recently_scanned × 3, get_scanned_packages, aggregate_stats, list_scans filter × 2, no_db_returns_empty. **726 tests pass**.
+- **v1.3.0** — `pyproject.toml` bump.
+
 ## [RT-CORVUS-SCALE-B] — 2026-07-05 — Module parallelism + error categorization + discovery expansion · v1.2.0
 
 - **S0 — Error categorization** — `_classify_startup_error(e)` en `batch.py`: parsea stderr de `ServerStartupError` → categorías `credentials / browser / runtime / network / unknown`. `BatchResult.add()` acepta `error_category`; `summary_md()` muestra `ERROR (credentials)` etc. en la tabla. Dato para paper: 54% startup ERROR en npm, ~40% = credenciales externas.

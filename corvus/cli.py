@@ -956,6 +956,65 @@ def report(
 
 
 @app.command()
+def history(
+    limit: Annotated[int, typer.Option("--limit", "-n", help="Max rows to show")] = 50,
+    case_study: Annotated[Optional[str], typer.Option("--cs", help="Filter by case study (e.g. CS07)")] = None,
+    pkg: Annotated[Optional[str], typer.Option("--pkg", help="Filter by package name substring")] = None,
+    stats: Annotated[bool, typer.Option("--stats", help="Show aggregate stats only")] = False,
+) -> None:
+    """Show scan history from ~/.corvus/history.db."""
+    from .history import aggregate_stats, list_scans
+
+    if stats:
+        agg = aggregate_stats()
+        if not agg:
+            console.print("[yellow]No history yet.[/yellow]")
+            return
+        t = Table(show_header=False, box=None, padding=(0, 2))
+        for k, v in agg.items():
+            if k == "error_breakdown":
+                continue
+            t.add_row(f"[dim]{k}[/dim]", str(v))
+        console.print(t)
+        if agg.get("error_breakdown"):
+            console.print("\n[bold]Error categories:[/bold]")
+            for cat, cnt in agg["error_breakdown"].items():
+                console.print(f"  {cat}: {cnt}")
+        return
+
+    rows = list_scans(limit=limit, case_study=case_study, pkg_filter=pkg)
+    if not rows:
+        console.print("[yellow]No history yet.[/yellow]")
+        return
+
+    t = Table(show_header=True)
+    t.add_column("ID",    style="dim", width=5)
+    t.add_column("Date",  width=12)
+    t.add_column("Package", min_width=30)
+    t.add_column("Status", width=10)
+    t.add_column("Raw", justify="right", width=5)
+    t.add_column("CS",   width=6)
+    t.add_column("Ver",  width=8)
+
+    STATUS_STYLE = {"ok": "green", "error": "red", "skip": "yellow"}
+    for r in rows:
+        date = r["scan_date"][:10]
+        status = r["status"]
+        cat = r.get("error_category") or ""
+        status_label = f"{status}({cat})" if cat else status
+        t.add_row(
+            str(r["id"]),
+            date,
+            r["pkg_name"],
+            f"[{STATUS_STYLE.get(status, 'white')}]{status_label}[/]",
+            str(r["raw_count"]),
+            r.get("case_study") or "",
+            r.get("corvus_version") or "",
+        )
+    console.print(t)
+
+
+@app.command()
 def version():
     """Print version."""
     console.print(f"corvus {__version__}")

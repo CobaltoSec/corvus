@@ -136,13 +136,13 @@ async def test_github_repo_to_npm_pkg_found():
 
 @pytest.mark.asyncio
 async def test_github_repo_to_npm_pkg_no_mcp_in_name():
-    """github_repo_to_npm_pkg returns None if package.json name has no 'mcp'."""
-    pkg_json = {"name": "my-react-app"}
+    """github_repo_to_npm_pkg returns name even without 'mcp' (topic:mcp-server repos are all MCP servers)."""
+    pkg_json = {"name": "my-tools-server"}
     resp = _mock_resp(200, pkg_json)
     client = MagicMock()
     client.get = AsyncMock(return_value=resp)
-    result = await _discover.github_repo_to_npm_pkg(client, "user", "my-react-app")
-    assert result is None
+    result = await _discover.github_repo_to_npm_pkg(client, "user", "my-tools-server")
+    assert result == "my-tools-server"
 
 
 @pytest.mark.asyncio
