@@ -15,6 +15,24 @@ _STATEFUL_TOOL_NAME = re.compile(
     re.I,
 )
 
+# Resource URIs that look like probe payloads stored by the server as session resources.
+# When cmd-injection / ssrf modules call tools that echo user input as resource URIs,
+# the resulting "new resource" is a scan side-effect, not a server-initiated rug-pull.
+# Only match encoding/traversal patterns that are unambiguously probe-synthesized —
+# NOT absolute paths (e.g. /etc/passwd) which could also be legitimate server-added resources.
+_PROBE_ARTIFACT_URI_RE = re.compile(
+    r"\.\.[/\\%]|"           # path traversal: ../ ..\ ..%
+    r"(?:%2e){2,}|"          # URL-encoded dots repeated (%2e%2e)
+    r"(?:%5c){2,}|"          # URL-encoded backslashes repeated
+    r"%252e|"                 # double-encoded dot
+    r"[A-Z]{20,}|"           # buffer fill (long all-caps run, e.g. AAAA...)
+    r"(?<![:/])//|"          # double-slash path bypass not preceded by scheme colon or slash
+    r"．．|"                  # Unicode fullwidth dot-dot (．．) traversal bypass
+    r"[A-Za-z]:\\|"          # Windows drive path with backslash (C:\...) — unescaped \ is probe indicator
+    r"%SYSTEM|%WIN",         # Windows env-var references (%SYSTEMROOT% etc.)
+    re.I,
+)
+
 
 class RugPullModule(ScanModule):
     owasp_id = "MCP06"
@@ -128,21 +146,38 @@ class RugPullModule(ScanModule):
         new_res_map = {r.uri: r for r in new_resources}
 
         for uri in sorted(set(new_res_map) - set(orig_res_map)):
-            findings.append(Finding(
-                owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                severity=Severity.CRITICAL,
-                title=f"Rug Pull — resource '{uri}' appeared mid-session",
-                description=(
-                    f"Resource '{uri}' was not present during initial enumeration but appeared "
-                    "after the session began. The server may be exposing additional attack surface "
-                    "after establishing initial trust."
-                ),
-                confidence=85,
-                remediation=(
-                    "Never trust a server whose resource surface changes during an active session. "
-                    "Re-enumerate before any privileged operations."
-                ),
-            ))
+            is_probe_artifact = bool(_PROBE_ARTIFACT_URI_RE.search(uri))
+            if is_probe_artifact:
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                    severity=Severity.LOW,
+                    title=f"Rug Pull — probe input persisted as resource '{uri[:80]}'",
+                    description=(
+                        f"Resource '{uri[:200]}' appeared mid-session and its URI contains "
+                        "payload-like patterns (traversal sequences, shell paths, or buffer fills). "
+                        "The server stores probe inputs as session resources, which an LLM may later "
+                        "read as trusted content. This is a scan side-effect rather than a "
+                        "server-initiated rug-pull — verify manually."
+                    ),
+                    confidence=40,
+                    remediation="Sanitize resource URIs; reject traversal and arbitrary user input in resource identifiers.",
+                ))
+            else:
+                findings.append(Finding(
+                    owasp_category=OWASPCategory.MCP06_RUG_PULL,
+                    severity=Severity.CRITICAL,
+                    title=f"Rug Pull — resource '{uri}' appeared mid-session",
+                    description=(
+                        f"Resource '{uri}' was not present during initial enumeration but appeared "
+                        "after the session began. The server may be exposing additional attack surface "
+                        "after establishing initial trust."
+                    ),
+                    confidence=85,
+                    remediation=(
+                        "Never trust a server whose resource surface changes during an active session. "
+                        "Re-enumerate before any privileged operations."
+                    ),
+                ))
 
         for uri in sorted(set(orig_res_map) - set(new_res_map)):
             findings.append(Finding(

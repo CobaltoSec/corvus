@@ -23,6 +23,12 @@ _ADMIN_LIST_TOOL_RE = re.compile(
     re.I,
 )
 
+# Tools whose names explicitly declare they are slow — timing check would always FP
+_SLOW_BY_DESIGN_RE = re.compile(
+    r"long[._\-]?running|slow|delay|sleep|wait_for|background|deferred",
+    re.I,
+)
+
 
 class ResponseFloodModule(ScanModule):
     owasp_id = "MCP10"
@@ -64,7 +70,7 @@ class ResponseFloodModule(ScanModule):
                 elapsed = time.monotonic() - _t0
                 text = _extract_text(result)
 
-                if elapsed > 10.0:
+                if elapsed > 10.0 and not _SLOW_BY_DESIGN_RE.search(tool.name):
                     findings.append(Finding(
                         owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
                         severity=Severity.MEDIUM,

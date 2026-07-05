@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-CLI-FP] — 2026-07-05 — CLI UX + FP calibration · v1.1.0
+
+- **CLI aesthetics** — banner TTY-aware (supprimido en pipe/SARIF), argumento posicional `target` con auto-detect transport (`http://` → HTTP, else stdio), `--fast/-F` (static only), output nmap-style (dim para módulos limpios, badge `(N)` para findings), timing al final. `_NoiseFilter` elimina asyncio Windows pipe noise en stderr.
+- **cmd-injection FP** — `echo` tool ya no dispara HIGH: `_TRANSFORMATION_TOOL_RE` extendido con `echo|mirror|reflect|passthrough|repeat|ping`. `echo.message` HIGH (85%) → LOW (30%).
+- **response-flood FP** — `_SLOW_BY_DESIGN_RE` nuevo: herramientas con `long[._-]?running|slow|delay|sleep|wait_for|background|deferred` en el nombre saltan el check de tiempo. `trigger-long-running-operation` MEDIUM eliminado. `get-env` oversized (CS01-F38 TP) surfaceó correctamente.
+- **rug-pull FP** — `_PROBE_ARTIFACT_URI_RE` nuevo: URIs que contienen traversal encoding (`../`, `%2e%2e`, `%252e`, `(?<![:/])//`), Unicode fullwidth dot-dot (`．．`), Windows drive+backslash (`C:\`), buffer fills, `%SYSTEM` → severidad LOW 40% "probe input persisted". 22 CRITICAL FP → 4 (reducción 82%). 671 unit tests pass.
+- **v1.1.0** — `pyproject.toml` bump. `dist/cobaltosec_corvus-1.1.0.*` listo; PyPI publish pendiente (manual).
+
 ## [RT-CORVUS-CFP-EKO] — 2026-07-04 — CFP Ekoparty 2026 · draft completo
 
 - **CFP listo para submitear** — `case-studies/cfp-ekoparty-2026.md`: descripción en español (8 hallazgos principales), outline 30 min, bio del speaker. Título: *"Corvus: Seguridad en el Ecosistema MCP a Escala"*. Deadline Sessionize: 2026-08-14.

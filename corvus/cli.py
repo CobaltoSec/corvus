@@ -4,11 +4,13 @@ import asyncio
 import datetime
 import shlex
 import sys
+import time
 from pathlib import Path
 from typing import Annotated, List, Optional
 
 import typer
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 from . import __version__
@@ -105,6 +107,41 @@ _DYNAMIC = {
 }
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
+
+
+def _print_banner() -> None:
+    if not console.is_terminal:
+        return
+    console.print(
+        f"\n[bold cyan]CORVUS[/bold cyan] [dim]v{__version__}[/dim]"
+        "  ·  MCP Security Framework  ·  [dim]CobaltoSec[/dim]\n"
+    )
+
+
+class _NoiseFilter:
+    """Swallow asyncio Windows pipe-cleanup noise lines written to stderr."""
+    _SUPPRESS = ("socket.send() raised exception", "Exception ignored in _Proactor")
+
+    def __init__(self, real: object) -> None:
+        self._real = real
+        self._buf = ""
+
+    def write(self, text: str) -> int:
+        self._buf += text
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            if not any(s in line for s in self._SUPPRESS):
+                self._real.write(line + "\n")
+        return len(text)
+
+    def flush(self) -> None:
+        if self._buf and not any(s in self._buf for s in self._SUPPRESS):
+            self._real.write(self._buf)
+        self._buf = ""
+        self._real.flush()
+
+    def fileno(self) -> int:
+        return self._real.fileno()
 _SEV_COLOR = {
     "critical": "bold red",
     "high":     "red",
@@ -116,8 +153,12 @@ _SEV_COLOR = {
 
 @app.command()
 def scan(
+    target: Annotated[Optional[str], typer.Argument(
+        help="Target: URL (http) or launch command (stdio). "
+             "E.g. 'npx @modelcontextprotocol/server-everything' or 'http://localhost:3000/mcp'"
+    )] = None,
     transport: Annotated[Optional[str], typer.Option(
-        "--transport", "-t", help="stdio | http (overrides config)")] = None,
+        "--transport", "-t", help="stdio | http (overrides auto-detect)")] = None,
     cmd: Annotated[Optional[str], typer.Option(
         "--cmd", help="Command to launch MCP server (stdio)")] = None,
     url: Annotated[Optional[str], typer.Option(
@@ -151,16 +192,19 @@ def scan(
         "--delay", help="Seconds to wait between probes (rate limiting / WAF)")] = 0.0,
     show_score: Annotated[bool, typer.Option(
         "--score", help="Print Risk Score (0-100) at end of scan")] = False,
+    fast: Annotated[bool, typer.Option(
+        "--fast", "-F", help="Fast mode: static modules only (no live probes)")] = False,
 ):
     """Scan an MCP server for security vulnerabilities."""
     asyncio.run(_scan(
-        transport, cmd, url, module, output_dir, fail_on, timeout,
+        target, transport, cmd, url, module, output_dir, fail_on, timeout,
         sarif, log_requests, header, config_file, plugin_dir, min_confidence,
-        env, delay, show_score,
+        env, delay, show_score, fast,
     ))
 
 
 async def _scan(
+    cli_target: str | None,
     cli_transport: str | None,
     cli_cmd: str | None,
     cli_url: str | None,
@@ -177,6 +221,7 @@ async def _scan(
     cli_env: list[str] | None = None,
     delay: float = 0.0,
     show_score: bool = False,
+    fast: bool = False,
 ) -> None:
     if sys.platform == "win32":
         from .batch import _filtered_unraisablehook, _filtered_exception_handler
@@ -197,6 +242,15 @@ async def _scan(
     else:
         cfg = CorvusConfig()
 
+    # --- Auto-detect transport from positional target ---
+    if cli_target:
+        if cli_target.startswith(("http://", "https://")):
+            cli_transport = cli_transport or "http"
+            cli_url = cli_url or cli_target
+        else:
+            cli_transport = cli_transport or "stdio"
+            cli_cmd = cli_cmd or cli_target
+
     # --- Merge: CLI overrides config; config fills what CLI omits ---
     transport_name = cli_transport or cfg.scan.transport
     cmd            = cli_cmd or cfg.scan.cmd
@@ -206,9 +260,11 @@ async def _scan(
     write_sarif    = cli_sarif or cfg.scan.sarif
     output_dir_str = str(output_dir) if output_dir else cfg.scan.output_dir
 
-    # Modules: CLI string takes full precedence; config can be str or list
+    # Modules: CLI string takes full precedence; --fast forces static; config fills remainder
     if cli_module:
         module_filter: str | list[str] = cli_module
+    elif fast:
+        module_filter = "static"
     else:
         module_filter = cfg.scan.modules  # "all" | "static" | "dynamic" | list[str]
 
@@ -274,43 +330,63 @@ async def _scan(
 
     session = ScanSession(target=target, transport=transport_name, output_dir=resolved_output_dir)
 
-    console.print(f"\n[bold cyan]Corvus v{__version__}[/bold cyan]  MCP Security Scanner")
-    console.print(f"Target     : {target}")
-    console.print(f"Transport  : {transport_name}")
-    console.print(f"Modules    : {', '.join(names)}")
+    _print_banner()
+    mod_label = (
+        f"{len(names)} ({module_filter})"
+        if isinstance(module_filter, str)
+        else f"{len(names)} (custom)"
+    )
+    panel_lines = [
+        f"[bold]Target[/bold]    {target}",
+        f"[bold]Modules[/bold]   {mod_label}",
+    ]
     if config_file:
-        console.print(f"Config     : {config_file}")
+        panel_lines.append(f"[bold]Config[/bold]    {config_file}")
+    if effective_delay:
+        panel_lines.append(f"[bold]Delay[/bold]     {effective_delay}s")
+    console.print(Panel("\n".join(panel_lines), title="Scan", border_style="dim", padding=(0, 1)))
     console.print()
 
-    async with xport:
-        console.print("[bold]Enumerating surface...[/bold]")
-        surface = await MCPEnumerator(xport).enumerate()
-        console.print(f"  Tools      : {len(surface.tools)}")
-        console.print(f"  Resources  : {len(surface.resources)}")
-        console.print(f"  Prompts    : {len(surface.prompts)}")
-        if surface.server_name:
-            console.print(f"  Server     : {surface.server_name} {surface.server_version}")
-        console.print()
-
-        for name in names:
-            mod = modules_registry[name]()
-            label = "static" if mod.is_static else "dynamic"
-            console.print(f"[bold yellow][{mod.owasp_id}][/bold yellow] {mod.category} ({label})")
-            findings = await mod.run(surface, xport, session)
-            for f in findings:
-                session.add_finding(f)
-            if findings:
-                for f in findings:
-                    color = _SEV_COLOR.get(f.severity.value, "white")
-                    console.print(
-                        f"  [{color}][{f.severity.value.upper()}][/{color}] {f.title}"
-                        f" [dim]({f.confidence}%)[/dim]"
-                    )
-            else:
-                console.print("  [green]No findings[/green]")
+    t0 = time.monotonic()
+    if sys.platform == "win32":
+        _orig_stderr, sys.stderr = sys.stderr, _NoiseFilter(sys.stderr)
+    else:
+        _orig_stderr = None
+    try:
+        async with xport:
+            console.print("[dim]Enumerating surface...[/dim]", end=" ")
+            surface = await MCPEnumerator(xport).enumerate()
+            parts = [f"{len(surface.tools)} tools", f"{len(surface.resources)} resources", f"{len(surface.prompts)} prompts"]
+            if surface.server_name:
+                parts.append(f"{surface.server_name} {surface.server_version}".strip())
+            console.print(f"[dim]{' · '.join(parts)}[/dim]")
             console.print()
-            if effective_delay:
-                await asyncio.sleep(effective_delay)
+
+            total = len(names)
+            for i, name in enumerate(names, 1):
+                mod = modules_registry[name]()
+                findings = await mod.run(surface, xport, session)
+                for f in findings:
+                    session.add_finding(f)
+                if findings:
+                    n = len(findings)
+                    badge = f" [dim]({n})[/dim]" if n > 1 else ""
+                    console.print(f"[dim][{i:>2}/{total}][/dim] [bold]{name}[/bold]{badge}")
+                    for f in findings:
+                        color = _SEV_COLOR.get(f.severity.value, "white")
+                        title = f.title if len(f.title) <= 90 else f.title[:87] + "…"
+                        console.print(
+                            f"       [{color}]{f.severity.value.upper()}[/{color}]"
+                            f"  {title} [dim]({f.confidence}%)[/dim]"
+                        )
+                else:
+                    console.print(f"[dim][{i:>2}/{total}]  {name}[/dim]")
+                if effective_delay:
+                    await asyncio.sleep(effective_delay)
+    finally:
+        if _orig_stderr is not None:
+            sys.stderr.flush()
+            sys.stderr = _orig_stderr
 
     if min_confidence is not None:
         session.findings = [f for f in session.findings if f.confidence >= min_confidence]
@@ -322,6 +398,8 @@ async def _scan(
     gen = ReportGenerator(resolved_output_dir)
     report_path = gen.write(result)
 
+    elapsed = time.monotonic() - t0
+    console.print()
     _print_summary(result)
 
     if show_score:
@@ -332,7 +410,11 @@ async def _scan(
         tc = _TIER_COLOR.get(tier, "white")
         console.print(f"Risk Score : [{tc}]{sc}/100 — {tier}[/{tc}]")
 
-    console.print(f"\nReport: {report_path}")
+    n_findings = len(result.findings)
+    console.print(
+        f"\n[dim]Scan complete · {n_findings} finding{'s' if n_findings != 1 else ''}"
+        f" · {elapsed:.1f}s · {report_path}[/dim]"
+    )
 
     if write_sarif:
         sarif_path = gen.write_sarif(result)
@@ -437,8 +519,15 @@ async def _batch(
         output_dir = Path("corvus-sessions") / f"batch-{ts}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    console.print(f"\n[bold cyan]Corvus Batch Scan[/bold cyan]  {len(targets)} target(s)")
-    console.print(f"Output dir : {output_dir}\n")
+    _print_banner()
+    console.print(Panel(
+        f"[bold]Targets[/bold]   {len(targets)}\n"
+        f"[bold]Output[/bold]    {output_dir}",
+        title="Batch Scan",
+        border_style="dim",
+        padding=(0, 1),
+    ))
+    console.print()
 
     result = await run_batch(
         targets,
@@ -486,6 +575,7 @@ def list_modules(
     """List available scan modules (built-ins + any discovered plugins)."""
     plugins = discover_plugins(plugin_dirs=plugin_dir or None)
     combined = {**_ALL_MODULES, **plugins}
+    _print_banner()
     table = Table(title="Modules")
     table.add_column("Name")
     table.add_column("OWASP")

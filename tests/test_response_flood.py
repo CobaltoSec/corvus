@@ -35,7 +35,7 @@ def _tool_result(text: str) -> dict:
 @pytest.mark.asyncio
 async def test_slow_response_detected():
     """Tool taking >10s → MEDIUM slow-response finding."""
-    surface = _surface(("slow_tool", {}))
+    surface = _surface(("fetch_data", {}))
 
     call_times = [0.0, 15.0]  # start, end
     call_iter = iter(call_times)

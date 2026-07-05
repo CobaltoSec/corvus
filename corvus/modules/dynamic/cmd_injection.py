@@ -69,10 +69,11 @@ _ECHO_FIELD_NAMES = frozenset({
     "color", "coin", "domain", "markdown", "phone", "org", "vs", "format", "param",
 })
 
-# Tools whose names suggest they transform input — output always contains the input
+# Tools whose names suggest they transform or passthrough input — output always contains the input
 _TRANSFORMATION_TOOL_RE = re.compile(
     r"\b(format|convert|transform|encode|decode|render|parse|generate|compile|validate"
-    r"|to_html|to_json|to_markdown|to_csv|to_xml|prettify|minify|beautify)\b",
+    r"|to_html|to_json|to_markdown|to_csv|to_xml|prettify|minify|beautify"
+    r"|echo|mirror|reflect|passthrough|repeat|ping)\b",
     re.I,
 )
 
