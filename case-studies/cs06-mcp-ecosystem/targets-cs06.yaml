@@ -1,0 +1,293 @@
+meta:
+  case_study: CS06
+  description: OWASP MCP Ecosystem Audit — CS06 auto-discovered + curated (2026-07-05)
+  corvus_version: 1.1.0
+  strategy: |
+    26 targets curados del run discover.py 2026-07-05 (npm + PyPI/uvx).
+    Criterio: likely-noauth confirmado o infraestructura/dev-tool que arranca sin credenciales.
+    Categorías nuevas: gaming (Godot), legal japonés (hourei), dep-security (Socket),
+    enterprise IaC (AWS Labs terraform/cdk/sns-sqs/bedrock), IoT/monitoring (Axiom),
+    accesibilidad (AccessFlow), comunidad Python (mcp-hn, calculator).
+
+targets:
+
+# ─── LIKELY-NOAUTH — guaranteed starters ────────────────────────────────────
+
+# 1936/wk — Japanese law (e-Gov public API), likely-noauth
+- name: hourei
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - hourei-mcp-server@latest
+  status: pending
+  notes: 'Japanese law information via e-Gov public API. 1.9k/wk, likely-noauth.'
+
+# 409/wk — functype TypeScript docs + code validation, local tool
+- name: functype
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - functype-mcp-server@latest
+  status: pending
+  notes: 'functype documentation lookup and TypeScript code validation. 409/wk, likely-noauth.'
+
+# 430/wk — FDIC BankFind Suite public API, no auth
+- name: fdic
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - fdic-mcp-server@latest
+  status: pending
+  notes: 'FDIC BankFind Suite API — public banking data, no auth. 430/wk.'
+
+# 572/wk — minimal MCP server reference implementation
+- name: tiny-stdio
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - tiny-stdio-mcp-server@latest
+  status: pending
+  notes: 'Minimal MCP server over stdio with typed tools. 572/wk, likely local.'
+
+# ─── LOCAL TOOLS / MAYBE-AUTH ────────────────────────────────────────────────
+
+# 451/wk — Ollama local LLM integration (needs Ollama running, interesting tool chaining)
+- name: ollama
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - ollama-mcp-server@latest
+  status: pending
+  notes: 'Ollama local LLM integration. 451/wk, maybe-auth. Interesting: LLM tool-chaining attack surface.'
+
+# 262/wk — Godot game engine integration (needs Godot installed, static tools interesting)
+- name: godot
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - godot-mcp-server@latest
+  status: pending
+  notes: 'Godot game engine MCP integration. 262/wk. Static analysis regardless of Godot install.'
+
+# 2001/wk — Socket Security dependency scanner (interesting attack surface for dep-scanning)
+- name: socketsecurity
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@socketsecurity/mcp@latest'
+  status: pending
+  notes: 'Socket MCP for dependency security scanning. 2k/wk. Security tool attack surface.'
+
+# 472/wk — AccessFlow accessibility issue remediation (local analysis tool)
+- name: accessflow
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - accessflow-mcp-server@latest
+  status: pending
+  notes: 'AccessFlow accessibility issue remediation. 472/wk. Likely local tool.'
+
+# 1857/wk — Jan Browser local AI integration (Jan is open-source local AI app)
+- name: search-jan
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - search-mcp-server@latest
+  status: pending
+  notes: 'Jan Browser MCP — local AI app web automation. 1.9k/wk. Local Jan app integration.'
+
+# 271/wk — Grayboard whiteboard for Claude Code
+- name: grayboard
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - grayboard-mcp-server@latest
+  status: pending
+  notes: 'Grayboard MCP for Claude Code whiteboard. 271/wk. Claude Code companion tool.'
+
+# 1117/wk — Axiom observability/log querying (needs API key for dynamic, static interesting)
+- name: axiom
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-axiom@latest
+  status: pending
+  notes: 'Axiom APL log querying. 1.1k/wk, maybe-auth. Needs API key for dynamic tools.'
+
+# 4084/wk — SAP MDK enterprise dev toolkit (interesting enterprise attack surface)
+- name: sap-mdk
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sap/mdk-mcp-server@latest'
+  status: pending
+  notes: 'SAP Mobile Development Kit MCP server. 4.1k/wk. Enterprise dev tool — rich tool set.'
+
+# 566/wk — YJZF Chinese platform (unknown surface, worth auditing)
+- name: yjzf
+  tier: CS06
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@yjzf/mcp-server-yjzf@latest'
+  status: pending
+  notes: 'YJZF MCP Server (Chinese platform). 566/wk, maybe-auth. Unknown surface.'
+
+# ─── PyPI / uvx — AWS Labs Enterprise Servers ────────────────────────────────
+
+# 13828/wk — AWS Bedrock KB retrieval (high volume, interesting RAG surface)
+- name: bedrock-kb-retrieval
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.bedrock-kb-retrieval-mcp-server
+  status: pending
+  notes: 'AWS Bedrock Knowledge Base retrieval. 13.8k/wk, maybe-auth. Needs AWS creds for dynamic.'
+
+# 1216/wk — Terraform IaC tools (interesting scope for cloud infra)
+- name: terraform-aws
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.terraform-mcp-server
+  status: pending
+  notes: 'AWS Terraform IaC management. 1.2k/wk, maybe-auth. IaC tool surface.'
+
+# 1871/wk — SNS/SQS messaging (interesting tool descriptions for MCP02/03)
+- name: sns-sqs
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.amazon-sns-sqs-mcp-server
+  status: pending
+  notes: 'AWS SNS/SQS messaging. 1.9k/wk, maybe-auth. Messaging infrastructure.'
+
+# 2021/wk — Nova Canvas image generation (interesting for prompt injection via image params)
+- name: nova-canvas
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.nova-canvas-mcp-server
+  status: pending
+  notes: 'AWS Nova Canvas image generation. 2k/wk, maybe-auth. Image gen attack surface.'
+
+# 342/wk — AWS CDK infrastructure (many complex tools)
+- name: cdk-aws
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.cdk-mcp-server
+  status: pending
+  notes: 'AWS CDK IaC server. 342/wk, maybe-auth. Complex infrastructure tool set.'
+
+# 408/wk — Cost analysis (financial data, interesting scope creep potential)
+- name: cost-analysis
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.cost-analysis-mcp-server
+  status: pending
+  notes: 'AWS cost analysis and optimization. 408/wk, maybe-auth. Financial data surface.'
+
+# 478/wk — Kendra intelligent search (interesting tool descriptions)
+- name: kendra
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.amazon-kendra-index-mcp-server
+  status: pending
+  notes: 'AWS Kendra intelligent search. 478/wk, maybe-auth. Enterprise search.'
+
+# 137/wk — Lambda function management (interesting exec primitives)
+- name: lambda-aws
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.lambda-mcp-server
+  status: pending
+  notes: 'AWS Lambda function management. 137/wk, maybe-auth. Interesting exec-related tools.'
+
+# 1708/wk — Git repo research (likely-noauth, public repos)
+- name: git-repo-research
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.git-repo-research-mcp-server
+  status: pending
+  notes: 'AWS git repository research tools. 1.7k/wk, likely-noauth. Public git repos.'
+
+# 156/wk — Code documentation generation (local, likely-noauth)
+- name: code-doc-gen
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - awslabs.code-doc-gen-mcp-server
+  status: pending
+  notes: 'AWS code documentation generation. 156/wk, likely-noauth. Local doc gen.'
+
+# ─── PyPI / uvx — Community Python servers ───────────────────────────────────
+
+# 338/wk — Hacker News (likely-noauth, public HN API)
+- name: mcp-hn
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-hn
+  status: pending
+  notes: 'Hacker News discussions and stories. 338/wk, likely-noauth. Public HN API.'
+
+# 11162/wk — Math calculator (likely-noauth, very high volume for Python MCP)
+- name: calculator
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-calculator
+  status: pending
+  notes: 'Math and calculation tools. 11.2k/wk, likely-noauth. Reference Python MCP.'
+
+# 458/wk — Redis operations (likely-noauth tag, needs Redis running for dynamic)
+- name: redis
+  tier: CS06
+  transport: stdio
+  cmd:
+  - uvx
+  - mcp-server-redis
+  status: pending
+  notes: 'Redis key-value store operations. 458/wk, likely-noauth. Needs Redis for dynamic.'

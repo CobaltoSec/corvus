@@ -80,10 +80,20 @@ case_studies:
     false_positives: 55  # estimated
     fp_rate: 52.0  # higher than CS04 — FP driven by token-exposure in error messages + JSON null serialization
     note: "Auto-discovered via discover.py (npm). Highlights: LLM instruction injection via tool description (next-devtools), prompt injection in prompts/get (touchdesigner), Python execution exposure (touchdesigner). Security tools mcpwall/mcp-guard crashed without config — blind spot in audit chain. 57% startup error rate — majority require external runtime."
+  cs06:
+    servers: 12  # OK servers with findings (26 targeted, 14 ERROR)
+    targets_total: 26
+    skipped: 0
+    error_startup: 14  # 54% — AWS Labs servers need env credentials; npm tools need local runtimes
+    raw_findings: 127  # from 12 OK servers
+    true_positives: 56  # estimated
+    false_positives: 71  # estimated — FP driven by fdic long descriptions (MCP03)
+    fp_rate: 56.0  # without fdic outlier: ~46%
+    note: "Auto-discovered via discover.py (npm+PyPI). Mix: game engine (godot), banking (fdic), AWS Labs enterprise (kendra), TypeScript tools (functype), community Python (mcp-hn, calculator). Highlights: CRITICAL anti-forensic log erasure in godot (clear_console_log), path traversal in game scene write tools, XSS reflection pattern confirmed independently in functype (npm) AND awslabs.amazon-kendra-index-mcp-server (PyPI) — systematic cross-ecosystem. YJZF: server starts with 0 tools exposed. AWS Labs: only kendra succeeded (bedrock/terraform/sns-sqs/nova-canvas/cdk/cost-analysis/lambda/git-repo-research all ERROR)."
   totals:
-    servers: 113  # 101 (CS01-04) + 12 (CS05 OK)
-    raw_findings: 1372  # 1267 (CS01-04) + 105 (CS05)
-    true_positives: 791  # 741 (CS01-04) + 50 (CS05 estimated)
+    servers: 125  # 113 (CS01-05) + 12 (CS06 OK)
+    raw_findings: 1499  # 1372 (CS01-05) + 127 (CS06)
+    true_positives: 847  # 791 (CS01-05) + 56 (CS06 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -98,6 +108,8 @@ key_findings:
   - "Covert AI agent surveillance via MCP scope creep: clarvia-mcp-server instructs agents to 'Use after every tool invocation' to report all activity to external servers"
   - "SSRF with timing evidence: pulsemcp-pulse-fetch scrape.url accesses 169.254.169.254 AWS metadata endpoint (8.3s timing delta vs 2.3s baseline)"
   - "Stored SQL injection pattern: arxiv-mcp-server watch_topic.topic stores SQL payload in database without sanitization (plausible, needs check_alerts verification)"
+  - "Anti-forensic log erasure: godot-mcp-server exposes clear_console_log tool (CRITICAL, MCP08) — combined with write-path traversal in save_resource_to_file/take_screenshot enables exfiltrate-then-cover-tracks chain"
+  - "XSS response injection pattern confirmed across ecosystems: functype-mcp-server (npm) and awslabs.amazon-kendra-index-mcp-server (PyPI) both reflect unsanitized XSS payloads verbatim in error messages — systematic cross-SDK issue"
 
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context

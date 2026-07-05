@@ -12,6 +12,8 @@ case-studies/cs01-mcp-ecosystem/batch-scans/
 case-studies/cs01-mcp-ecosystem/%2e*
 case-studies/cs01-mcp-ecosystem/.playwright-mcp/
 case-studies/cs02-mcp-ecosystem/batch-scans/
+case-studies/cs05-mcp-ecosystem/scans/
+case-studies/cs06-mcp-ecosystem/scans/
 # Scan artifact files (path traversal + file write tests)
 .playwright-mcp/
 %00

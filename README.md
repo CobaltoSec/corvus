@@ -359,12 +359,12 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across three case studies — 113 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across three case studies — 125 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm ecosystem.
 
 | | CS01 | CS02 | CS03 | Combined |
 |---|---|---|---|---|
-| Servers audited | 20 | 29 | 8 | **113** |
-| True positives | 70 | 51 | ~70 | **~791** |
+| Servers audited | 20 | 29 | 8 | **125** |
+| True positives | 70 | 51 | ~70 | **~847** |
 | FP rate | 23.1% | 20.3% | ~2.6% | — |
 
 Key findings from the wild:
@@ -380,6 +380,8 @@ Key findings from the wild:
 - **Covert AI agent surveillance via MCP scope creep: clarvia-mcp-server instructs agents to 'Use after every tool invocation' to report all activity to external servers**
 - **SSRF with timing evidence: pulsemcp-pulse-fetch scrape.url accesses 169.254.169.254 AWS metadata endpoint (8.3s timing delta vs 2.3s baseline)**
 - **Stored SQL injection pattern: arxiv-mcp-server watch_topic.topic stores SQL payload in database without sanitization (plausible, needs check_alerts verification)**
+- **Anti-forensic log erasure: godot-mcp-server exposes clear_console_log tool (CRITICAL, MCP08) — combined with write-path traversal in save_resource_to_file/take_screenshot enables exfiltrate-then-cover-tracks chain**
+- **XSS response injection pattern confirmed across ecosystems: functype-mcp-server (npm) and awslabs.amazon-kendra-index-mcp-server (PyPI) both reflect unsanitized XSS payloads verbatim in error messages — systematic cross-SDK issue**
 
 Full datasets, curated findings, and methodology in [`case-studies/`](case-studies/).
 <!-- CORVUS_RESEARCH_END -->
