@@ -162,6 +162,8 @@ def load_batch_targets(config_path: Path) -> list[BatchTarget]:
 
     result: list[BatchTarget] = []
     for entry in targets:
+        if entry.get("status") in ("skip", "done", "error"):
+            continue
         if "name" not in entry:
             raise ValueError(f"Each target must have a 'name' field: {entry}")
         if "transport" not in entry:

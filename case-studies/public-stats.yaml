@@ -70,10 +70,20 @@ case_studies:
     false_positives: 429  # estimated — 3 new FP patterns: docs lazy-load (195), strptime reflection (33), API error echo (62+)
     fp_rate: 44.0  # estimated; without sveltejs-mcp outlier: ~30% (comparable to CS01/02)
     note: "Batches B-I. Categories: UI frameworks, news APIs, crypto, weather, dev-utils, web-search, design systems, docs servers. GHSA candidates: mcp-devutils (RSA key), pdf-toolkit-mcp (prompt injection), arxiv-mcp-server (stored SQL plausible), pulsemcp-pulse-fetch (SSRF plausible). Novel patterns: description mutation rug-pull, covert AI surveillance telemetry, stored SQL via watch_topic."
+  cs05:
+    servers: 12  # servers with successful scan (28 scanned - 16 startup errors)
+    targets_total: 30
+    skipped: 2  # chrome-devtools, browsermcp (launch Chrome)
+    error_startup: 16  # require local context, binaries, or running instances
+    raw_findings: 105   # from 12 OK servers
+    true_positives: 50  # estimated
+    false_positives: 55  # estimated
+    fp_rate: 52.0  # higher than CS04 — FP driven by token-exposure in error messages + JSON null serialization
+    note: "Auto-discovered via discover.py (npm). Highlights: LLM instruction injection via tool description (next-devtools), prompt injection in prompts/get (touchdesigner), Python execution exposure (touchdesigner). Security tools mcpwall/mcp-guard crashed without config — blind spot in audit chain. 57% startup error rate — majority require external runtime."
   totals:
-    servers: 101
-    raw_findings: 1267  # 288 (CS01-03) + 979 (CS04)
-    true_positives: 741  # 191 (CS01-03) + 550 (CS04 estimated)
+    servers: 113  # 101 (CS01-04) + 12 (CS05 OK)
+    raw_findings: 1372  # 1267 (CS01-04) + 105 (CS05)
+    true_positives: 791  # 741 (CS01-04) + 50 (CS05 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:

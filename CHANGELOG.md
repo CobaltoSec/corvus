@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-CS05] — 2026-07-05 — CS05 scan + FP calibration v2
+
+- **CS05 scan completo** — 30 targets (20 CS05-A + 10 CS05-B). 12 servers OK / 16 startup ERROR (57%) / 2 skipped (browser automation). ~105 raw findings → ~50 TP / ~55 FP. Alta tasa ERROR: mayoría requieren contexto externo (TouchDesigner, Storybook, Terraform, ioBroker). Security tools mcpwall/mcp-guard crashearon sin config — blind spot en la cadena de auditoría.
+- **8 hallazgos curados** (`case-studies/cs05-mcp-ecosystem/findings-curated-cs05.md`): F01 LLM instruction injection via description (next-devtools HIGH, OWASP MCP03), F02 bidirectional tool chaining (next-devtools MED, EXT06), F03 input reflection en error msg (next-devtools MED, MCP05), F04 shadow tool exec Python+node (touchdesigner HIGH, EXT03), F05 prompt injection via `prompts/get` (touchdesigner HIGH, MCP10), F06 protocol crash cascade (5 servers HIGH, EXT01), F07 scope creep read→write label (motiff MED, MCP02), F08 missing required fields validation (siemens + mastra MED, EXT01). No nuevos GHSAs.
+- **4 FP fixes (calibración v2)** — `token_exposure.py`: `_is_connection_error_text()` — skip IP match cuando el texto es help de conexión fallida (elimina 12 LOWs FP por server tipo touchdesigner). `injection.yaml`: `"null"` y `"undefined"` eliminados de `generic_string` — FP sistémico en cualquier JSON con campos nulos. `shadow_tool.py`: `_TRANSPARENT_EXEC_NAME_RE` — prefijos `execute_/exec_` → MEDIUM 65% (nombre auto-documenta la capacidad, no ocultación adversarial). `batch.py`: `status: done/error` también skipean targets, además de `skip`.
+- **public-stats.yaml actualizado** — cs05 block + totals: 113 servers / 1372 raw findings / 791 TP.
+
 ## [RT-CORVUS-SCALE-S1] — 2026-07-05 — Auto-discovery npm + CS05 targets curados (30)
 
 - **`scripts/discover.py`** — script interno de auto-discovery: 8 queries npm, cross-ref contra CS01–CS04 (461 packages conocidos), filtra por downloads (>25/wk) + heurística auth (likely-noauth / maybe-auth / likely-auth), genera candidates YAML en tracking format estándar. Round 1: 1075 pkgs nuevos. Round 2 (threshold 25, queries adicionales claude/cursor): 1332 pkgs, 50 candidatos finales.

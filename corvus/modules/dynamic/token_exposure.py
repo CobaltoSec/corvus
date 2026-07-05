@@ -29,12 +29,23 @@ _SIGNALS: list[tuple[re.Pattern[str], str, Severity, int]] = [
     (re.compile(r"(Error|Exception) at .+\.py:\d+"),
      "source file reference in error", Severity.LOW, 70),
     (re.compile(r"\b(127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)\b"),
-     "internal IP address", Severity.LOW, 70),
+     "internal IP address", Severity.LOW, 70),  # filtered by _is_connection_error_text below
     (re.compile(r'-----BEGIN (RSA |EC )?PRIVATE KEY-----'),
      "private key material", Severity.CRITICAL, 85),
     (re.compile(r"(Flask|Express|FastAPI|uvicorn|starlette|Django)/\d+\.\d+", re.I),
      "framework version string", Severity.INFO, 70),
 ]
+
+
+_CONNECTION_ERROR_RE = re.compile(
+    r"cannot connect|connection failed|not running|check your configuration|default port|configure",
+    re.I,
+)
+
+
+def _is_connection_error_text(text: str) -> bool:
+    """Return True if text is a connection-error help message, not a real credential leak."""
+    return bool(_CONNECTION_ERROR_RE.search(text))
 
 
 class TokenExposureModule(ScanModule):
@@ -112,6 +123,8 @@ class TokenExposureModule(ScanModule):
                     if m:
                         if label == "credential in response" and _is_type_annotation_match(m.group(0)):
                             continue  # TypeScript type annotation, not a real credential
+                        if label == "internal IP address" and _is_connection_error_text(text):
+                            continue  # IP in connection-error help text — not a real leak
                         if label in seen_signals:
                             break  # already reported this signal for this tool (A1: dedup across response texts)
                         seen_signals.add(label)

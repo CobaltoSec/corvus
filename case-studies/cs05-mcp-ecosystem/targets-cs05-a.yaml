@@ -22,8 +22,8 @@ targets:
   - npx
   - -y
   - chrome-devtools-mcp@latest
-  status: pending
-  notes: 'MCP server for Chrome DevTools. 2.1M/wk. Esperar: puede necesitar Chrome corriendo.'
+  status: skip
+  notes: 'MCP server for Chrome DevTools. 2.1M/wk. SKIP — lanza Chrome real y abre múltiples tabs.'
 
 # 1,675,231/wk — Storybook oficial: sirve knowledge de componentes del proyecto
 # Probablemente sin auth (lee stories locales)
@@ -209,9 +209,9 @@ targets:
   - npx
   - -y
   - '@browsermcp/mcp@latest'
-  status: pending
-  notes: 'Browser automation using Browser MCP extension. 11.5k/wk. Needs browser extension
-    — may fail without it.'
+  status: skip
+  notes: 'Browser automation using Browser MCP extension. 11.5k/wk. SKIP — puede lanzar
+    Chrome/browser automation sin control.'
 
 # ─── DESIGN SYSTEMS / DOCS ────────���──────────────────────────────────────────
 

@@ -49,6 +49,13 @@ _SCOPE_QUALIFIER_RE = re.compile(
     re.I,
 )
 
+# Tools whose NAME already contains the execution verb — the capability is transparent, not hidden.
+# Limited to 'execute_' / 'exec_' prefixes; 'run_system', 'run_command' stay HIGH (shell access).
+_TRANSPARENT_EXEC_NAME_RE = re.compile(
+    r"^(execute|exec)_",
+    re.I,
+)
+
 # DB-tool name prefixes — tools with these prefixes legitimately use execution language in docs
 _DB_TOOL_PREFIX_RE = re.compile(
     r"^(pg_|mysql_|mongo_|sqlite_|redis_|elastic_|dynamo_|psql_|db_)",
@@ -87,6 +94,25 @@ class ShadowToolModule(ScanModule):
 
     def _check_description(self, name: str, description: str) -> list[Finding]:
         if description and _DANGEROUS_DESCRIPTION.search(description):
+            # Tool name already reveals the execution capability — not hidden, just powerful.
+            if _TRANSPARENT_EXEC_NAME_RE.match(name):
+                return [Finding(
+                    owasp_category=OWASPCategory.EXT03_SHADOW_TOOL,
+                    severity=Severity.MEDIUM,
+                    title=f"Shadow Tool — '{name}' description reveals arbitrary execution intent",
+                    description=(
+                        f"Tool '{name}' description contains execution keywords. "
+                        "The tool name is self-documenting (execution verb prefix), so the capability "
+                        "is transparent — but verify the scope is restricted to the intended context."
+                    ),
+                    tool_name=name,
+                    evidence=description[:300],
+                    remediation=(
+                        "Restrict the tool to a well-defined, scoped operation. "
+                        "Do not expose generic shell execution capabilities via MCP tools."
+                    ),
+                    confidence=65,
+                )]
             # DB-prefix or query-verb tools legitimately use execution language in their descriptions
             # (e.g. pg_execute_sql "Executes arbitrary SQL", read_query "Runs a SELECT query").
             if _DB_TOOL_PREFIX_RE.match(name) or _QUERY_VERB_TOOL_RE.match(name):

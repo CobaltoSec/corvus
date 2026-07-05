@@ -55,5 +55,3 @@ generic_string:
   - "\x00"
   - "\n\rHTTP/1.1 200 OK\r\n"
   - "%00"
-  - "null"
-  - "undefined"
