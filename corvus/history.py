@@ -115,8 +115,8 @@ def list_scans(
         _ensure_schema(con)
         clauses, params = [], []
         if case_study:
-            clauses.append("case_study = ?")
-            params.append(case_study)
+            clauses.append("case_study LIKE ?")
+            params.append(f"{case_study}%")
         if pkg_filter:
             clauses.append("pkg_name LIKE ?")
             params.append(f"%{pkg_filter}%")

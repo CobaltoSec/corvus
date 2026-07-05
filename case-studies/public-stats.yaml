@@ -90,10 +90,20 @@ case_studies:
     false_positives: 71  # estimated — FP driven by fdic long descriptions (MCP03)
     fp_rate: 56.0  # without fdic outlier: ~46%
     note: "Auto-discovered via discover.py (npm+PyPI). Mix: game engine (godot), banking (fdic), AWS Labs enterprise (kendra), TypeScript tools (functype), community Python (mcp-hn, calculator). Highlights: CRITICAL anti-forensic log erasure in godot (clear_console_log), path traversal in game scene write tools, XSS reflection pattern confirmed independently in functype (npm) AND awslabs.amazon-kendra-index-mcp-server (PyPI) — systematic cross-ecosystem. YJZF: server starts with 0 tools exposed. AWS Labs: only kendra succeeded (bedrock/terraform/sns-sqs/nova-canvas/cdk/cost-analysis/lambda/git-repo-research all ERROR)."
+  cs07:
+    servers: 1  # 11 scanned, 1 OK, 10 ERROR
+    targets_total: 15
+    skipped: 4  # context7 (already CS03), workspace-mcp (OAuth), alpaca (API key), mcp-client-for-ollama (client)
+    error_startup: 10  # 91% error rate — broken ESM deps (zod/v4), broken npm packages, external DB requirements
+    raw_findings: 12  # from @antv/mcp-server-chart only
+    true_positives: 9
+    false_positives: 3
+    fp_rate: 25.0
+    note: "GitHub topic discovery (discover.py --source github). 91% runtime error rate vs ~50% npm-curated. Root causes: Node.js ESM compat issues (zod/v4 directory import), broken package dependencies (sourcey/preact), external service requirements (mongodb/mysql/pg-aiguide). Key finding: github topic discovery is a low-yield supplemental source, not primary. @antv/mcp-server-chart (36k/wk): protocol crashes (batch/oversized/nested), proto-pollution (__proto__ on 4 tools), cursor path traversal accepted."
   totals:
-    servers: 125  # 113 (CS01-05) + 12 (CS06 OK)
-    raw_findings: 1499  # 1372 (CS01-05) + 127 (CS06)
-    true_positives: 847  # 791 (CS01-05) + 56 (CS06 estimated)
+    servers: 126  # 125 (CS01-06) + 1 (CS07 OK)
+    raw_findings: 1511  # 1499 (CS01-06) + 12 (CS07)
+    true_positives: 856  # 847 (CS01-06) + 9 (CS07)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
