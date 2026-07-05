@@ -26,3 +26,4 @@ test
 .cache/
 SIGUIENTE.md
 .claude/
+scripts/discover-output/

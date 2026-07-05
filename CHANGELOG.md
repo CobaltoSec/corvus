@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-SCALE-S1] — 2026-07-05 — Auto-discovery npm + CS05 targets curados (30)
+
+- **`scripts/discover.py`** — script interno de auto-discovery: 8 queries npm, cross-ref contra CS01–CS04 (461 packages conocidos), filtra por downloads (>25/wk) + heurística auth (likely-noauth / maybe-auth / likely-auth), genera candidates YAML en tracking format estándar. Round 1: 1075 pkgs nuevos. Round 2 (threshold 25, queries adicionales claude/cursor): 1332 pkgs, 50 candidatos finales.
+- **CS05-A** — 20 targets curados (`case-studies/cs05-mcp-ecosystem/targets-cs05-a.yaml`): chrome-devtools (2.1M/wk), storybook (1.7M/wk), pandacss (254k), agentation, next-devtools, mcp-hello-world, mcp-searxng, mcp-server-airbnb, terraform, newsnow, openapi-mcp-generator, goke, axe, mcp-server-sqlite-npx, docs, browsermcp, coinbase-cds, motiff, theia-ai, touchdesigner.
+- **CS05-B** — 10 targets adicionales del round 2 (`case-studies/cs05-mcp-ecosystem/targets-cs05-b.yaml`): mui (4k/wk), excalidraw (3.6k/wk), siemens-ix-react (1.7k/wk), mcpwall (security proxy), mcp-guard (security middleware), mastra-mcp-registry (meta-registry), handoff (AI memory), bunli-plugin, vibelens, iobroker.
+- Total CS05: **30 targets pendientes de scan** — `corvus batch targets-cs05-a.yaml && corvus batch targets-cs05-b.yaml`.
+
 ## [RT-CORVUS-CLI-FP] — 2026-07-05 — CLI UX + FP calibration · v1.1.0
 
 - **CLI aesthetics** — banner TTY-aware (supprimido en pipe/SARIF), argumento posicional `target` con auto-detect transport (`http://` → HTTP, else stdio), `--fast/-F` (static only), output nmap-style (dim para módulos limpios, badge `(N)` para findings), timing al final. `_NoiseFilter` elimina asyncio Windows pipe noise en stderr.

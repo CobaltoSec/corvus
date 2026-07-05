@@ -1,0 +1,268 @@
+meta:
+  case_study: CS05-A
+  description: OWASP MCP Ecosystem Audit — CS05 Batch A (auto-discovered, curated 2026-07-05)
+  corvus_version: 1.1.0
+  strategy: |
+    20 targets curados del run discover.py 2026-07-05.
+    Criterio: no-auth confirmado o framework/devtool local sin señales de SaaS.
+    Excluidos: Transcend×9, Gmail, CircleCI, MS-365, PowerBI, Browserbase, Xero,
+    LangSmith, Square, Currents, RetellAI, Kubernetes (linux-amd64), outline (needs URL+token),
+    gezhe/mdk/cariot/yjzf (SaaS desconocido), mcp-server-browser (Bytedance Windows issues).
+
+targets:
+
+# ─── DEVTOOLS / LOCAL ────────────────────────────────────────────────────────
+
+# 2,135,112/wk — Chrome DevTools MCP, integra protocol de debugging de Chrome
+# Probablemente necesita Chrome instalado pero arranca sin auth
+- name: chrome-devtools
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - chrome-devtools-mcp@latest
+  status: pending
+  notes: 'MCP server for Chrome DevTools. 2.1M/wk. Esperar: puede necesitar Chrome corriendo.'
+
+# 1,675,231/wk — Storybook oficial: sirve knowledge de componentes del proyecto
+# Probablemente sin auth (lee stories locales)
+- name: storybook
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@storybook/mcp@latest'
+  status: pending
+  notes: 'Official Storybook MCP — serves component knowledge from local stories. 1.7M/wk,
+    likely-noauth.'
+
+# 254,211/wk — Panda CSS AI assistant: documentación del framework CSS
+- name: pandacss
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@pandacss/mcp@latest'
+  status: pending
+  notes: 'Panda CSS framework docs for AI assistants. 254k/wk. Likely no auth — static
+    knowledge base.'
+
+# 91,898/wk — Agentation: visual feedback para AI coding agents
+- name: agentation
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - agentation-mcp@latest
+  status: pending
+  notes: 'Visual feedback for AI coding agents. 92k/wk. Worth trying — might work locally.'
+
+# 72,419/wk — Next.js dev tools, stdio transport, herramienta local de desarrollo
+- name: next-devtools
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - next-devtools-mcp@latest
+  status: pending
+  notes: 'Next.js development tools MCP server. 72k/wk. Local dev tool, likely no auth.'
+
+# ─── MINIMAL / REFERENCE ──────────���───────────────────────���──────────────────
+
+# 27,932/wk — Hello World MCP, servidor mínimo de referencia
+- name: mcp-hello-world
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-hello-world@latest
+  status: pending
+  notes: 'Simple Hello World MCP server. 28k/wk. Minimal surface — useful as reference
+    scan.'
+
+# ─── SEARCH / DATA PÚBLICA ──────────────��────────────────────────���───────────
+
+# 20,243/wk — SearXNG integration: conecta a instancia SearXNG (open source, self-hosted)
+# Arranca sin instancia configurada, permite probar static + init_audit
+- name: mcp-searxng
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-searxng@latest
+  status: pending
+  notes: 'SearXNG integration. 20k/wk. Self-hosted search — starts without running instance
+    (test static/init).'
+
+# 1,497/wk — Airbnb search/listing via community scraping (no auth esperado)
+- name: mcp-server-airbnb
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@openbnb/mcp-server-airbnb@latest'
+  status: pending
+  notes: 'Airbnb search and listing details. 1.5k/wk. Community impl — likely uses public
+    Airbnb API (no auth).'
+
+# 805/wk — Terraform Registry: API pública de HashiCorp, sin auth
+- name: terraform
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - terraform-mcp-server@latest
+  status: pending
+  notes: 'Terraform Registry operations. 805/wk. Public HashiCorp Registry API — no auth.'
+
+# 157/wk — NewsNow aggregator, probablemente public news API
+- name: newsnow
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - newsnow-mcp-server@latest
+  status: pending
+  notes: 'NewsNow MCP server. 157/wk. Public news aggregation — verify auth at startup.'
+
+# ─── CODE / TOOLING LOCAL ───��─────────────────────────────────��──────────────
+
+# 13,243/wk — Genera código de MCP server a partir de specs OpenAPI (local, no auth)
+- name: openapi-mcp-generator
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - openapi-mcp-generator@latest
+  status: pending
+  notes: 'Generates MCP server code from OpenAPI specs. 13k/wk. Local code-gen tool —
+    no auth.'
+
+# 9,731/wk — CLI generator from MCP tools: genera CLI commands a partir de los tools del server
+- name: goke
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@goke/mcp@latest'
+  status: pending
+  notes: 'Dynamically generate CLI commands from MCP server tools. 10k/wk. Local tool
+    — no auth.'
+
+# 3,517/wk — Axe DevTools: accessibility analysis local, no auth
+- name: axe
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - axe-mcp-server@latest
+  status: pending
+  notes: 'Axe DevTools accessibility analysis and remediation. 3.5k/wk. Local — likely-noauth.'
+
+# 949/wk — npm wrapper de mcp-server-sqlite (tenemos uvx, este es diferente)
+# Interesante comparar si tiene la misma superficie que el uvx
+- name: mcp-server-sqlite-npx
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-sqlite-npx@latest
+  - --db-path
+  - C:\Temp\test-cs05.db
+  status: pending
+  notes: 'npm wrapper for mcp-server-sqlite. 949/wk. Compare vs uvx version already in
+    CS01.'
+
+# 497/wk — Documentation fetcher: busca y sirve docs de frameworks/libs (URLs públicas)
+- name: docs
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@arabold/docs-mcp-server@latest'
+  status: pending
+  notes: 'Fetches and searches documentation from public URLs. 497/wk. likely-noauth.'
+
+# ─── BROWSER AUTOMATION ───────────��───────────────────────────��──────────────
+
+# 11,525/wk — Browser MCP: browser automation via extensión de Chrome
+# Puede necesitar extensión instalada para conectar
+- name: browsermcp
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@browsermcp/mcp@latest'
+  status: pending
+  notes: 'Browser automation using Browser MCP extension. 11.5k/wk. Needs browser extension
+    — may fail without it.'
+
+# ─── DESIGN SYSTEMS / DOCS ────────���──────────────────────────────────────────
+
+# 3,200/wk — Coinbase Design System docs: component library oficial de Coinbase
+# Probablemente solo sirve documentación de componentes, sin auth
+- name: coinbase-cds
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@coinbase/cds-mcp-server@latest'
+  status: pending
+  notes: 'Coinbase Design System MCP server. 3.2k/wk. Design system component docs —
+    likely no auth.'
+
+# 3,225/wk — Motiff design tool (Figma-like, Chinese): puede necesitar API key
+- name: motiff
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@motiffcom/motiff-mcp-server@latest'
+  status: pending
+  notes: 'Motiff design tool MCP server. 3.2k/wk. Chinese Figma-like — may require API
+    key (skip if auth at startup).'
+
+# ─── IDE / PLATFORM ────────��──────────────────────────��──────────────────────
+
+# 2,335/wk — Eclipse Theia AI MCP: IDE framework OSS, puede ser tool de dev local
+- name: theia-ai
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@theia/ai-mcp-server@latest'
+  status: pending
+  notes: 'Eclipse Theia IDE AI MCP server. 2.3k/wk. Open-source IDE — may work as local
+    dev tool.'
+
+# 2,751/wk — TouchDesigner MCP: integra con TouchDesigner (software de medios generativos)
+# Necesita TD instalado pero arranca standalone para probar
+- name: touchdesigner
+  tier: CS05-A
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - touchdesigner-mcp-server@latest
+  status: pending
+  notes: 'TouchDesigner integration. 2.75k/wk. Needs TD installed — test static modules
+    independently.'

@@ -1,0 +1,141 @@
+meta:
+  case_study: CS05-B
+  description: OWASP MCP Ecosystem Audit — CS05 Batch B (segunda corrida discover, curado 2026-07-05)
+  corvus_version: 1.1.0
+  strategy: |
+    10 targets curados del run discover.py round 2 (--min-downloads 25, queries adicionales).
+    Todos nuevos respecto a CS05-A. Foco en: design systems, security proxies, tooling local,
+    home automation y meta-tools. Excluidos: mismo criterio CS05-A (SaaS/OAuth).
+
+targets:
+
+# ─── MUI / DESIGN SYSTEMS ────────────────────────────────────────────────────
+
+# 4,052/wk — MUI (Material UI) component library official MCP
+# Sirve documentación de componentes, casi seguro sin auth
+- name: mui
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mui/mcp@latest'
+  status: pending
+  notes: 'MUI Material UI official MCP server. 4k/wk. Component docs — likely-noauth.'
+
+# 1,701/wk — Siemens iX design system for React components
+- name: siemens-ix-react
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@siemens/ix-mcp-react@latest'
+  status: pending
+  notes: 'Siemens iX design system MCP for React. 1.7k/wk. Design system docs — likely
+    no auth.'
+
+# ─── DIAGRAMMING / VISUALIZATION ─────────────────────────────────────────────
+
+# 3,595/wk — Excalidraw: herramienta de diagramas open-source (local, sin auth)
+- name: excalidraw
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - excalidraw-mcp@latest
+  status: pending
+  notes: 'Excalidraw diagramming MCP server. 3.6k/wk. Local diagramming tool — no auth.'
+
+# 94/wk — VibeLens: visualiza cambios de código con anotaciones inline en VS Code/Cursor
+- name: vibelens
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - vibelens-mcp@latest
+  status: pending
+  notes: 'Visualize code changes with inline annotations in VS Code/Cursor. 94/wk. Might
+    need VS Code running.'
+
+# ─── SECURITY TOOLS (muy interesantes para escanear) ─────────────────────────
+
+# 166/wk — mcpwall: proxy de seguridad determinístico para MCP tool calls
+# Bloquea requests peligrosos, redact secrets — un MCP server de seguridad para escanear
+- name: mcpwall
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcpwall@latest
+  status: pending
+  notes: 'Deterministic security proxy for MCP tool calls. 166/wk. Security proxy —
+    very interesting attack surface.'
+
+# 148/wk — EP-MCP Guard: middleware de referencia para proteger tool calls irreversibles
+- name: mcp-guard
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@emilia-protocol/mcp-guard@latest'
+  status: pending
+  notes: 'Reference MCP middleware — wraps tool-call handler, blocks irreversible calls.
+    148/wk. Security middleware surface.'
+
+# ─── LOCAL TOOLING / AI AGENTS ───────────────────────────────────────────────
+
+# 2,577/wk — Mastra MCP registry of registries: meta-server de discovery de MCP servers
+- name: mastra-mcp-registry
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@mastra/mcp-registry-registry@latest'
+  status: pending
+  notes: 'MCP registry of registries. 2.6k/wk. likely-noauth — meta-discovery server.'
+
+# 1,159/wk — Handoff: memoria persistente para AI coding agents entre sesiones
+# Local, sin auth esperado (almacena estado localmente)
+- name: handoff
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - handoff-mcp-server@latest
+  status: pending
+  notes: 'Persistent memory for AI coding agents across sessions. 1.2k/wk. Local storage
+    — likely no auth.'
+
+# 27/wk — Bunli plugin-mcp: genera CLI commands a partir de MCP tool schemas (similar a goke)
+- name: bunli-plugin
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@bunli/plugin-mcp@latest'
+  status: pending
+  notes: 'Create CLI commands from MCP tool schemas (Bunli framework). 27/wk. Local
+    tool — no auth.'
+
+# ─── HOME AUTOMATION / IoT ───────────────────────────────────────────────────
+
+# 637/wk — ioBroker MCP: plataforma open-source de home automation
+# Necesita instancia ioBroker corriendo, pero puede arrancar sin ella para probar static modules
+- name: iobroker
+  tier: CS05-B
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - iobroker.mcp@latest
+  status: pending
+  notes: 'ioBroker home automation platform MCP. 637/wk. Needs ioBroker instance — test
+    static modules independently.'
