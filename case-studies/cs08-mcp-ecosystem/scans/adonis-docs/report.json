@@ -1,0 +1,472 @@
+{
+  "target": "uvx adonis-docs-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "AdonisJS Docs",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "list_versions",
+        "description": "List all available AdonisJS documentation versions.\n\nReturns a formatted list of supported AdonisJS versions with their labels.\nUse the version key (v5, v6, v7) in other tools.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "list_versionsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "list_sections",
+        "description": "List all documentation sections and pages for a given AdonisJS version.\n\nArgs:\n    version: AdonisJS version — \"v5\", \"v6\", or \"v7\" (default: \"v7\")\n\nReturns a structured list of all categories and page titles with their permalinks.\n",
+        "input_schema": {
+          "properties": {
+            "version": {
+              "default": "v7",
+              "title": "Version",
+              "type": "string"
+            }
+          },
+          "title": "list_sectionsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_doc",
+        "description": "Get the full content of a specific AdonisJS documentation page.\n\nArgs:\n    permalink: The page permalink (e.g., \"guides/basics/routing\", \"installation\").\n               Use list_sections to find available permalinks.\n    version: AdonisJS version — \"v5\", \"v6\", or \"v7\" (default: \"v7\")\n\nReturns the raw markdown content of the documentation page.\n",
+        "input_schema": {
+          "properties": {
+            "permalink": {
+              "title": "Permalink",
+              "type": "string"
+            },
+            "version": {
+              "default": "v7",
+              "title": "Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "permalink"
+          ],
+          "title": "get_docArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_docs",
+        "description": "Search AdonisJS documentation by keyword.\n\nSearches through page titles and content for matching terms.\n\nArgs:\n    query: Search terms (case-insensitive)\n    version: AdonisJS version — \"v5\", \"v6\", or \"v7\" (default: \"v7\").\n             Use \"all\" to search across all versions.\n\nReturns matching documentation pages with snippets.\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "version": {
+              "default": "v7",
+              "title": "Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "search_docsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "edge_list_sections",
+        "description": "List all Edge.js template engine documentation sections and pages.\n\nReturns a structured list of all categories and page titles with their permalinks.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "edge_list_sectionsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "edge_get_doc",
+        "description": "Get the full content of a specific Edge.js documentation page.\n\nArgs:\n    permalink: The page permalink (e.g., \"introduction\", \"components/slots\").\n               Use edge_list_sections to find available permalinks.\n\nReturns the raw markdown content of the documentation page.\n",
+        "input_schema": {
+          "properties": {
+            "permalink": {
+              "title": "Permalink",
+              "type": "string"
+            }
+          },
+          "required": [
+            "permalink"
+          ],
+          "title": "edge_get_docArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "edge_search_docs",
+        "description": "Search Edge.js template engine documentation by keyword.\n\nSearches through page titles and content for matching terms.\n\nArgs:\n    query: Search terms (case-insensitive)\n\nReturns matching documentation pages with snippets.\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "edge_search_docsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "lucid_list_sections",
+        "description": "List all Lucid ORM documentation sections and pages.\n\nReturns a structured list of all categories and page titles with their\npermalinks. Covers guides, query builders, migrations, and models.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "lucid_list_sectionsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "lucid_get_doc",
+        "description": "Get the full content of a specific Lucid ORM documentation page.\n\nArgs:\n    permalink: The page permalink (e.g., \"introduction\", \"models\",\n               \"relationships\", \"migrations\", \"select-query-builder\").\n               Use lucid_list_sections to find available permalinks.\n\nReturns the raw markdown content of the documentation page.\n",
+        "input_schema": {
+          "properties": {
+            "permalink": {
+              "title": "Permalink",
+              "type": "string"
+            }
+          },
+          "required": [
+            "permalink"
+          ],
+          "title": "lucid_get_docArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "lucid_search_docs",
+        "description": "Search Lucid ORM documentation by keyword.\n\nSearches through page titles and content for matching terms.\n\nArgs:\n    query: Search terms (e.g., \"relationships\", \"migrations\", \"hooks\")\n\nReturns matching documentation pages with snippets.\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "lucid_search_docsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "packages_list",
+        "description": "List available AdonisJS community and official packages.\n\nBrowse the AdonisJS packages registry to discover packages for\nauthentication, database, storage, messaging, extensions, and more.\n\nArgs:\n    category: Optional category filter (e.g., \"Authentication\", \"Database\",\n              \"Extensions\", \"Storage\", \"Security\", \"Authorization\",\n              \"Messaging\", \"Rendering\"). Leave empty to list all.\n\nReturns a list of packages with name, description, npm package, category,\nand compatibility info.\n",
+        "input_schema": {
+          "properties": {
+            "category": {
+              "default": "",
+              "title": "Category",
+              "type": "string"
+            }
+          },
+          "title": "packages_listArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "packages_search",
+        "description": "Search AdonisJS packages by keyword.\n\nSearches package names, descriptions, keywords, and categories.\n\nArgs:\n    query: Search terms (e.g., \"jwt\", \"queue\", \"auth\", \"mail\", \"cache\")\n\nReturns matching packages with details and install instructions.\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "packages_searchArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "packages_get",
+        "description": "Get detailed information about a specific AdonisJS package.\n\nFetches the package metadata and its full README from GitHub, including\ninstallation instructions, configuration, and usage examples.\n\nArgs:\n    name: Package name or npm package name (e.g., \"adonisjs-jwt\",\n          \"@adonisjs/cache\", \"lucid\", \"ally\").\n\nReturns package details and full README content.\n",
+        "input_schema": {
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "title": "packages_getArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_backend_guidelines",
+        "description": "Get AdonisJS v7 backend development guidelines.\n\nReturns architecture rules, Edge template conventions, controller patterns,\nform/validation rules, model/database conventions, and asset handling for\nserver-rendered monolithic AdonisJS v7 + Edge.js applications.\n\nCall this before working on AdonisJS backend code (routes, controllers,\nmodels, services, validators, Edge views).\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_backend_guidelinesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_frontend_guidelines",
+        "description": "Get frontend anti-slop guidelines for HTML, CSS, and UI development.\n\nReturns rules for writing high-quality frontend code in Edge templates:\nsemantic HTML, typography, color, layout, spacing, borders/shadows,\nanimation, accessibility, responsive design, icons, and component states.\n\nThese rules prevent the generic \"AI-averaged\" look that plagues generated\nfrontend code. Call this before writing or editing HTML/CSS in Edge templates.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_frontend_guidelinesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_code_quality_guidelines",
+        "description": "Get anti-slop code quality rules for any code changes.\n\nReturns rules to prevent low-quality AI-generated code: surgical changes\nonly, no comment spam, no filler content, no bloated output, no invented\nstructure, no unnecessary abstractions, no dependency additions, no\nspeculative code, no SPA leakage, and domain-specific naming.\n\nCall this before making any code changes to an AdonisJS project.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_code_quality_guidelinesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_agents_md",
+        "description": "Get a ready-to-use AGENTS.md file for AdonisJS v7 + Edge.js projects.\n\nReturns an AGENTS.md template that instructs AI coding agents to use\nthe adonis-docs-mcp tools for documentation, guidelines, and package\ndiscovery. Drop this file in the root of your AdonisJS project so\nagents automatically know how to work with the codebase.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_agents_mdArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "clear_cache",
+        "description": "Clear the local documentation cache.\n\nUse this if you want to force-refresh documentation from GitHub.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "clear_cacheArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": [
+      {
+        "name": "adonisjs_stack",
+        "description": "Development guidelines for AdonisJS v7 + Edge.js monolithic projects.\n\nLoad this prompt before working on an AdonisJS v7 + Edge.js monolithic\nproject. It provides anti-AI-slop rules, architecture constraints, and\nconventions for server-rendered applications.\n",
+        "arguments": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'list_sections.version'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "list_sections",
+      "parameter": "version",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Unknown version '<script>alert(1)</script>'. Available: v7, v6, v5, edge, lucid",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'list_sections' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "list_sections",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "10 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 45.625,
+  "exchanges": []
+}

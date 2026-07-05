@@ -1,0 +1,586 @@
+{
+  "target": "uvx arxiv-today-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "arxiv",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "fetch_papers",
+        "description": "Fetch recent papers from arXiv API and store them in the local database.\n\nReturns only fetched paper titles (not abstracts) to save context.\nUse query_papers(entry_ids=[...], fields=[\"abstract\"]) to retrieve abstracts for specific papers.\n\nArgs:\n    category: arXiv category (e.g. \"cs.AI\", \"cs.CL\", \"stat.ML\")\n    date: Fetch papers published on a specific date in YYYY-MM-DD format.\n          When provided, takes priority over num_days.\n    num_days: Number of days to look back (default: 3). Ignored when date is set.\n    max_results: Maximum number of papers to fetch (default: 100)\n",
+        "input_schema": {
+          "properties": {
+            "category": {
+              "title": "Category",
+              "type": "string"
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Date"
+            },
+            "num_days": {
+              "default": 3,
+              "title": "Num Days",
+              "type": "integer"
+            },
+            "max_results": {
+              "default": 100,
+              "title": "Max Results",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "category"
+          ],
+          "title": "fetch_papersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "count_papers_on_date",
+        "description": "Count how many papers were published in an arXiv category on a specific date.\n\nUse this before fetch_papers to check the volume of papers for a given day,\nso you can decide how many to fetch with fetch_papers(max_results=N).\n\nArgs:\n    category: arXiv category (e.g. \"cs.AI\", \"cs.CL\", \"stat.ML\")\n    date: Date in YYYY-MM-DD format (e.g. \"2026-03-18\")\n",
+        "input_schema": {
+          "properties": {
+            "category": {
+              "title": "Category",
+              "type": "string"
+            },
+            "date": {
+              "title": "Date",
+              "type": "string"
+            }
+          },
+          "required": [
+            "category",
+            "date"
+          ],
+          "title": "count_papers_on_dateArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "query_papers",
+        "description": "Query papers from the local database with flexible filtering and field selection.\n\nAll filter parameters are combined with AND logic. Within categories, OR logic is used.\nIf no filter parameters are provided, returns the most recent papers up to max_results.\n\nArgs:\n    date: Filter by publication date in YYYY-MM-DD format (e.g. \"2026-03-18\")\n    categories: Filter by one or more arXiv categories (OR logic), e.g. [\"cs.AI\", \"cs.LG\"]\n    title: Filter by title keyword (title field only, not abstract; case-insensitive for ASCII)\n    entry_ids: Fetch specific papers by their arXiv entry IDs. Typically used alone;\n               combining with other filters applies AND logic and may return fewer results\n               than expected if the other conditions do not match.\n    fields: Fields to return. Valid: entry_id, title, authors, abstract, url, published, updated, categories.\n            Defaults to: entry_id, title, authors, published, url\n    max_results: Maximum number of results to return (default: 500)\n",
+        "input_schema": {
+          "properties": {
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Date"
+            },
+            "categories": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Categories"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Title"
+            },
+            "entry_ids": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Entry Ids"
+            },
+            "fields": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Fields"
+            },
+            "max_results": {
+              "default": 500,
+              "title": "Max Results",
+              "type": "integer"
+            }
+          },
+          "title": "query_papersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "cleanup_papers",
+        "description": "Delete papers from the local database by date and/or category.\n\nAt least one filter must be provided to prevent accidental full deletion.\nFilters are combined with AND logic.\n\nArgs:\n    before_date: Delete papers published before this date (exclusive), e.g. \"2026-03-01\"\n    date: Delete papers published on this specific date, e.g. \"2026-03-18\"\n    categories: Delete only papers in these categories (OR logic), e.g. [\"cs.AI\", \"cs.LG\"]\n",
+        "input_schema": {
+          "properties": {
+            "before_date": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Before Date"
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Date"
+            },
+            "categories": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Categories"
+            }
+          },
+          "title": "cleanup_papersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_stats",
+        "description": "Get statistics about papers stored in the local database.\n\nReturns total count, date range, per-date breakdown, and top categories.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_statsArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'query_papers'",
+      "description": "Description is 1018 chars (limit 1000). May contain hidden content.",
+      "tool_name": "query_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'date' in 'fetch_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "fetch_papers",
+      "parameter": "date",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'date'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'date' in 'query_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query_papers",
+      "parameter": "date",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'date'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'categories' in 'query_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query_papers",
+      "parameter": "categories",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'categories'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'title' in 'query_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query_papers",
+      "parameter": "title",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'title'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'entry_ids' in 'query_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query_papers",
+      "parameter": "entry_ids",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'entry_ids'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'fields' in 'query_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query_papers",
+      "parameter": "fields",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'fields'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'before_date' in 'cleanup_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "cleanup_papers",
+      "parameter": "before_date",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'before_date'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'date' in 'cleanup_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "cleanup_papers",
+      "parameter": "date",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'date'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'categories' in 'cleanup_papers' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "cleanup_papers",
+      "parameter": "categories",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'categories'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'cleanup_papers' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "cleanup_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'fetch_papers.category'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: generic_string).",
+      "tool_name": "fetch_papers",
+      "parameter": "category",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"status\": \"ok\",\n  \"category\": \"<script>alert(1)</script>\",\n  \"papers_fetched\": 0,\n  \"num_days\": 3\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Slow tool response — 'query_papers' took 19.8s",
+      "description": "Tool 'query_papers' took 19.8 seconds to respond. Slow responses can be used for resource exhaustion in agent pipelines or indicate unbounded computation triggered by benign inputs.",
+      "tool_name": "query_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Response time: 19.84s",
+      "remediation": "Enforce server-side timeouts on all tool executions. Cap at 30s max.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT04",
+      "severity": "high",
+      "title": "SSRF (timeout) — 'fetch_papers.category' hung on SSRF payload",
+      "description": "Call with SSRF payload 'http://169.254.169.254/' timed out after 12.0s, suggesting the server is attempting the network request.",
+      "tool_name": "fetch_papers",
+      "parameter": "category",
+      "payload": "http://169.254.169.254/",
+      "evidence": null,
+      "remediation": "Block outbound requests to RFC-1918 and link-local ranges. Use an allowlist for permitted URL schemes and hosts.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT04",
+      "severity": "high",
+      "title": "SSRF (timing) — 'fetch_papers.date' delayed on SSRF payload",
+      "description": "Call with payload 'http://169.254.169.254/latest/meta-data/' took 7.8s vs baseline 2.0s — server likely attempted the outbound request before timing out.",
+      "tool_name": "fetch_papers",
+      "parameter": "date",
+      "payload": "http://169.254.169.254/latest/meta-data/",
+      "evidence": null,
+      "remediation": "Block outbound requests to RFC-1918 and link-local ranges. Use an allowlist for permitted URL schemes and hosts.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT13",
+      "severity": "high",
+      "title": "Server hangs on path traversal cursor",
+      "description": "The server crashed or disconnected when processing an invalid cursor value. This is a Denial of Service vector.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "tools/list timed out with cursor='../../../../etc/passwd'",
+      "remediation": "Validate cursor values before processing; return -32602 (Invalid params) for malformed cursors.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: none",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 71.32800000000134,
+  "exchanges": []
+}

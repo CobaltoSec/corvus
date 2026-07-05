@@ -1,0 +1,317 @@
+{
+  "target": "uvx arxiv-latex-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "arxiv-latex-mcp",
+    "server_version": "0.2.2",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_paper_prompt",
+        "description": "Recommended default: fetch the full LaTeX source of an arXiv paper for precise interpretation of mathematical expressions.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "arxiv_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper (e.g., '2403.12345')"
+            }
+          },
+          "required": [
+            "arxiv_id"
+          ]
+        }
+      },
+      {
+        "name": "get_paper_abstract",
+        "description": "Get just the abstract of an arXiv paper. Use this for a quick preview when the user hasn't read the paper yet, not when they provide an arXiv ID to discuss a paper.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "arxiv_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper (e.g., '2403.12345')"
+            }
+          },
+          "required": [
+            "arxiv_id"
+          ]
+        }
+      },
+      {
+        "name": "list_paper_sections",
+        "description": "List section headings of an arXiv paper. Useful when the full paper is too long for context and you need to identify which sections to fetch individually.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "arxiv_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper (e.g., '2403.12345')"
+            }
+          },
+          "required": [
+            "arxiv_id"
+          ]
+        }
+      },
+      {
+        "name": "get_paper_section",
+        "description": "Get a specific section of an arXiv paper by section path. Use when the full paper is too long for context or the user wants to focus on a particular section. Use list_paper_sections first to find available paths.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "arxiv_id": {
+              "type": "string",
+              "description": "The arXiv ID of the paper (e.g., '2403.12345')"
+            },
+            "section_path": {
+              "type": "string",
+              "description": "The section path to extract (e.g., '1', '2.1', 'Introduction'). Use list_paper_sections to find available paths."
+            }
+          },
+          "required": [
+            "arxiv_id",
+            "section_path"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_paper_prompt.arxiv_id'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_paper_prompt",
+      "parameter": "arxiv_id",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Error processing arXiv paper <script>alert(1)</script>: unsupported operand type(s) for +: 'NoneType' and 'str'",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'get_paper_abstract.arxiv_id'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "get_paper_abstract",
+      "parameter": "arxiv_id",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Error processing arXiv paper <script>alert(1)</script>: 1 validation error for TextContent\ntext\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'list_paper_sections.arxiv_id'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "list_paper_sections",
+      "parameter": "arxiv_id",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "Error processing arXiv paper <script>alert(1)</script>: expected string or bytes-like object, got 'NoneType'",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT11",
+      "severity": "high",
+      "title": "Server allows external log level escalation to DEBUG",
+      "description": "The MCP server accepted an unauthenticated logging/setLevel request with level='debug'. This may expose tokens, internal paths, and sensitive state in log streams accessible to the operator.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='debug' and level='emergency' both returned success",
+      "remediation": "Restrict logging/setLevel to admin contexts or disable it entirely.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: {\"jsonrpc\":\"2.0\",\"id\":42,\"result\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{\"experimental\":{},",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 38.76600000000144,
+  "exchanges": []
+}

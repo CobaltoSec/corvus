@@ -1,0 +1,1064 @@
+{
+  "target": "uvx yahoo-local-search-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "mcp-yahoo-localsearch",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_local",
+        "description": "Yahoo!ローカルサーチAPIで店舗・施設情報を検索する汎用ツール。\n\nキーワード・業種コード・住所コード・緯度経度・矩形範囲などを組み合わせて、\n全国の店舗データ（電話帳カセットなど）を検索する。\n\n仕様上の必須条件:\n    appid 以外に、query / gc / ac / lat+lon / cid のいずれかを必ず指定すること。\n    いずれも未指定の場合は API 側で 400 エラーになる。\n\nArgs:\n    query: 検索キーワード (例: \"焼肉\", \"イオン\", \"サントリー美術館\")\n    gc: 業種コード (例: \"0118008\"=焼肉, \"0118\"=韓国・朝鮮料理, \"0202\"=スーパーマーケット)\n        YOLP業種コード一覧:\n        https://developer.yahoo.co.jp/webapi/map/openlocalplatform/genre.html\n    ac: 住所コード (JIS X 0401)\n        都道府県は2桁 (例: \"01\"=北海道, \"13\"=東京都)\n        市区町村は5桁 (例: \"01101\"=札幌市中央区, \"13103\"=東京都港区)\n        国コード (ISO 3166-1 alpha-2) も指定可能 (例: \"JP\", \"US\")\n    lat: 中心緯度 (世界測地系、例: 43.0644 = 札幌駅)\n    lon: 中心経度 (例: 141.3470 = 札幌駅)\n    dist: 検索距離 km (最大20、小数可)。lat/lonと併用必須。\n    bbox: 矩形範囲。\"左下経度,左下緯度,右上経度,右上緯度\" 形式。\n    sort: ソート順\n        - \"rating\": 星の数順\n        - \"score\": スコア順\n        - \"hybrid\": 適合度・口コミ・評価のハイブリッド (デフォルト)\n        - \"review\": 口コミ件数順\n        - \"kana\": あいうえお順\n        - \"price\": 金額順\n        - \"dist\": 直線距離順 (lat/lon必須、geoより高速)\n        - \"geo\": 球面三角法による距離順 (lat/lon必須、より正確)\n        - \"match\": 適合度順\n        \"-rating\" のように \"-\" を先頭に付けると降順。例: sort=\"-review\"\n    start: 取得開始位置 (1始まり、最大3000)\n    results: 取得件数 (最大100)\n    detail: 出力項目数\n        - \"simple\": 最小限\n        - \"standard\": 標準 (デフォルト)\n        - \"full\": 全項目 (写真URL等含む)\n    cid: カセットID。電話帳カセット = \"d8a23e9e64a4c817227ab09858bc1330\"\n        未指定時は公開カセット全体が対象。\n    open_param: 営業時間フィルタ\n        - \"now\": 現在時刻に開店している施設\n        - \"5,19\": 5日の19時に開店 (日付,時間)\n        - \"Mon,12\": 月曜12時に開店 (曜日,時間。曜日はMon〜Sun)\n    coupon: trueでクーポン利用可の店舗のみ\n    parking: trueで駐車場ありの店舗のみ\n    creditcard: trueでクレジットカード利用可の店舗のみ\n    smoking: 喫煙可否 (\"1\"=禁煙, \"2\"=分煙, \"3\"=喫煙可、カンマ区切りで複数指定)\n    reservation: \"1\" で予約可能な店舗のみ\n    image: trueで画像があるデータのみ\n    maxprice: 価格帯上限\n    minprice: 価格帯下限\n    group: \"gid\" を指定で同一店舗を名寄せ\n    distinct: group=gid 時に false で重複レコード全表示\n\nReturns:\n    APIレスポンス (YDF形式のJSON)。ResultInfo, Feature[] を含む dict。\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Query"
+            },
+            "gc": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Gc"
+            },
+            "ac": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ac"
+            },
+            "lat": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Lat"
+            },
+            "lon": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Lon"
+            },
+            "dist": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Dist"
+            },
+            "bbox": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Bbox"
+            },
+            "sort": {
+              "default": "hybrid",
+              "title": "Sort",
+              "type": "string"
+            },
+            "start": {
+              "default": 1,
+              "title": "Start",
+              "type": "integer"
+            },
+            "results": {
+              "default": 20,
+              "title": "Results",
+              "type": "integer"
+            },
+            "detail": {
+              "default": "standard",
+              "title": "Detail",
+              "type": "string"
+            },
+            "cid": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Cid"
+            },
+            "open_param": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Open Param"
+            },
+            "coupon": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Coupon"
+            },
+            "parking": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Parking"
+            },
+            "creditcard": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Creditcard"
+            },
+            "smoking": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Smoking"
+            },
+            "reservation": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Reservation"
+            },
+            "image": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Image"
+            },
+            "maxprice": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Maxprice"
+            },
+            "minprice": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Minprice"
+            },
+            "group": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Group"
+            },
+            "distinct": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Distinct"
+            }
+          },
+          "title": "search_localArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_by_genre",
+        "description": "業種コード (gc) を軸に店舗を検索 (search_local の薄いラッパー)。\n\nYOLP業種コードの代表例:\n    - \"01\"          : グルメ全般\n    - \"0118008\"     : 焼肉/ホルモン\n    - \"0117001\"     : 寿司\n    - \"01170011\"    : 回転寿司\n    - \"0107001\"     : 居酒屋\n    - \"0202\"        : スーパーマーケット\n    - \"020201\"      : コンビニエンスストア\n    - \"0203001\"     : 百貨店・デパート\n    - \"030201\"      : ホテル\n完全な一覧:\n    https://developer.yahoo.co.jp/webapi/map/openlocalplatform/genre.html\n\nArgs:\n    gc: 業種コード (必須)\n    ac: 住所コードで地域を絞り込む (例: \"01\"=北海道, \"01101\"=札幌市中央区)\n    query: 追加のキーワード絞り込み (例: 業種=焼肉 + query=\"ジンギスカン\")\n    lat, lon, dist: 緯度経度+半径km (距離順検索したい時に有効)\n    sort: ソート順 (デフォルト \"hybrid\"。距離順なら \"geo\")\n    results: 取得件数 (最大100)\n    detail: simple / standard / full\n    use_phonebook: True で電話帳カセットに限定する (デフォルト True、データ品質安定)\n\nReturns:\n    APIレスポンス (YDF形式のJSON)。\n",
+        "input_schema": {
+          "properties": {
+            "gc": {
+              "title": "Gc",
+              "type": "string"
+            },
+            "ac": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ac"
+            },
+            "query": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Query"
+            },
+            "lat": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Lat"
+            },
+            "lon": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Lon"
+            },
+            "dist": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Dist"
+            },
+            "sort": {
+              "default": "hybrid",
+              "title": "Sort",
+              "type": "string"
+            },
+            "results": {
+              "default": 20,
+              "title": "Results",
+              "type": "integer"
+            },
+            "detail": {
+              "default": "standard",
+              "title": "Detail",
+              "type": "string"
+            },
+            "use_phonebook": {
+              "default": true,
+              "title": "Use Phonebook",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "gc"
+          ],
+          "title": "search_by_genreArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_nearby",
+        "description": "指定緯度経度の中心から半径dist km以内の店舗を検索 (search_localの薄いラッパー)。\n\n主な用途:\n    - 取引先住所をジオコーディングした後、その周辺の競合店・関連店舗を発掘\n    - 営業エリアの店舗密度調査\n    - イベント会場 (例: Food Taipei 会場) 周辺の飲食店リスト化\n\nArgs:\n    lat: 中心緯度 (世界測地系)\n    lon: 中心経度\n    dist: 検索半径 km (デフォルト1.0、最大20.0)\n    query: キーワード絞り込み (例: \"ラーメン\")\n    gc: 業種コード絞り込み (例: \"0118008\"=焼肉)\n    sort: ソート順 (デフォルト \"geo\" = 距離順)\n    results: 取得件数 (最大100)\n    detail: simple / standard / full\n    use_phonebook: True で電話帳カセットに限定 (デフォルト True)\n\nReturns:\n    APIレスポンス (YDF形式のJSON)。\n",
+        "input_schema": {
+          "properties": {
+            "lat": {
+              "title": "Lat",
+              "type": "number"
+            },
+            "lon": {
+              "title": "Lon",
+              "type": "number"
+            },
+            "dist": {
+              "default": 1.0,
+              "title": "Dist",
+              "type": "number"
+            },
+            "query": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Query"
+            },
+            "gc": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Gc"
+            },
+            "sort": {
+              "default": "geo",
+              "title": "Sort",
+              "type": "string"
+            },
+            "results": {
+              "default": 20,
+              "title": "Results",
+              "type": "integer"
+            },
+            "detail": {
+              "default": "standard",
+              "title": "Detail",
+              "type": "string"
+            },
+            "use_phonebook": {
+              "default": true,
+              "title": "Use Phonebook",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "lat",
+            "lon"
+          ],
+          "title": "search_nearbyArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'search_local' inputSchema requests PII fields",
+      "description": "Tool 'search_local' inputSchema declares field(s) associated with PII: creditcard. Collecting PII through MCP tools may violate data minimization principles and privacy regulations.",
+      "tool_name": "search_local",
+      "parameter": null,
+      "payload": null,
+      "evidence": "inputSchema properties: creditcard",
+      "remediation": "Review whether collecting this PII is strictly necessary. Apply data minimization and ensure appropriate consent and handling.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'search_local'",
+      "description": "Description is 1902 chars (limit 1000). May contain hidden content.",
+      "tool_name": "search_local",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_local'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_local",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_by_genre'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_by_genre",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_nearby'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_nearby",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'query' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "query",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'query'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'gc' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "gc",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'gc'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ac' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "ac",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ac'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'lat' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "lat",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'lat'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'lon' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "lon",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'lon'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'dist' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "dist",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'dist'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'bbox' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "bbox",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'bbox'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'cid' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "cid",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'cid'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'open_param' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "open_param",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'open_param'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'coupon' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "coupon",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'coupon'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'parking' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "parking",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'parking'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'creditcard' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "creditcard",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'creditcard'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'smoking' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "smoking",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'smoking'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'reservation' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "reservation",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'reservation'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'image' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "image",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'image'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'maxprice' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "maxprice",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'maxprice'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'minprice' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "minprice",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'minprice'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'group' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "group",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'group'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'distinct' in 'search_local' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_local",
+      "parameter": "distinct",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'distinct'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ac' in 'search_by_genre' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_by_genre",
+      "parameter": "ac",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ac'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'query' in 'search_by_genre' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_by_genre",
+      "parameter": "query",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'query'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'lat' in 'search_by_genre' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_by_genre",
+      "parameter": "lat",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'lat'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-028",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'lon' in 'search_by_genre' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_by_genre",
+      "parameter": "lon",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'lon'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-029",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'dist' in 'search_by_genre' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_by_genre",
+      "parameter": "dist",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'dist'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-030",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'query' in 'search_nearby' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_nearby",
+      "parameter": "query",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'query'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-031",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'gc' in 'search_nearby' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_nearby",
+      "parameter": "gc",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'gc'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-032",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-033",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-034",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-035",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-036",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: none",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-037",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-038",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-039",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 63.95299999999952,
+  "exchanges": []
+}

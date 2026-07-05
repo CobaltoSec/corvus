@@ -1,0 +1,483 @@
+{
+  "target": "uvx arxiv-query-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "arxiv-query-mcp",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "arxiv_search",
+        "description": "Search arXiv for academic papers using full query syntax.\n\nSupports field-specific search and boolean operators. Returns paginated\nresults with title, authors, abstract snippet, and direct links.\n\nArgs:\n    params (SearchInput):\n        - query (str): Query string, e.g. 'ti:attention AND cat:cs.LG'\n        - max_results (int): Results per page (1 - 50, default 10)\n        - start (int): Pagination offset (default 0)\n        - sort_by (str): relevance | lastUpdatedDate | submittedDate\n        - sort_order (str): descending | ascending\n        - response_format (str): markdown | json\n\nReturns:\n    str: Paginated list of matching papers with metadata and links.\n\n    JSON schema when response_format='json':\n    {\n      \"total\": int,\n      \"count\": int,\n      \"start\": int,\n      \"has_more\": bool,\n      \"next_start\": int | null,\n      \"papers\": [{ \"id\", \"title\", \"authors\", \"abstract\", \"published\",\n                   \"updated\", \"primary_category\", \"categories\",\n                   \"abstract_url\", \"pdf_url\", \"html_url\",\n                   \"comment\", \"journal_ref\", \"doi\" }]\n    }\n\nExamples:\n    - 'ti:large language model AND cat:cs.LG' — LLM papers in ML\n    - 'au:lecun AND cat:cs.CV' — LeCun's vision papers\n    - 'abs:diffusion AND abs:image generation' — diffusion image gen\n    - 'ti:attention is all you need' — search by title phrase\n",
+        "input_schema": {
+          "$defs": {
+            "ResponseFormat": {
+              "description": "Output serialisation format returned by each tool.",
+              "enum": [
+                "markdown",
+                "json"
+              ],
+              "title": "ResponseFormat",
+              "type": "string"
+            },
+            "SearchInput": {
+              "additionalProperties": false,
+              "description": "Input parameters for the arxiv_search tool.",
+              "properties": {
+                "query": {
+                  "description": "arXiv search query. Supports field prefixes: ti: (title), au: (author), abs: (abstract), cat: (category), all: (all fields). Combine with AND, OR, ANDNOT. Examples: 'ti:transformer AND cat:cs.LG', 'au:hinton', 'abs:diffusion model'",
+                  "maxLength": 500,
+                  "minLength": 1,
+                  "title": "Query",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Results per page (1–50)",
+                  "maximum": 50,
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "start": {
+                  "default": 0,
+                  "description": "Pagination offset (0-based)",
+                  "minimum": 0,
+                  "title": "Start",
+                  "type": "integer"
+                },
+                "sort_by": {
+                  "$ref": "#/$defs/SortBy",
+                  "default": "relevance",
+                  "description": "Sort criterion: relevance | lastUpdatedDate | submittedDate"
+                },
+                "sort_order": {
+                  "$ref": "#/$defs/SortOrder",
+                  "default": "descending",
+                  "description": "Sort direction: descending | ascending"
+                },
+                "response_format": {
+                  "$ref": "#/$defs/ResponseFormat",
+                  "default": "markdown",
+                  "description": "Output format: markdown | json"
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "title": "SearchInput",
+              "type": "object"
+            },
+            "SortBy": {
+              "description": "Criterion used to order arXiv search results.",
+              "enum": [
+                "relevance",
+                "lastUpdatedDate",
+                "submittedDate"
+              ],
+              "title": "SortBy",
+              "type": "string"
+            },
+            "SortOrder": {
+              "description": "Direction of the sort applied to search results.",
+              "enum": [
+                "descending",
+                "ascending"
+              ],
+              "title": "SortOrder",
+              "type": "string"
+            }
+          },
+          "properties": {
+            "params": {
+              "$ref": "#/$defs/SearchInput"
+            }
+          },
+          "required": [
+            "params"
+          ],
+          "title": "arxiv_searchArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "arxiv_get_paper",
+        "description": "Retrieve full metadata for a specific arXiv paper by its ID.\n\nReturns complete information: title, all authors, full abstract, categories,\ndates, journal reference, DOI, and direct links to abstract, PDF, and HTML.\n\nArgs:\n    params (GetPaperInput):\n        - paper_id (str): arXiv ID, e.g. '2303.08774', '1706.03762v2',\n                          or old-style 'hep-th/9901001'\n        - response_format (str): markdown | json\n\nReturns:\n    str: Full paper metadata.\n\n    JSON schema when response_format='json':\n    { \"id\", \"title\", \"authors\", \"abstract\", \"published\", \"updated\",\n      \"primary_category\", \"categories\", \"abstract_url\", \"pdf_url\",\n      \"html_url\", \"comment\", \"journal_ref\", \"doi\" }\n\nExamples:\n    - Attention Is All You Need: paper_id='1706.03762'\n    - GPT-4 technical report:    paper_id='2303.08774'\n    - AlphaFold:                 paper_id='2108.10991'\n",
+        "input_schema": {
+          "$defs": {
+            "GetPaperInput": {
+              "additionalProperties": false,
+              "description": "Input parameters for the arxiv_get_paper tool.",
+              "properties": {
+                "paper_id": {
+                  "description": "arXiv paper ID, e.g. '2303.08774' or '2303.08774v2' or 'hep-th/9901001'",
+                  "maxLength": 40,
+                  "minLength": 5,
+                  "title": "Paper Id",
+                  "type": "string"
+                },
+                "response_format": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ResponseFormat"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "markdown",
+                  "description": "Output format: markdown | json"
+                }
+              },
+              "required": [
+                "paper_id"
+              ],
+              "title": "GetPaperInput",
+              "type": "object"
+            },
+            "ResponseFormat": {
+              "description": "Output serialisation format returned by each tool.",
+              "enum": [
+                "markdown",
+                "json"
+              ],
+              "title": "ResponseFormat",
+              "type": "string"
+            }
+          },
+          "properties": {
+            "params": {
+              "$ref": "#/$defs/GetPaperInput"
+            }
+          },
+          "required": [
+            "params"
+          ],
+          "title": "arxiv_get_paperArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "arxiv_list_by_category",
+        "description": "List recent papers in a specific arXiv subject category.\n\nRetrieves papers filtered to one category, sorted by submission date by\ndefault. Useful for monitoring a research area's latest preprints.\n\nArgs:\n    params (ListByCategoryInput):\n        - category (str): arXiv category code, e.g. 'cs.LG', 'math.CO'\n        - max_results (int): Results per page (1 - 50, default 20)\n        - start (int): Pagination offset\n        - sort_by (str): relevance | lastUpdatedDate | submittedDate\n        - sort_order (str): descending | ascending\n        - response_format (str): markdown | json\n\nReturns:\n    str: Paginated list of papers in the category.\n\nCommon category codes:\n    cs.LG  — Machine Learning        cs.AI  — Artificial Intelligence\n    cs.CL  — Computation & Language  cs.CV  — Computer Vision\n    cs.CR  — Cryptography            cs.RO  — Robotics\n    cs.NE  — Neural & Evolutionary   math.CO — Combinatorics\n    math.ST — Statistics Theory      physics.quant-ph — Quantum Physics\n    stat.ML — Statistics / ML        econ.GN — General Economics\n    q-bio.NC — Neurons & Cognition\n",
+        "input_schema": {
+          "$defs": {
+            "ListByCategoryInput": {
+              "additionalProperties": false,
+              "description": "Input parameters for the arxiv_list_by_category tool.",
+              "properties": {
+                "category": {
+                  "description": "arXiv category code, e.g. 'cs.LG' (ML), 'cs.AI', 'cs.CL' (NLP), 'cs.CV' (vision), 'cs.CR' (security), 'math.CO', 'physics.quant-ph', 'stat.ML'",
+                  "maxLength": 30,
+                  "minLength": 2,
+                  "title": "Category",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 20,
+                  "description": "Results per page (1–50)",
+                  "maximum": 50,
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "start": {
+                  "default": 0,
+                  "description": "Pagination offset",
+                  "minimum": 0,
+                  "title": "Start",
+                  "type": "integer"
+                },
+                "sort_by": {
+                  "$ref": "#/$defs/SortBy",
+                  "default": "submittedDate",
+                  "description": "Sort criterion: relevance | lastUpdatedDate | submittedDate"
+                },
+                "sort_order": {
+                  "$ref": "#/$defs/SortOrder",
+                  "default": "descending",
+                  "description": "Sort direction: descending | ascending"
+                },
+                "response_format": {
+                  "$ref": "#/$defs/ResponseFormat",
+                  "default": "markdown",
+                  "description": "Output format: markdown | json"
+                }
+              },
+              "required": [
+                "category"
+              ],
+              "title": "ListByCategoryInput",
+              "type": "object"
+            },
+            "ResponseFormat": {
+              "description": "Output serialisation format returned by each tool.",
+              "enum": [
+                "markdown",
+                "json"
+              ],
+              "title": "ResponseFormat",
+              "type": "string"
+            },
+            "SortBy": {
+              "description": "Criterion used to order arXiv search results.",
+              "enum": [
+                "relevance",
+                "lastUpdatedDate",
+                "submittedDate"
+              ],
+              "title": "SortBy",
+              "type": "string"
+            },
+            "SortOrder": {
+              "description": "Direction of the sort applied to search results.",
+              "enum": [
+                "descending",
+                "ascending"
+              ],
+              "title": "SortOrder",
+              "type": "string"
+            }
+          },
+          "properties": {
+            "params": {
+              "$ref": "#/$defs/ListByCategoryInput"
+            }
+          },
+          "required": [
+            "params"
+          ],
+          "title": "arxiv_list_by_categoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "arxiv_fetch_paper_text",
+        "description": "Fetch the readable text content of an arXiv paper.\n\nFirst tries the HTML version of the paper (available for most papers\nsubmitted after ~2023 with LaTeX source). Falls back to returning the\nfull abstract and metadata if the HTML version is unavailable.\n\nUse arxiv_get_paper first to find the paper ID, then call this tool\nto read the paper's content.\n\nArgs:\n    params (FetchPaperTextInput):\n        - paper_id (str): arXiv paper ID, e.g. '2303.08774'\n\nReturns:\n    str: Extracted paper text (up to 10,000 characters) or full abstract\n         with links when HTML is unavailable.\n",
+        "input_schema": {
+          "$defs": {
+            "FetchPaperTextInput": {
+              "additionalProperties": false,
+              "description": "Input parameters for the arxiv_fetch_paper_text tool.",
+              "properties": {
+                "paper_id": {
+                  "description": "arXiv paper ID, e.g. '2303.08774'. Use arxiv_get_paper first to confirm the ID.",
+                  "maxLength": 40,
+                  "minLength": 5,
+                  "title": "Paper Id",
+                  "type": "string"
+                },
+                "response_format": {
+                  "$ref": "#/$defs/ResponseFormat",
+                  "default": "markdown",
+                  "description": "Output format: markdown | json"
+                }
+              },
+              "required": [
+                "paper_id"
+              ],
+              "title": "FetchPaperTextInput",
+              "type": "object"
+            },
+            "ResponseFormat": {
+              "description": "Output serialisation format returned by each tool.",
+              "enum": [
+                "markdown",
+                "json"
+              ],
+              "title": "ResponseFormat",
+              "type": "string"
+            }
+          },
+          "properties": {
+            "params": {
+              "$ref": "#/$defs/FetchPaperTextInput"
+            }
+          },
+          "required": [
+            "params"
+          ],
+          "title": "arxiv_fetch_paper_textArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'arxiv_search'",
+      "description": "Description is 1349 chars (limit 1000). May contain hidden content.",
+      "tool_name": "arxiv_search",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'arxiv_list_by_category'",
+      "description": "Description is 1091 chars (limit 1000). May contain hidden content.",
+      "tool_name": "arxiv_list_by_category",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 54.28100000000086,
+  "exchanges": []
+}

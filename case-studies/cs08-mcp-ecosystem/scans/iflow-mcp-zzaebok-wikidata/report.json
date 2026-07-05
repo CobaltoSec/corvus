@@ -1,0 +1,323 @@
+{
+  "target": "uvx iflow-mcp-zzaebok-wikidata",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "Wikidata MCP Server",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_entity",
+        "description": "\nSearch for a Wikidata entity ID by its query.\n\nArgs:\n    query (str): The query to search for. The query should be unambiguous enough to uniquely identify the entity.\n\nReturns:\n    str: The Wikidata entity ID corresponding to the given query.\"\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "search_entityArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_property",
+        "description": "\nSearch for a Wikidata property ID by its query.\n\nArgs:\n    query (str): The query to search for. The query should be unambiguous enough to uniquely identify the property.\n\nReturns:\n    str: The Wikidata property ID corresponding to the given query.\"\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "search_propertyArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_properties",
+        "description": "\nGet the properties associated with a given Wikidata entity ID.\n\nArgs:\n    entity_id (str): The entity ID to retrieve properties for. This should be a valid Wikidata entity ID.\n\nReturns:\n    list: A list of property IDs associated with the given entity ID. If no properties are found, an empty list is returned.\n",
+        "input_schema": {
+          "properties": {
+            "entity_id": {
+              "title": "Entity Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "entity_id"
+          ],
+          "title": "get_propertiesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "execute_sparql",
+        "description": "\nExecute a SPARQL query on Wikidata.\n\nYou may assume the following prefixes:\nPREFIX wd: <http://www.wikidata.org/entity/>\nPREFIX wdt: <http://www.wikidata.org/prop/direct/>\nPREFIX p: <http://www.wikidata.org/prop/>\nPREFIX ps: <http://www.wikidata.org/prop/statement/>\n\nArgs:\n    sparql_query (str): The SPARQL query to execute.\n\nReturns:\n    str: The JSON-formatted result of the SPARQL query execution. If there are no results, an empty JSON object will be returned.\n",
+        "input_schema": {
+          "properties": {
+            "sparql_query": {
+              "title": "Sparql Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "sparql_query"
+          ],
+          "title": "execute_sparqlArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_metadata",
+        "description": "\nRetrieve the English label and description for a given Wikidata entity ID.\n\nArgs:\n    entity_id (str): The entity ID to retrieve metadata for.\n    language (str): The language code for the label and description (default is \"en\"). Use ISO 639-1 codes.\n\nReturns:\n    dict: A dictionary containing the label and description of the entity, if available.\n",
+        "input_schema": {
+          "properties": {
+            "entity_id": {
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "language": {
+              "default": "en",
+              "title": "Language",
+              "type": "string"
+            }
+          },
+          "required": [
+            "entity_id"
+          ],
+          "title": "get_metadataArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'execute_sparql'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "execute_sparql",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT03",
+      "severity": "medium",
+      "title": "Shadow Tool — 'execute_sparql' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_sparql' description contains execution keywords. The tool name is self-documenting (execution verb prefix), so the capability is transparent — but verify the scope is restricted to the intended context.",
+      "tool_name": "execute_sparql",
+      "parameter": null,
+      "payload": null,
+      "evidence": "\nExecute a SPARQL query on Wikidata.\n\nYou may assume the following prefixes:\nPREFIX wd: <http://www.wikidata.org/entity/>\nPREFIX wdt: <http://www.wikidata.org/prop/direct/>\nPREFIX p: <http://www.wikidata.org/prop/>\nPREFIX ps: <http://www.wikidata.org/prop/statement/>\n\nArgs:\n    sparql_query (str): T",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_entity' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "search_entity",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT04",
+      "severity": "high",
+      "title": "SSRF (timeout) — 'execute_sparql.sparql_query' hung on SSRF payload",
+      "description": "Call with SSRF payload 'http://127.0.0.1/' timed out after 12.0s, suggesting the server is attempting the network request.",
+      "tool_name": "execute_sparql",
+      "parameter": "sparql_query",
+      "payload": "http://127.0.0.1/",
+      "evidence": null,
+      "remediation": "Block outbound requests to RFC-1918 and link-local ranges. Use an allowlist for permitted URL schemes and hosts.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "5 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: none",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 66.28100000000086,
+  "exchanges": []
+}

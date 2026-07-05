@@ -1,0 +1,517 @@
+{
+  "target": "uvx mcp-csv-database",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "CSV Database Server",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_database_schema",
+        "description": "Get the current database schema showing all loaded tables\nand their structure\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_database_schemaArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "list_loaded_tables",
+        "description": "List all currently loaded tables with their source CSV files",
+        "input_schema": {
+          "properties": {},
+          "title": "list_loaded_tablesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "load_csv_folder",
+        "description": "\nLoad all CSV files from a folder into a temporary SQLite database.\n\nArgs:\n    folder_path: Path to folder containing CSV files\n    table_prefix: Optional prefix for table names\n\nReturns:\n    Status message with details of loaded files\n",
+        "input_schema": {
+          "properties": {
+            "folder_path": {
+              "title": "Folder Path",
+              "type": "string"
+            },
+            "table_prefix": {
+              "default": "",
+              "title": "Table Prefix",
+              "type": "string"
+            }
+          },
+          "required": [
+            "folder_path"
+          ],
+          "title": "load_csv_folderArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "execute_sql_query",
+        "description": "\nExecute any SQL query on the loaded database.\n\nArgs:\n    query: Any SQL query to execute (SELECT, INSERT, UPDATE, DELETE, CREATE, etc.)\n    limit: Maximum number of rows to return for SELECT queries (default: 100)\n\nReturns:\n    Query results formatted as JSON\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "limit": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "execute_sql_queryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_table_info",
+        "description": "\nGet detailed information about a specific table.\n\nArgs:\n    table_name: Name of the table to inspect\n\nReturns:\n    Detailed table information including schema and sample data\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name"
+          ],
+          "title": "get_table_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "create_index",
+        "description": "\nCreate an index on a table column for better query performance.\n\nArgs:\n    table_name: Name of the table\n    column_name: Name of the column to index\n    index_name: Optional custom index name\n\nReturns:\n    Status message\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            },
+            "column_name": {
+              "title": "Column Name",
+              "type": "string"
+            },
+            "index_name": {
+              "default": "",
+              "title": "Index Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name",
+            "column_name"
+          ],
+          "title": "create_indexArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "backup_database",
+        "description": "\nCreate a backup of the current database to a file.\n\nArgs:\n    backup_path: Path where to save the backup file\n\nReturns:\n    Status message\n",
+        "input_schema": {
+          "properties": {
+            "backup_path": {
+              "title": "Backup Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "backup_path"
+          ],
+          "title": "backup_databaseArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "export_table_to_csv",
+        "description": "\nExport a table to a CSV file.\n\nArgs:\n    table_name: Name of the table to export\n    output_path: Path for the output CSV file\n    include_header: Whether to include column headers\n\nReturns:\n    Status message\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            },
+            "output_path": {
+              "title": "Output Path",
+              "type": "string"
+            },
+            "include_header": {
+              "default": true,
+              "title": "Include Header",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "table_name",
+            "output_path"
+          ],
+          "title": "export_table_to_csvArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_query_plan",
+        "description": "\nGet the execution plan for a query to understand performance.\n\nArgs:\n    query: SQL query to analyze\n\nReturns:\n    Query execution plan\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "get_query_planArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "clear_database",
+        "description": "\nClear the temporary database and remove all loaded tables.\n\nReturns:\n    Status message\n",
+        "input_schema": {
+          "properties": {},
+          "title": "clear_databaseArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_column_stats",
+        "description": "\nGet statistical summary for a specific column.\n\nArgs:\n    table_name: Name of the table\n    column_name: Name of the column to analyze\n\nReturns:\n    Statistical summary including count, nulls, unique values, and distribution info\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            },
+            "column_name": {
+              "title": "Column Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name",
+            "column_name"
+          ],
+          "title": "get_column_statsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "find_duplicates",
+        "description": "\nFind duplicate rows in a table.\n\nArgs:\n    table_name: Name of the table to check\n    columns: Comma-separated column names to check for duplicates, or \"all\" for all columns\n\nReturns:\n    Information about duplicate rows found\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            },
+            "columns": {
+              "default": "all",
+              "title": "Columns",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name"
+          ],
+          "title": "find_duplicatesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "analyze_missing_data",
+        "description": "\nAnalyze missing data patterns in a table.\n\nArgs:\n    table_name: Name of the table to analyze\n\nReturns:\n    Summary of missing data patterns across all columns\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name"
+          ],
+          "title": "analyze_missing_dataArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_data_summary",
+        "description": "\nGet a comprehensive summary of the table data.\n\nArgs:\n    table_name: Name of the table to summarize\n\nReturns:\n    Quick overview with key insights about the data\n",
+        "input_schema": {
+          "properties": {
+            "table_name": {
+              "title": "Table Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table_name"
+          ],
+          "title": "get_data_summaryArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": [
+      {
+        "name": "analyze_data_prompt",
+        "description": "\nGenerate a prompt for analyzing data in a specific table.\n\nArgs:\n    table_name: Name of the table to analyze\n    analysis_type: Type of analysis (summary, trends, insights, etc.)\n",
+        "arguments": [
+          {
+            "name": "table_name",
+            "required": true
+          },
+          {
+            "name": "analysis_type",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'export_table_to_csv' accepts write-path param (path traversal risk)",
+      "description": "Tool 'export_table_to_csv' accepts a file path parameter (output_path) and its description indicates write operations. Without path sanitization, callers may supply traversal sequences to write files outside the intended directory.",
+      "tool_name": "export_table_to_csv",
+      "parameter": null,
+      "payload": null,
+      "evidence": "path param(s): output_path | description: \nExport a table to a CSV file.\n\nArgs:\n    table_name: Name of the table to export\n    output_path: Path for the output CSV file\n    include_header: Whether to include column headers\n\nReturns:\n    Stat",
+      "remediation": "Validate and canonicalize file path inputs. Restrict writes to an explicit base directory using path.resolve() or os.path.abspath() checks. Manual verification recommended.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT03",
+      "severity": "medium",
+      "title": "Shadow Tool — 'execute_sql_query' description reveals arbitrary execution intent",
+      "description": "Tool 'execute_sql_query' description contains execution keywords. The tool name is self-documenting (execution verb prefix), so the capability is transparent — but verify the scope is restricted to the intended context.",
+      "tool_name": "execute_sql_query",
+      "parameter": null,
+      "payload": null,
+      "evidence": "\nExecute any SQL query on the loaded database.\n\nArgs:\n    query: Any SQL query to execute (SELECT, INSERT, UPDATE, DELETE, CREATE, etc.)\n    limit: Maximum number of rows to return for SELECT queries (default: 100)\n\nReturns:\n    Query results formatted as JSON\n",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'load_csv_folder.folder_path'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "load_csv_folder",
+      "parameter": "folder_path",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\"function_results_id\": \"34cad606\", \"status\": \"error\", \"message\": \"Folder '<script>alert(1)</script>' does not exist.\"}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "11 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'analyze_data_prompt'",
+      "description": "prompts/get for 'analyze_data_prompt' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "analyze_data_prompt",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"description\": \"\\nGenerate a prompt for analyzing data in a specific table.\\n\\nArgs:\\n    table_name: Name of the table to analyze\\n    analysis_type: Type of analysis (summary, trends, insights, etc.)\\n\", \"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"Table 'CORVUS_INJECTION_TE",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 34.32799999999952,
+  "exchanges": []
+}

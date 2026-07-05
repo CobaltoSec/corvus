@@ -1,0 +1,389 @@
+{
+  "target": "uvx arxiv-research-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "arxiv-research",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_papers",
+        "description": "Search arXiv for papers matching a keyword query.\n\nUse this as the primary discovery tool when the user is exploring a topic,\nlooking for prior work, or does not yet know specific paper IDs. It searches\nacross titles, abstracts, and authors and returns a ranked list of papers\nwith enough metadata (IDs, authors, dates, categories, abstract) for the\nagent to decide what to read next.\n\nFor richer queries, take advantage of arXiv field prefixes and boolean\noperators (see the ``query`` parameter). To pull a known paper by its ID,\nuse ``get_abstract`` instead; to follow a specific researcher, use\n``find_by_author``.\n\nReturns a :class:`SearchResults` object. When nothing matches, ``papers`` is\nempty and ``note`` explains how to refine the query. Raises a descriptive\nerror if the query is empty or the arXiv request fails.\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "description": "Keyword query. Plain text searches title, abstract, and authors. You may also use arXiv field prefixes for precision: ti: (title), au: (author), abs: (abstract), cat: (category, e.g. cat:cs.LG), and boolean operators AND / OR / ANDNOT. Example: 'ti:\"diffusion model\" AND cat:cs.CV'.",
+              "title": "Query",
+              "type": "string"
+            },
+            "max_results": {
+              "default": 10,
+              "description": "Maximum papers to return (1-50).",
+              "minimum": 1,
+              "title": "Max Results",
+              "type": "integer"
+            },
+            "sort_by": {
+              "default": "relevance",
+              "description": "Result ordering: 'relevance' (best keyword match), 'newest' (most recently submitted), or 'last_updated' (most recently revised).",
+              "enum": [
+                "relevance",
+                "newest",
+                "last_updated"
+              ],
+              "title": "Sort By",
+              "type": "string"
+            },
+            "response_format": {
+              "default": "concise",
+              "description": "'concise' (default) shortens abstracts and caps the author list to save context; 'detailed' returns full abstracts and all authors.",
+              "enum": [
+                "concise",
+                "detailed"
+              ],
+              "title": "Response Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "search_papersArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_abstract",
+        "description": "Fetch the full details of a single arXiv paper by its ID.\n\nUse this when you already know a paper's arXiv ID (for example, one returned\nby ``search_papers``, ``find_by_author``, or ``trending_topics``, or pasted\nby the user) and need its complete record: the full untruncated abstract,\nthe complete author list, all subject categories, publication and revision\ndates, the PDF and abstract URLs, and any DOI / journal reference / author\ncomment.\n\nAlways returns the full (untruncated) record. Raises a descriptive error if\nthe ID is empty, malformed, or does not correspond to any arXiv paper.\n",
+        "input_schema": {
+          "properties": {
+            "arxiv_id": {
+              "description": "arXiv identifier of the paper. Accepts modern IDs ('2401.01234' or '2401.01234v2'), legacy IDs ('math.GT/0309136'), or a full URL ('https://arxiv.org/abs/2401.01234'). A specific version may be requested with the 'vN' suffix; omit it to get the latest.",
+              "title": "Arxiv Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "arxiv_id"
+          ],
+          "title": "get_abstractArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "find_by_author",
+        "description": "Find a researcher's most recent papers on arXiv, newest first.\n\nUse this to track or summarize a specific person's work: \"What has <author>\npublished lately?\", \"Show me <author>'s recent papers\", or to gather a\nreading list from one researcher. Results are sorted by submission date (most\nrecent first), so it is well suited to \"latest work\" questions.\n\nAuthor matching uses arXiv's author field and is approximate: it can miss\npapers that index the name differently and can include different researchers\nwho share a name, so scan the returned author lists to confirm identity. For\nfielded combinations (e.g. an author working in one category) use\n``search_papers`` with an ``au:`` + ``cat:`` query.\n\nReturns an :class:`AuthorResults` object; ``papers`` is empty with guidance\nin ``note`` when nothing matches. Raises a descriptive error if the name is\nempty or the arXiv request fails.\n",
+        "input_schema": {
+          "properties": {
+            "author_name": {
+              "description": "Researcher's name, e.g. 'Yann LeCun' or 'Fei-Fei Li'. Matching is approximate; use the fullest spelling you have. Common-name matches may include papers by different people who share the name.",
+              "title": "Author Name",
+              "type": "string"
+            },
+            "max_results": {
+              "default": 10,
+              "description": "Maximum papers to return (1-50).",
+              "minimum": 1,
+              "title": "Max Results",
+              "type": "integer"
+            },
+            "response_format": {
+              "default": "concise",
+              "description": "'concise' (default) shortens abstracts and caps the author list to save context; 'detailed' returns full abstracts and all authors.",
+              "enum": [
+                "concise",
+                "detailed"
+              ],
+              "title": "Response Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "author_name"
+          ],
+          "title": "find_by_authorArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "trending_topics",
+        "description": "Surface what is being actively published in an arXiv category right now.\n\nUse this to answer \"what's hot / trending in <field> this week?\" or to get a\npulse on a research area. It scans the most recent submissions to a single\ncategory, keeps those within the last ``days`` days, returns them newest\nfirst, and aggregates which sub-categories those recent papers most often\nbelong to (``top_cross_topics``) — a practical proxy for \"trending topics\".\n\nImportant: the arXiv API exposes no citation, download, or view metrics, so\ntrue popularity cannot be measured. Here \"trending\" therefore means\n*recency of submission* within the window, and the topic ranking reflects how\nfrequently sub-categories co-occur among those recent papers. The ``note``\nfield on the result restates this so the agent does not overclaim.\n\n``category`` must be a valid arXiv category *code* (e.g. 'cs.LG'), not a\nfree-text topic — to explore a topic by keyword, use ``search_papers``.\n\nReturns a :class:`TrendingResults` object; if the category code is unknown or\nnothing was submitted in the window, ``papers`` is empty and ``note``\nexplains why. Raises a descriptive error if the category is empty or the\narXiv request fails.\n",
+        "input_schema": {
+          "properties": {
+            "category": {
+              "description": "arXiv subject category code to monitor, e.g. 'cs.LG' (machine learning), 'cs.AI', 'cs.CL' (NLP), 'cs.CV', 'stat.ML', 'math.CO', 'physics.optics', 'q-bio.NC'. Use a single category code, not a free-text topic.",
+              "title": "Category",
+              "type": "string"
+            },
+            "days": {
+              "default": 7,
+              "description": "Look-back window in days (1-90). Default 7 = 'this week'.",
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            },
+            "max_results": {
+              "default": 10,
+              "description": "Maximum papers to return (1-50).",
+              "minimum": 1,
+              "title": "Max Results",
+              "type": "integer"
+            },
+            "response_format": {
+              "default": "concise",
+              "description": "'concise' (default) shortens abstracts and caps the author list to save context; 'detailed' returns full abstracts and all authors.",
+              "enum": [
+                "concise",
+                "detailed"
+              ],
+              "title": "Response Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "category"
+          ],
+          "title": "trending_topicsArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'trending_topics'",
+      "description": "Description is 1203 chars (limit 1000). May contain hidden content.",
+      "tool_name": "trending_topics",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'get_abstract' directs LLM to call search_papers",
+      "description": "Tool 'get_abstract' description references tool(s) 'search_papers', 'find_by_author', 'trending_topics' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "get_abstract",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Fetch the full details of a single arXiv paper by its ID.\n\nUse this when you already know a paper's arXiv ID (for example, one returned\nby ``search_papers``, ``find_by_author``, or ``trending_topics``, or pasted\nby the user) and need its complete record: the full untruncated abstract,\nthe complete a",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'trending_topics' directs LLM to call search_papers",
+      "description": "Tool 'trending_topics' description references tool(s) 'search_papers' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "trending_topics",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Surface what is being actively published in an arXiv category right now.\n\nUse this to answer \"what's hot / trending in <field> this week?\" or to get a\npulse on a research area. It scans the most recent submissions to a single\ncategory, keeps those within the last ``days`` days, returns them newest\nf",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'search_papers.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "search_papers",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"query\": \"' OR '1'='1\",\n  \"sort_by\": \"relevance\",\n  \"returned\": 10,\n  \"response_format\": \"concise\",\n  \"papers\": [\n    {\n      \"arxiv_id\": \"1603.07035v1\",\n      \"title\": \"Revisiting Unit Fractions That Sum To 1\",\n      \"authors\": [\n        \"Yutaka Nishiyama\"\n      ],\n      \"author_count\": 1,\n    ",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Slow tool response — 'search_papers' took 13.7s",
+      "description": "Tool 'search_papers' took 13.7 seconds to respond. Slow responses can be used for resource exhaustion in agent pipelines or indicate unbounded computation triggered by benign inputs.",
+      "tool_name": "search_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Response time: 13.69s",
+      "remediation": "Enforce server-side timeouts on all tool executions. Cap at 30s max.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP10",
+      "severity": "high",
+      "title": "Response Flooding — 'search_papers' returns oversized response",
+      "description": "Tool 'search_papers' returned 10,111 bytes (threshold: 8,192 bytes). Large responses can overflow LLM context windows, push out system prompts, or cause denial-of-service in agent pipelines.",
+      "tool_name": "search_papers",
+      "parameter": null,
+      "payload": null,
+      "evidence": "10,111 bytes — preview: {\n  \"query\": \"test\",\n  \"sort_by\": \"relevance\",\n  \"returned\": 10,\n  \"response_format\": \"concise\",\n  \"papers\": [\n    {\n      \"arxiv_id\": \"1101.4081v3\",\n      \"title\": \"A simple way to speedup Gauss Elim",
+      "remediation": "Paginate or cap tool responses. Never return unbounded data. Aim for responses under 4 KB to preserve LLM context budget.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT04",
+      "severity": "high",
+      "title": "SSRF (timeout) — 'search_papers.query' hung on SSRF payload",
+      "description": "Call with SSRF payload 'http://169.254.169.254/latest/meta-data/' timed out after 12.0s, suggesting the server is attempting the network request.",
+      "tool_name": "search_papers",
+      "parameter": "query",
+      "payload": "http://169.254.169.254/latest/meta-data/",
+      "evidence": null,
+      "remediation": "Block outbound requests to RFC-1918 and link-local ranges. Use an allowlist for permitted URL schemes and hosts.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "4 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: none",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 45.375,
+  "exchanges": []
+}

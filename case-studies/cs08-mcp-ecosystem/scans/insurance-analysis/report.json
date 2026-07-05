@@ -1,0 +1,250 @@
+{
+  "target": "uvx insurance-analysis-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "insurance-analysis-mcp",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "analyze_customer_retention_value",
+        "description": "\n分析客户挽回价值和续保概率。\n\n本工具接收客户信息、保单数据、理赔数据，通过 CoT 思维链进行多维度分析，\n输出包含价值评估、风险评估、忠诚度评估、潜力评估的完整报告。\n\nArgs:\n    customer_data: 客户基本信息（必填），应为字典，包含以下字段：\n        - customer_id (str): 客户ID，如 \"C00000001\"\n        - name (str): 客户姓名\n        - level (str): 客户等级，如 \"VIP\" / \"普通\" / \"潜力\"\n        - total_premium (number|str): 累计保费，数值或数字字符串均可\n        - registration_date (str): 注册日期，如 \"2020-01-15\"\n\n    policy_data: 保单数据（选填），支持以下任意格式（工具自动识别并转换）：\n        - 推荐格式：{\"policies\": [{\"policy_id\":\"P001\", \"policy_type\":\"寿险\", \"premium\":50000, \"end_date\":\"2025-12-31\"}, ...]}\n        - 纯列表：[{\"policy_id\":\"P001\", ...}, ...]\n        - 单条记录：{\"policy_id\":\"P001\", ...}\n        - null 或不传：视为无保单数据\n\n    claim_data: 理赔数据（选填），支持以下任意格式（工具自动识别并转换）：\n        - 推荐格式：{\"claims\": [{\"claim_id\":\"CLM001\", \"claim_amount\":15000, \"claim_date\":\"2024-03-20\"}, ...]}\n        - 纯列表：[{\"claim_id\":\"CLM001\", ...}, ...]\n        - 单条记录：{\"claim_id\":\"CLM001\", ...}\n        - null 或不传：视为无理赔数据\n\nReturns:\n    JSON格式的详细分析报告，包含分析过程和最终建议\n",
+        "input_schema": {
+          "properties": {
+            "customer_data": {
+              "additionalProperties": true,
+              "title": "Customer Data",
+              "type": "object"
+            },
+            "policy_data": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Policy Data"
+            },
+            "claim_data": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Claim Data"
+            }
+          },
+          "required": [
+            "customer_data"
+          ],
+          "title": "analyze_customer_retention_valueArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_analysis_framework_info",
+        "description": "\n获取分析框架信息，包括使用的CoT思维链方法说明\n",
+        "input_schema": {
+          "properties": {},
+          "title": "get_analysis_framework_infoArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'analyze_customer_retention_value'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "analyze_customer_retention_value",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'policy_data' in 'analyze_customer_retention_value' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "analyze_customer_retention_value",
+      "parameter": "policy_data",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'policy_data'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'claim_data' in 'analyze_customer_retention_value' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "analyze_customer_retention_value",
+      "parameter": "claim_data",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'claim_data'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'analyze_customer_retention_value' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "analyze_customer_retention_value",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "1 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 49.59399999999914,
+  "exchanges": []
+}

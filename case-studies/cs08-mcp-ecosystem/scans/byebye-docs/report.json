@@ -1,0 +1,528 @@
+{
+  "target": "uvx byebye-docs-mcp",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "byebye-docs",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "list_templates",
+        "description": "利用可能なテンプレート一覧を取得",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "フィルタするカテゴリ（product, architecture, dev_process, agent, ops）"
+            }
+          }
+        }
+      },
+      {
+        "name": "create_document",
+        "description": "テンプレートから新規ドキュメントを作成",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "template_type": {
+              "type": "string",
+              "description": "テンプレートタイプ（vision.md, requirements.yaml, roles.yaml など）"
+            },
+            "output_path": {
+              "type": "string",
+              "description": "出力先パス（docs/ からの相対パス）"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "自動入力するメタデータ",
+              "properties": {
+                "project_name": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "template_type",
+            "output_path"
+          ]
+        }
+      },
+      {
+        "name": "get_section",
+        "description": "ドキュメントの特定セクションの内容を取得",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document_path": {
+              "type": "string",
+              "description": "ドキュメントのパス"
+            },
+            "section_name": {
+              "type": "string",
+              "description": "セクション名（markdownの場合はヘッダー名）"
+            }
+          },
+          "required": [
+            "document_path",
+            "section_name"
+          ]
+        }
+      },
+      {
+        "name": "update_section",
+        "description": "ドキュメントの特定セクションを更新（マーカーベース）",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document_path": {
+              "type": "string",
+              "description": "ドキュメントのパス"
+            },
+            "section_name": {
+              "type": "string",
+              "description": "セクション名（AI_EDITABLE マーカー名）"
+            },
+            "new_content": {
+              "type": "string",
+              "description": "新しいセクション内容"
+            }
+          },
+          "required": [
+            "document_path",
+            "section_name",
+            "new_content"
+          ]
+        }
+      },
+      {
+        "name": "validate_document",
+        "description": "ドキュメントが規定の構造に従っているか検証",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document_path": {
+              "type": "string",
+              "description": "検証するドキュメントのパス"
+            }
+          },
+          "required": [
+            "document_path"
+          ]
+        }
+      },
+      {
+        "name": "fill_metadata",
+        "description": "プロジェクト情報からメタデータを自動入力",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document_path": {
+              "type": "string",
+              "description": "メタデータを入力するドキュメントのパス"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "入力するメタデータ",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "document_path"
+          ]
+        }
+      },
+      {
+        "name": "diff_code_docs",
+        "description": "コードとドキュメント間の差分を検出",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "code_path": {
+              "type": "string",
+              "description": "検査対象のコードパス（ディレクトリまたはファイル）"
+            },
+            "doc_type": {
+              "type": "string",
+              "enum": [
+                "api",
+                "entities",
+                "all"
+              ],
+              "description": "比較対象のドキュメントタイプ",
+              "default": "all"
+            },
+            "language": {
+              "type": "string",
+              "enum": [
+                "python",
+                "typescript",
+                "auto"
+              ],
+              "description": "コードの言語（autoで自動検出）",
+              "default": "auto"
+            }
+          },
+          "required": [
+            "code_path"
+          ]
+        }
+      },
+      {
+        "name": "extract_from_code",
+        "description": "コードからドキュメント情報を抽出してYAML形式で出力",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "code_path": {
+              "type": "string",
+              "description": "抽出対象のコードパス"
+            },
+            "extract_type": {
+              "type": "string",
+              "enum": [
+                "api",
+                "entities",
+                "all"
+              ],
+              "description": "抽出する情報の種類",
+              "default": "all"
+            },
+            "output_format": {
+              "type": "string",
+              "enum": [
+                "yaml",
+                "json"
+              ],
+              "description": "出力形式",
+              "default": "yaml"
+            },
+            "merge_with_existing": {
+              "type": "boolean",
+              "description": "既存ドキュメントとマージするか",
+              "default": false
+            }
+          },
+          "required": [
+            "code_path"
+          ]
+        }
+      },
+      {
+        "name": "auto_sync",
+        "description": "コード変更をドキュメントに自動反映（プレビュー/適用モード）",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "code_path": {
+              "type": "string",
+              "description": "スキャン対象のコードパス",
+              "default": "src/"
+            },
+            "target_docs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "対象ドキュメント（api.yaml, entities.yaml等）"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "preview",
+                "apply"
+              ],
+              "description": "プレビューのみか実際に適用するか",
+              "default": "preview"
+            },
+            "language": {
+              "type": "string",
+              "enum": [
+                "python",
+                "typescript",
+                "auto"
+              ],
+              "description": "コードの言語",
+              "default": "auto"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "template://structure",
+        "name": "Template Structure",
+        "description": "テンプレートの構造情報（どのセクションがあるか、必須項目は何か）",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "template://schema",
+        "name": "Document Schemas",
+        "description": "各ドキュメントの検証スキーマ",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "project://current",
+        "name": "Current Project",
+        "description": "現在のプロジェクト情報",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "docs://list",
+        "name": "Document List",
+        "description": "プロジェクト内の既存ドキュメント一覧",
+        "mime_type": "application/json"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "design-review",
+        "description": "設計レビュー用のワークフロー",
+        "arguments": [
+          {
+            "name": "document_path",
+            "description": "レビュー対象のドキュメントパス",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "update-architecture",
+        "description": "アーキテクチャ図更新のガイド",
+        "arguments": [
+          {
+            "name": "change_description",
+            "description": "変更内容の説明",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'list_templates' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "list_templates",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "9 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'design-review'",
+      "description": "prompts/get for 'design-review' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "design-review",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"\\u8a2d\\u8a08\\u30c9\\u30ad\\u30e5\\u30e1\\u30f3\\u30c8\\u306e\\u30ec\\u30d3\\u30e5\\u30fc\\u3092\\u884c\\u3044\\u307e\\u3059\\u3002\\n\\n\\u5bfe\\u8c61\\u30c9\\u30ad\\u30e5\\u30e1\\u30f3\\u30c8: CORVUS_INJECTION_TEST_{{7*7}}\\n\\n\\u4ee5\\u4e0b\\u306e\\u89b3\\u70b9\\",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'update-architecture'",
+      "description": "prompts/get for 'update-architecture' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "update-architecture",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"\\u30a2\\u30fc\\u30ad\\u30c6\\u30af\\u30c1\\u30e3\\u30c9\\u30ad\\u30e5\\u30e1\\u30f3\\u30c8\\u306e\\u66f4\\u65b0\\u3092\\u884c\\u3044\\u307e\\u3059\\u3002\\n\\n\\u5909\\u66f4\\u5185\\u5bb9: CORVUS_INJECTION_TEST_{{7*7}}\\n\\n\\u4ee5\\u4e0b\\u306e\\u624b\\u9806\\u3067\\",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: {\"jsonrpc\":\"2.0\",\"id\":64,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"[Errno 13] Permission denied: '",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 20.42200000000048,
+  "exchanges": []
+}

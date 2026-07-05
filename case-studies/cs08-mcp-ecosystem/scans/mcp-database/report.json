@@ -1,0 +1,747 @@
+{
+  "target": "uvx mcp-database",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "Database Server",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "list_databases",
+        "description": "List all configured database connections and their status.\n\nReturns JSON with connection names, types, status, and masked URLs.\n",
+        "input_schema": {
+          "properties": {},
+          "title": "list_databasesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "list_tables",
+        "description": "List all tables in a database.\n\nArgs:\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "title": "list_tablesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_table_info",
+        "description": "Get detailed information about a table: columns, types, row count.\n\nArgs:\n    table: Table name.\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "table": {
+              "title": "Table",
+              "type": "string"
+            },
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table"
+          ],
+          "title": "get_table_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_schema",
+        "description": "Get the full database schema (CREATE TABLE statements for all tables).\n\nArgs:\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "title": "get_schemaArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "query",
+        "description": "Execute a read-only SQL query (SELECT, SHOW, DESCRIBE, EXPLAIN) and return results.\n\nArgs:\n    sql: SQL query to execute.\n    database: Name of the database within the connection (optional).\n    max_rows: Maximum number of rows to return (default: 100).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "sql": {
+              "title": "Sql",
+              "type": "string"
+            },
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "max_rows": {
+              "default": 100,
+              "title": "Max Rows",
+              "type": "integer"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "sql"
+          ],
+          "title": "queryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "execute",
+        "description": "Execute a write SQL statement (INSERT, UPDATE, DELETE). Only works if writes are enabled.\n\nArgs:\n    sql: SQL statement to execute.\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "sql": {
+              "title": "Sql",
+              "type": "string"
+            },
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "sql"
+          ],
+          "title": "executeArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "sample_rows",
+        "description": "Get a sample of rows from a table to understand its data.\n\nArgs:\n    table: Table name.\n    limit: Number of rows to sample (default: 5, max: 20).\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "table": {
+              "title": "Table",
+              "type": "string"
+            },
+            "limit": {
+              "default": 5,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "table"
+          ],
+          "title": "sample_rowsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_tables",
+        "description": "Search for tables or columns matching a keyword.\n\nArgs:\n    keyword: Keyword to search for in table and column names.\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            },
+            "database": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Database"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "search_tablesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "schema_diff",
+        "description": "Compare schemas between two database connections.\n\nArgs:\n    source_connection: Source connection name.\n    target_connection: Target connection name.\n    table_name: Optional table name to diff. If empty, diff all tables.\n",
+        "input_schema": {
+          "properties": {
+            "source_connection": {
+              "title": "Source Connection",
+              "type": "string"
+            },
+            "target_connection": {
+              "title": "Target Connection",
+              "type": "string"
+            },
+            "table_name": {
+              "default": "",
+              "title": "Table Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_connection",
+            "target_connection"
+          ],
+          "title": "schema_diffArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "check_health",
+        "description": "Check database health: latency, table count, row count, largest tables.\n\nArgs:\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "title": "check_healthArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "generate_er_diagram",
+        "description": "Generate an ER (Entity-Relationship) diagram in Mermaid format.\n\nArgs:\n    connection_name: Name of the database connection (default: \"default\").\n    format: Output format. Currently only 'mermaid' is supported.\n",
+        "input_schema": {
+          "properties": {
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            },
+            "format": {
+              "default": "mermaid",
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "title": "generate_er_diagramArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "explain_query",
+        "description": "Explain the execution plan for a SELECT query.\n\nArgs:\n    query: SQL SELECT or WITH...SELECT statement to explain.\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "explain_queryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "diagnose_connection",
+        "description": "Diagnose a database connection with detailed status and troubleshooting hints.\n\nArgs:\n    connection_name: Name of the database connection (default: \"default\").\n",
+        "input_schema": {
+          "properties": {
+            "connection_name": {
+              "default": "default",
+              "title": "Connection Name",
+              "type": "string"
+            }
+          },
+          "title": "diagnose_connectionArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "db://mergewall_audit_schema",
+        "name": "resource_mergewall_audit_schema",
+        "description": "Return the suggested Mergewall audit table schema.",
+        "mime_type": "text/plain"
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "medium",
+      "title": "Scope Creep — 'get_schema' is named read-only but description implies write access",
+      "description": "Tool 'get_schema' has a read-only prefix but its description mentions write operations ('CREATE'), creating a scope mismatch that callers and LLMs may be unable to detect.",
+      "tool_name": "get_schema",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Get the full database schema (CREATE TABLE statements for all tables).\n\nArgs:\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+      "remediation": "Separate read and write operations into distinct tools. Ensure tool names accurately reflect their full capabilities.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'list_tables' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "list_tables",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'get_table_info' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "get_table_info",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'get_schema' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "get_schema",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'query' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "query",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'execute' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "execute",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'sample_rows' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "sample_rows",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'database' in 'search_tables' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_tables",
+      "parameter": "database",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'database'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'check_health' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "check_health",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'generate_er_diagram' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "generate_er_diagram",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'diagnose_connection' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "diagnose_connection",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'query' description reveals arbitrary execution intent",
+      "description": "Tool 'query' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "query",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Execute a read-only SQL query (SELECT, SHOW, DESCRIBE, EXPLAIN) and return results.\n\nArgs:\n    sql: SQL query to execute.\n    database: Name of the database within the connection (optional).\n    max_rows: Maximum number of rows to return (default: 100).\n    connection_name: Name of the database conn",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT03",
+      "severity": "medium",
+      "title": "Shadow Tool — 'execute' (scope-restricted)",
+      "description": "Tool 'execute' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "execute",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'execute' description reveals arbitrary execution intent",
+      "description": "Tool 'execute' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "execute",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Execute a write SQL statement (INSERT, UPDATE, DELETE). Only works if writes are enabled.\n\nArgs:\n    sql: SQL statement to execute.\n    database: Name of the database within the connection (optional).\n    connection_name: Name of the database connection (default: \"default\").\n",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'list_tables' accepts undeclared extra fields",
+      "description": "Tool accepted arguments containing '__proto__' without error.",
+      "tool_name": "list_tables",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject calls containing parameters not declared in inputSchema.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "12 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: {\"jsonrpc\":\"2.0\",\"id\":62,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Error: Write operations are dis",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 19.67200000000048,
+  "exchanges": []
+}

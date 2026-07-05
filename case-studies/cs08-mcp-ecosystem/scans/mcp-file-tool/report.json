@@ -1,0 +1,1087 @@
+{
+  "target": "uvx mcp-file-tool",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "BigFile MCP Service",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "read_bytes",
+        "description": "按字节分片读取文件内容。\n\n参数:\n- file_path: 文件路径\n- offset: 起始字节偏移（>=0）\n- length: 读取长度（>0）\n- encoding: 文本编码\n- ctx: 上下文对象（可选）\n\n返回:\n- ReadBytesResult: 包含读取到的文本与元信息。\n  字段: `data`, `offset`, `bytes_read`, `end_offset`, `file_size`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `offset < 0` 或 `length <= 0` 时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "offset": {
+              "title": "Offset",
+              "type": "integer"
+            },
+            "length": {
+              "title": "Length",
+              "type": "integer"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "offset",
+            "length"
+          ],
+          "title": "tool_read_bytesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "read_lines",
+        "description": "按行分片读取文件内容。\n\n参数:\n- file_path: 文件路径\n- start_line: 起始行（>=1）\n- num_lines: 读取行数（>0）\n- encoding: 文本编码\n- ctx: 上下文对象（可选）\n\n返回:\n- ReadLinesResult: 行读取结果结构。\n  字段: `lines`, `start_line`, `end_line`, `total_lines`, `start_offset`, `end_offset`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `start_line < 1` 或 `num_lines <= 0` 时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "start_line": {
+              "title": "Start Line",
+              "type": "integer"
+            },
+            "num_lines": {
+              "title": "Num Lines",
+              "type": "integer"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "start_line",
+            "num_lines"
+          ],
+          "title": "tool_read_linesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "read_last_lines",
+        "description": "读取文件尾部的最后 N 行。\n\n参数:\n- file_path: 文件路径\n- num_lines: 最后读取的行数（>0）\n- encoding: 文本编码\n- ctx: 上下文对象（可选）\n\n返回:\n- ReadLinesResult: 与 `tool_read_lines` 返回结构一致。\n  字段: `lines`, `start_line`, `end_line`, `total_lines`, `start_offset`, `end_offset`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `num_lines <= 0` 时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "num_lines": {
+              "title": "Num Lines",
+              "type": "integer"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "num_lines"
+          ],
+          "title": "tool_read_last_linesArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "write_overwrite",
+        "description": "覆盖写入：从指定字节偏移开始写入文本数据。\n\n参数:\n- file_path: 文件路径\n- offset: 写入起始字节偏移\n- data: 文本数据\n- encoding: 文本编码\n- ctx: 上下文对象（可选）\n\n返回:\n- WriteResult: 写入结果结构。\n  字段: `path`, `offset`, `bytes_written`, `end_offset`。\n\n异常:\n- OSError: 文件写入过程中可能抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "offset": {
+              "title": "Offset",
+              "type": "integer"
+            },
+            "data": {
+              "title": "Data",
+              "type": "string"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "offset",
+            "data"
+          ],
+          "title": "tool_write_overwriteArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "append",
+        "description": "追加写入：在文件末尾追加文本数据。\n\n参数:\n- file_path: 文件路径\n- data: 文本数据\n- encoding: 文本编码\n- ctx: 上下文对象（可选）\n\n返回:\n- WriteResult: 写入结果结构。\n  字段: `path`, `offset`, `bytes_written`, `end_offset`。\n\n异常:\n- OSError: 文件写入过程中可能抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "data": {
+              "title": "Data",
+              "type": "string"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "data"
+          ],
+          "title": "tool_appendArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "insert",
+        "description": "插入写入：在指定字节偏移处插入文本数据（原子替换）。\n\n参数:\n- file_path: 文件路径\n- offset: 插入偏移\n- data: 文本数据\n- encoding: 文本编码\n- temp_dir: 临时目录（可选）\n- ctx: 上下文对象（可选）\n\n返回:\n- InsertResult: 插入写入结果结构。\n  字段: `path`, `offset`, `bytes_inserted`, `new_size`。\n\n异常:\n- AssertionError: 当 `offset < 0` 时抛出。\n- OSError: 文件复制/替换过程中可能抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "offset": {
+              "title": "Offset",
+              "type": "integer"
+            },
+            "data": {
+              "title": "Data",
+              "type": "string"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "temp_dir": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Temp Dir"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "offset",
+            "data"
+          ],
+          "title": "tool_insertArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "file_info",
+        "description": "获取文件基本信息（路径、大小、修改时间）。\n\n参数:\n- file_path: 文件路径\n- ctx: 上下文对象（可选）\n\n返回:\n- FileInfo: 文件信息结构。\n  字段: `path`, `size`, `mtime`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "tool_file_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "build_line_index",
+        "description": "构建行偏移索引（每 step 行记录一次字节偏移）。\n\n参数:\n- file_path: 目标文件\n- step: 间隔行数\n- ctx: 上下文对象（可选）\n\n返回:\n- LineIndexBuildResult: 行索引构建结果结构。\n  字段: `path`, `index_path`, `entries`, `step`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "step": {
+              "default": 1000,
+              "title": "Step",
+              "type": "integer"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "tool_build_line_indexArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_regex",
+        "description": "流式正则搜索大文件，返回命中偏移、近似行号及上下文。\n\n参数:\n- file_path: 文件路径\n- pattern: 正则表达式字符串\n- encoding: 文本编码\n- start_offset: 开始搜索的字节偏移\n- end_offset: 结束搜索的字节偏移（None 表示到文件末尾）\n- max_results: 最大返回条数\n- context_chars: 每个命中项的上下文字符数\n- flags: 正则标志（i,m,s,x），用于控制忽略大小写、多行等\n\n返回:\n- RegexSearchResult: 正则搜索结果结构。\n  `matches` 为列表，元素字段: `start_offset`, `end_offset`, `start_line`, `end_line`, `snippet`；同时包含 `count` 总数。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `start_offset` 与 `end_offset` 区间非法时抛出。\n- re.error: 当正则表达式非法时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "pattern": {
+              "title": "Pattern",
+              "type": "string"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "start_offset": {
+              "default": 0,
+              "title": "Start Offset",
+              "type": "integer"
+            },
+            "end_offset": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "End Offset"
+            },
+            "max_results": {
+              "default": 200,
+              "title": "Max Results",
+              "type": "integer"
+            },
+            "context_chars": {
+              "default": 96,
+              "title": "Context Chars",
+              "type": "integer"
+            },
+            "flags": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Flags"
+            }
+          },
+          "required": [
+            "file_path",
+            "pattern"
+          ],
+          "title": "tool_search_regexArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_literal",
+        "description": "流式字面量搜索大文件，返回命中偏移、近似行号及上下文。\n\n参数:\n- file_path: 文件路径\n- query: 字面量查询字符串\n- encoding: 文本编码\n- start_offset: 开始搜索的字节偏移\n- end_offset: 结束搜索的字节偏移（None 表示到文件末尾）\n- max_results: 最大返回条数\n- context_chars: 每个命中项的上下文字符数\n- case_sensitive: 是否大小写敏感（默认敏感）\n\n返回:\n- LiteralSearchResult: 字面量搜索结果结构。\n  `matches` 为列表，元素字段: `start_offset`, `end_offset`, `start_line`, `end_line`, `snippet`；同时包含 `count` 总数。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `start_offset` 与 `end_offset` 区间非法时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "start_offset": {
+              "default": 0,
+              "title": "Start Offset",
+              "type": "integer"
+            },
+            "end_offset": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "End Offset"
+            },
+            "max_results": {
+              "default": 200,
+              "title": "Max Results",
+              "type": "integer"
+            },
+            "context_chars": {
+              "default": 96,
+              "title": "Context Chars",
+              "type": "integer"
+            },
+            "case_sensitive": {
+              "default": true,
+              "title": "Case Sensitive",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "file_path",
+            "query"
+          ],
+          "title": "tool_search_literalArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "build_inverted_index",
+        "description": "构建或增量更新倒排索引（SQLite 存储）。\n\n参数:\n- file_path: 目标文件\n- incremental: 是否尝试增量更新（仅支持追加场景）\n- token_pattern: 分词正则表达式（默认匹配字母数字与下划线/连字符）\n- lower: 是否对词项进行小写归一化\n\n返回:\n- BuildInvertedIndexResult: 倒排索引构建结果结构。\n  字段: `db_path`（SQLite 路径）, `mode`（\"incremental\" 或 \"full\"）, `indexed_bytes`（本次索引的字节数）。\n\n说明:\n- 仅支持“末尾追加”的增量更新；若检测到非追加修改将自动触发全量重建。\n\n异常:\n- FileNotFoundError: 当目标文件不存在或索引文件缺失时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "incremental": {
+              "default": true,
+              "title": "Incremental",
+              "type": "boolean"
+            },
+            "token_pattern": {
+              "default": "[\\w\\-]+",
+              "title": "Token Pattern",
+              "type": "string"
+            },
+            "lower": {
+              "default": true,
+              "title": "Lower",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "tool_build_inverted_indexArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "search_index_term",
+        "description": "使用倒排索引查询词项，返回命中偏移与上下文片段。\n\n参数:\n- file_path: 目标文件\n- term: 查询词项（与索引构建的归一化规则一致）\n- prefix: 是否前缀匹配（LIKE term%）\n- limit: 最大返回条数\n- context_chars: 每个命中项的上下文字符数\n\n返回:\n- IndexSearchResult: 索引查询结果结构。\n  `matches` 为列表，元素字段: `term`, `offset`, `end_offset`, `line`, `snippet`；同时包含 `count` 总数。\n\n异常:\n- FileNotFoundError: 当倒排索引数据库不存在时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "term": {
+              "title": "Term",
+              "type": "string"
+            },
+            "prefix": {
+              "default": false,
+              "title": "Prefix",
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 200,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "context_chars": {
+              "default": 96,
+              "title": "Context Chars",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "file_path",
+            "term"
+          ],
+          "title": "tool_search_index_termArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "line_number_at_offset",
+        "description": "根据字节偏移估算行号，若存在索引则快速定位。\n\n参数:\n- file_path: 文件路径\n- offset: 字节偏移\n- ctx: 上下文对象（可选）\n\n返回:\n- LineNumberResult: 行号估算结果结构。\n  字段: `line`, `scanned_bytes`, `from_checkpoint`。\n\n异常:\n- FileNotFoundError: 当文件不存在时抛出。\n- AssertionError: 当 `offset < 0` 时抛出。\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "offset": {
+              "title": "Offset",
+              "type": "integer"
+            },
+            "ctx": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ctx"
+            }
+          },
+          "required": [
+            "file_path",
+            "offset"
+          ],
+          "title": "tool_line_number_at_offsetArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'read_bytes'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "read_bytes",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'read_lines'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "read_lines",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'read_last_lines'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "read_last_lines",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'write_overwrite'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "write_overwrite",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'insert'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "insert",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'build_line_index'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "build_line_index",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_regex'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_regex",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_literal'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_literal",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'build_inverted_index'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "build_inverted_index",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'search_index_term'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "search_index_term",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'line_number_at_offset'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "line_number_at_offset",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'read_bytes' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "read_bytes",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'read_lines' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "read_lines",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'read_last_lines' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "read_last_lines",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'write_overwrite' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "write_overwrite",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'append' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "append",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'temp_dir' in 'insert' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "insert",
+      "parameter": "temp_dir",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'temp_dir'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'insert' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "insert",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'file_info' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "file_info",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-020",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'build_line_index' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "build_line_index",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-021",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'end_offset' in 'search_regex' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_regex",
+      "parameter": "end_offset",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'end_offset'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-022",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'flags' in 'search_regex' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_regex",
+      "parameter": "flags",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'flags'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-023",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'end_offset' in 'search_literal' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "search_literal",
+      "parameter": "end_offset",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'end_offset'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-024",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'ctx' in 'line_number_at_offset' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "line_number_at_offset",
+      "parameter": "ctx",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'ctx'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-025",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-026",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "13 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-027",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-028",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: {\"jsonrpc\":\"2.0\",\"id\":48,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Error executing tool append: No",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-029",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-030",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-031",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-032",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-033",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 20.811999999999898,
+  "exchanges": []
+}

@@ -100,10 +100,20 @@ case_studies:
     false_positives: 3
     fp_rate: 25.0
     note: "GitHub topic discovery (discover.py --source github). 91% runtime error rate vs ~50% npm-curated. Root causes: Node.js ESM compat issues (zod/v4 directory import), broken package dependencies (sourcey/preact), external service requirements (mongodb/mysql/pg-aiguide). Key finding: github topic discovery is a low-yield supplemental source, not primary. @antv/mcp-server-chart (36k/wk): protocol crashes (batch/oversized/nested), proto-pollution (__proto__ on 4 tools), cursor path traversal accepted."
+  cs08:
+    servers: 51  # 395 scanned, 51 OK, 343 ERROR (87% error rate)
+    targets_total: 395
+    skipped: 0
+    error_startup: 343  # 341 unknown + 2 credentials (AWS) — majority require external services/config
+    raw_findings: 716  # from 51 OK servers
+    true_positives: 280  # estimated — FP rate ~61% driven by token_exposure FP + shadow_tool FP + schema LOWs
+    false_positives: 436  # estimated
+    fp_rate: 61.0
+    note: "PyPI auto-discovery (>200 DL/wk). 87% error rate — PyPI packages are integration wrappers requiring external services. Highlights: mcp-msaccess-database (VBA/macro execution + prompt injection = RCE chain on Windows, GHSA candidate CRITICAL), arxiv-latex (XSS reflection in 3 tools + unauthenticated log level escalation EXT11, GHSA candidate HIGH). PyPI ecosystem cluster: 9/51 OK servers are arxiv variants, all showing same XSS reflection pattern in arxiv_id — suggests shared upstream template. FP drivers: token_exposure on API-key-required error messages (4 CRITICAL FP), shadow_tool on common filesystem names."
   totals:
-    servers: 126  # 125 (CS01-06) + 1 (CS07 OK)
-    raw_findings: 1511  # 1499 (CS01-06) + 12 (CS07)
-    true_positives: 856  # 847 (CS01-06) + 9 (CS07)
+    servers: 177  # 126 (CS01-07) + 51 (CS08 OK)
+    raw_findings: 2227  # 1511 (CS01-07) + 716 (CS08)
+    true_positives: 1136  # 856 (CS01-07) + 280 (CS08 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:

@@ -1,0 +1,850 @@
+{
+  "target": "uvx mcp-filesystem",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "FileSystem",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "get_system_info",
+        "description": "获取系统信息，包括操作系统类型，cpu架构等。",
+        "input_schema": {
+          "properties": {},
+          "title": "get_system_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "check_path_exists",
+        "description": "\n检查路径是否存，如果存在，进一步判断这个路径是文件还是目录，返回路径类型。\n\nArgs:\n    path: 要检查的路径\n",
+        "input_schema": {
+          "properties": {
+            "path": {
+              "title": "Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "title": "check_path_existsArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_directory_info",
+        "description": "\n获取目录的详细信息，包括目录占磁盘空间，权限等信息。\n\nArgs:\n    directory_path: 目录路径\n",
+        "input_schema": {
+          "properties": {
+            "directory_path": {
+              "title": "Directory Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory_path"
+          ],
+          "title": "get_directory_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "find_directory",
+        "description": "\n在指定目录中查找子目录\n\nArgs:\n    directory_path: 要搜索的目录路径\n    name_pattern: 目录名模式（支持通配符，比如搜索名称中有trade的所有目录，可传参*trade*）\n",
+        "input_schema": {
+          "properties": {
+            "directory_path": {
+              "title": "Directory Path",
+              "type": "string"
+            },
+            "name_pattern": {
+              "title": "Name Pattern",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory_path",
+            "name_pattern"
+          ],
+          "title": "find_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "create_directory",
+        "description": "\n创建目录\n\nArgs:\n    path: 要创建的目录路径\n    exist_ok: 如果目录已存在是否忽略错误（默认False）\n    parents: 是否创建父目录（默认True）\n",
+        "input_schema": {
+          "properties": {
+            "path": {
+              "title": "Path",
+              "type": "string"
+            },
+            "exist_ok": {
+              "default": false,
+              "title": "Exist Ok",
+              "type": "boolean"
+            },
+            "parents": {
+              "default": true,
+              "title": "Parents",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "title": "create_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "delete_directory",
+        "description": "\n删除目录\n\nArgs:\n    path: 要删除的目录路径\n    recursive: 是否递归删除子目录和文件（默认True）\n",
+        "input_schema": {
+          "properties": {
+            "path": {
+              "title": "Path",
+              "type": "string"
+            },
+            "recursive": {
+              "default": true,
+              "title": "Recursive",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "title": "delete_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "list_directory",
+        "description": "\n列出目录内容\n\nArgs:\n    directory_path: 要列出的目录路径\n    sort_by: 排序方式（name/size/modified/type，默认name）\n    reverse: 是否反向排序（默认False）\n    filter_type: 过滤类型（file/directory，默认不过滤）\n",
+        "input_schema": {
+          "properties": {
+            "directory_path": {
+              "title": "Directory Path",
+              "type": "string"
+            },
+            "sort_by": {
+              "default": "name",
+              "title": "Sort By",
+              "type": "string"
+            },
+            "reverse": {
+              "default": false,
+              "title": "Reverse",
+              "type": "boolean"
+            },
+            "filter_type": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Filter Type"
+            }
+          },
+          "required": [
+            "directory_path"
+          ],
+          "title": "list_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "rename_directory",
+        "description": "\n重命名目录\n\nArgs:\n    old_path: 原目录路径\n    new_path: 新目录路径\n",
+        "input_schema": {
+          "properties": {
+            "old_path": {
+              "title": "Old Path",
+              "type": "string"
+            },
+            "new_path": {
+              "title": "New Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "old_path",
+            "new_path"
+          ],
+          "title": "rename_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "copy_directory",
+        "description": "\n复制目录\n\nArgs:\n    source_path: 源目录路径\n    destination_path: 目标目录路径\n    overwrite: 是否覆盖已存在的目录（默认False）\n",
+        "input_schema": {
+          "properties": {
+            "source_path": {
+              "title": "Source Path",
+              "type": "string"
+            },
+            "destination_path": {
+              "title": "Destination Path",
+              "type": "string"
+            },
+            "overwrite": {
+              "default": false,
+              "title": "Overwrite",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "source_path",
+            "destination_path"
+          ],
+          "title": "copy_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "move_directory",
+        "description": "\n移动目录\n\nArgs:\n    source_path: 源目录路径\n    destination_path: 目标目录路径\n    overwrite: 是否覆盖已存在的目录（默认False）\n",
+        "input_schema": {
+          "properties": {
+            "source_path": {
+              "title": "Source Path",
+              "type": "string"
+            },
+            "destination_path": {
+              "title": "Destination Path",
+              "type": "string"
+            },
+            "overwrite": {
+              "default": false,
+              "title": "Overwrite",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "source_path",
+            "destination_path"
+          ],
+          "title": "move_directoryArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_directory_tree",
+        "description": "\n获取目录树结构，相当于Linux中的tree命令，可指定最大深度。从而不用反复调用list_directory方法。\n\nArgs:\n    directory_path: 目录路径\n    max_depth: 最大深度（默认10）\n",
+        "input_schema": {
+          "properties": {
+            "directory_path": {
+              "title": "Directory Path",
+              "type": "string"
+            },
+            "max_depth": {
+              "default": 10,
+              "title": "Max Depth",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "directory_path"
+          ],
+          "title": "get_directory_treeArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "get_file_info",
+        "description": "\n获取文件信息\n\nArgs:\n    file_path: 文件路径\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "get_file_infoArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "create_file",
+        "description": "\n创建文件\n\nArgs:\n    path: 文件路径\n    content: 文件内容（可选）\n    encoding: 文件编码（默认utf-8）\n    exist_ok: 如果文件已存在是否忽略错误（默认False）\n",
+        "input_schema": {
+          "properties": {
+            "path": {
+              "title": "Path",
+              "type": "string"
+            },
+            "content": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Content"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            },
+            "exist_ok": {
+              "default": false,
+              "title": "Exist Ok",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "title": "create_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "delete_file",
+        "description": "\n删除文件\n\nArgs:\n    file_path: 文件路径\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "delete_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "rename_file",
+        "description": "\n重命名文件\n\nArgs:\n    old_path: 原文件路径\n    new_path: 新文件路径\n",
+        "input_schema": {
+          "properties": {
+            "old_path": {
+              "title": "Old Path",
+              "type": "string"
+            },
+            "new_path": {
+              "title": "New Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "old_path",
+            "new_path"
+          ],
+          "title": "rename_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "copy_file",
+        "description": "\n复制文件\n\nArgs:\n    source_path: 源文件路径\n    destination_path: 目标文件路径\n    overwrite: 是否覆盖已存在的文件（默认False）\n",
+        "input_schema": {
+          "properties": {
+            "source_path": {
+              "title": "Source Path",
+              "type": "string"
+            },
+            "destination_path": {
+              "title": "Destination Path",
+              "type": "string"
+            },
+            "overwrite": {
+              "default": false,
+              "title": "Overwrite",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "source_path",
+            "destination_path"
+          ],
+          "title": "copy_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "move_file",
+        "description": "\n移动文件\n\nArgs:\n    source_path: 源文件路径\n    destination_path: 目标文件路径\n    overwrite: 是否覆盖已存在的文件（默认False）\n",
+        "input_schema": {
+          "properties": {
+            "source_path": {
+              "title": "Source Path",
+              "type": "string"
+            },
+            "destination_path": {
+              "title": "Destination Path",
+              "type": "string"
+            },
+            "overwrite": {
+              "default": false,
+              "title": "Overwrite",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "source_path",
+            "destination_path"
+          ],
+          "title": "move_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "read_file",
+        "description": "\n读取文件内容\n\nArgs:\n    file_path: 文件路径\n    start_line: 起始行号（可选）\n    end_line: 结束行号（可选）\n    encoding: 文件编码（默认utf-8）\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "start_line": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Start Line"
+            },
+            "end_line": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "End Line"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "title": "read_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "write_file",
+        "description": "\n写入文件内容\n\nArgs:\n    file_path: 文件路径\n    content: 要写入的内容\n    mode: 写入模式（overwrite/append/insert，默认overwrite）\n    line_number: 插入模式下的行号（仅插入模式需要）\n    encoding: 文件编码（默认utf-8）\n",
+        "input_schema": {
+          "properties": {
+            "file_path": {
+              "title": "File Path",
+              "type": "string"
+            },
+            "content": {
+              "title": "Content",
+              "type": "string"
+            },
+            "mode": {
+              "default": "overwrite",
+              "title": "Mode",
+              "type": "string"
+            },
+            "line_number": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Line Number"
+            },
+            "encoding": {
+              "default": "utf-8",
+              "title": "Encoding",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path",
+            "content"
+          ],
+          "title": "write_fileArguments",
+          "type": "object"
+        }
+      },
+      {
+        "name": "find_file",
+        "description": "\n在指定目录中查找文件\n\nArgs:\n    directory_path: 要搜索的目录路径\n    name_pattern: 文件名模式（支持通配符）\n",
+        "input_schema": {
+          "properties": {
+            "directory_path": {
+              "title": "Directory Path",
+              "type": "string"
+            },
+            "name_pattern": {
+              "title": "Name Pattern",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory_path",
+            "name_pattern"
+          ],
+          "title": "find_fileArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'filter_type' in 'list_directory' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "list_directory",
+      "parameter": "filter_type",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'filter_type'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'content' in 'create_file' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "create_file",
+      "parameter": "content",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'content'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'start_line' in 'read_file' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "read_file",
+      "parameter": "start_line",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'start_line'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'end_line' in 'read_file' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "read_file",
+      "parameter": "end_line",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'end_line'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'line_number' in 'write_file' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "write_file",
+      "parameter": "line_number",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'line_number'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'create_file' conflicts with a high-value built-in name",
+      "description": "Tool 'create_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "create_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'delete_file' conflicts with a high-value built-in name",
+      "description": "Tool 'delete_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "delete_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'read_file' conflicts with a high-value built-in name",
+      "description": "Tool 'read_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "read_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'write_file' conflicts with a high-value built-in name",
+      "description": "Tool 'write_file' uses a name commonly associated with built-in or high-privilege operations. A malicious server could register this tool to shadow legitimate tools and intercept LLM actions.",
+      "tool_name": "write_file",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Rename the tool to something unique and context-specific. Avoid generic names like 'bash', 'execute', or 'read_file' that clash with well-known tool namespaces.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "MCP01",
+      "severity": "low",
+      "title": "Token Exposure — internal IP address in 'get_system_info'",
+      "description": "Tool response contains internal IP address.",
+      "tool_name": "get_system_info",
+      "parameter": null,
+      "payload": null,
+      "evidence": "============================================================\nSYSTEM INFORMATION\n============================================================\nTimestamp: 2026-07-05T20:26:08.696012\nPython Version: 3.13.12 (main, Mar 24 2026, 22:56:40) [MSC v.1944 64 bit (AMD64)]\nPython Implementation: CPython\nOperating System: Windows 11\nArchitecture: AMD64\nPlatform: Windows-11-10.0.26200-SP0\nHostname: DESKTOP-TFV5V",
+      "remediation": "Strip sensitive data from tool responses. Never return raw environment variables, credentials, or internal paths.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "19 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — JSON-RPC batch array caused server disconnect",
+      "description": "Sending a JSON-RPC 2.0 batch (5 requests as an array) caused the server to crash or disconnect. MCP does not define batch semantics; servers must reject arrays gracefully.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "[{\"jsonrpc\":\"2.0\",\"id\":9000,\"method\":\"tools/list\"}, … (5 items)]",
+      "evidence": "Server disconnected after batch. Pre-crash response: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "remediation": "Validate input type at the JSON-RPC layer: if the parsed value is a list, return -32600 (Invalid Request) immediately without further processing.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "high",
+      "title": "Protocol crash — oversized method name caused transport failure",
+      "description": "The server failed to respond to a request with an 8192-byte method name. A robust server should return a JSON-RPC error, not disconnect or crash.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...' (8192 bytes)",
+      "evidence": null,
+      "remediation": "Add input length validation at the JSON-RPC parsing layer. Return -32700 (parse error) or -32600 (invalid request) for malformed inputs.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Protocol crash — deeply nested params caused server disconnect",
+      "description": "Sending a tools/call request with 50-level nested params caused the server to disconnect or crash. Deep nesting can cause stack overflows or excessive memory use in recursive JSON parsers.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "tools/call {arguments: {x: {x: {x: ... (50 levels)}}}}",
+      "evidence": null,
+      "remediation": "Limit JSON object nesting depth at parse time (recommended: ≤32 levels). Return -32700 (Parse error) for inputs exceeding the depth limit.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 28.375,
+  "exchanges": []
+}

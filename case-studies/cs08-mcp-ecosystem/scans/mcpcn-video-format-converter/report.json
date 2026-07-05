@@ -1,0 +1,285 @@
+{
+  "target": "uvx mcpcn-video-format-converter",
+  "transport": "stdio",
+  "surface": {
+    "server_name": "VideoFormatConverter",
+    "server_version": "1.28.1",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "convert_video_format",
+        "description": "Batch-convert videos to new containers and optionally adjust encoding parameters.\n\nArgs:\n    input_video_paths: List of input video paths (batch conversion supported).\n    output_video_paths: Optional list of output file paths (must match input_video_paths length). If provided, output_dir and target_format are ignored.\n    output_dir: Destination directory; outputs keep the original filename but use the target format extension. Ignored if output_video_paths is provided.\n    target_format: Target container (e.g., 'mp4', 'mov', 'mkv', 'webm', 'm4v', 'avi'). Ignored if output_video_paths is provided.\n    resolution: Desired resolution, e.g., '1920x1080', or a height such as '720'. Use 'preserve'/None to keep the original.\n    video_codec: Video codec (e.g., 'libx264', 'libx265', 'vp9', 'libvpx-vp9', 'wmv2'). Defaults to container preference/original.\n    video_bitrate: Video bitrate (e.g., '2500k', '1M'). Defaults to encoder settings.\n    frame_rate: Target frame rate (integer such as 24/30/60). Defaults to the original.\n    audio_codec: Audio codec (e.g., 'aac', 'libopus', 'libvorbis', 'mp3', 'wmav2'). Defaults to container/original.\n    audio_bitrate: Audio bitrate (e.g., '128k', '192k'). Defaults to encoder settings.\n    audio_sample_rate: Audio sample rate in Hz (e.g., 44100/48000). Defaults to the original.\n    audio_channels: Number of audio channels (1=mono, 2=stereo). Defaults to the original.\n    overwrite: Whether to overwrite existing output files (default: False).\n\nReturns:\n    A status message indicating success or failure for each video.\n",
+        "input_schema": {
+          "properties": {
+            "input_video_paths": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Input Video Paths",
+              "type": "array"
+            },
+            "output_video_paths": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Output Video Paths"
+            },
+            "output_dir": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Output Dir"
+            },
+            "target_format": {
+              "default": "mp4",
+              "title": "Target Format",
+              "type": "string"
+            },
+            "resolution": {
+              "default": null,
+              "title": "Resolution",
+              "type": "string"
+            },
+            "video_codec": {
+              "default": null,
+              "title": "Video Codec",
+              "type": "string"
+            },
+            "video_bitrate": {
+              "default": null,
+              "title": "Video Bitrate",
+              "type": "string"
+            },
+            "frame_rate": {
+              "default": null,
+              "title": "Frame Rate",
+              "type": "integer"
+            },
+            "audio_codec": {
+              "default": null,
+              "title": "Audio Codec",
+              "type": "string"
+            },
+            "audio_bitrate": {
+              "default": null,
+              "title": "Audio Bitrate",
+              "type": "string"
+            },
+            "audio_sample_rate": {
+              "default": null,
+              "title": "Audio Sample Rate",
+              "type": "integer"
+            },
+            "audio_channels": {
+              "default": null,
+              "title": "Audio Channels",
+              "type": "integer"
+            },
+            "overwrite": {
+              "default": false,
+              "title": "Overwrite",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "input_video_paths"
+          ],
+          "title": "convert_video_formatArguments",
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'convert_video_format'",
+      "description": "Description is 1575 chars (limit 1000). May contain hidden content.",
+      "tool_name": "convert_video_format",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'output_video_paths' in 'convert_video_format' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "convert_video_format",
+      "parameter": "output_video_paths",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'output_video_paths'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "low",
+      "title": "Parameter 'output_dir' in 'convert_video_format' has no type constraint",
+      "description": "Untyped parameters accept any value, making input validation harder to enforce.",
+      "tool_name": "convert_video_format",
+      "parameter": "output_dir",
+      "payload": null,
+      "evidence": null,
+      "remediation": "Add an explicit type to parameter 'output_dir'.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "1 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Protocol crash — string params caused server disconnect",
+      "description": "Sending a tools/call request where params is a string (not an object) caused the server to crash or disconnect. The JSON-RPC spec requires params to be an array or object.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"method\":\"tools/call\",\"params\":\"not-an-object\"}",
+      "evidence": null,
+      "remediation": "Validate params type (must be object or array) before processing. Return -32600 (Invalid Request) for wrong types.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 49.36000000000058,
+  "exchanges": []
+}
