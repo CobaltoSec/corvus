@@ -209,8 +209,10 @@ def update_projects_ts(stats: dict) -> None:
     )
     new_content = old_pattern.sub(lambda m: m.group(1) + new_desc + m.group(3), content)
 
-    if new_content == content:
+    if not old_pattern.search(content):
         print("  [warn] projectsData.ts: pattern not matched, manual update needed")
+    elif new_content == content:
+        print("  projectsData.ts already up-to-date")
     elif not DRY_RUN:
         PROJECTS_TS.write_text(new_content, encoding="utf-8")
         print("  projectsData.ts updated")
@@ -249,8 +251,12 @@ def update_tools_ts(stats: dict) -> None:
     )
     new_content = old_desc_pat.sub(lambda m_: m_.group(1) + new_desc + m_.group(3), new_content)
 
-    if new_content == content:
-        print("  [warn] toolsData.ts: pattern not matched, manual update needed")
+    tagline_matched = bool(old_tagline_pat.search(content))
+    desc_matched = bool(old_desc_pat.search(content))
+    if not tagline_matched or not desc_matched:
+        print(f"  [warn] toolsData.ts: pattern not matched (tagline={tagline_matched}, desc={desc_matched}), manual update needed")
+    elif new_content == content:
+        print("  toolsData.ts already up-to-date")
     elif not DRY_RUN:
         TOOLS_TS.write_text(new_content, encoding="utf-8")
         print("  toolsData.ts updated")
