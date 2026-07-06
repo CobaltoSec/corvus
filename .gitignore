@@ -30,3 +30,5 @@ SIGUIENTE.md
 .claude/
 scripts/discover-output/
 scripts/discover.py
+case-studies/*-PROMPT.md
+case-studies/*-prompt.md
