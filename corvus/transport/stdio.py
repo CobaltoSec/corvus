@@ -89,11 +89,11 @@ class StdioTransport(MCPTransport):
                 stderr=asyncio.subprocess.PIPE,
                 env=proc_env,
             )
-        # Detect immediate crash: wait up to 2s for the process to exit.
+        # Detect immediate crash: wait up to 5s for the process to exit.
         # If it exits, it crashed before handling any requests.
-        # 2s is needed on Windows where interpreter startup (Python, node) can take 500ms-1.5s.
+        # 5s needed on Windows where Python/node can take 3+ seconds to start and crash.
         try:
-            await asyncio.wait_for(self._process.wait(), timeout=2.0)
+            await asyncio.wait_for(self._process.wait(), timeout=5.0)
             stderr_bytes = b""
             try:
                 stderr_bytes = await asyncio.wait_for(
