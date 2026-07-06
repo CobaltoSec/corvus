@@ -109,7 +109,7 @@ case_studies:
     true_positives: 280  # estimated — FP rate ~61% driven by token_exposure FP + shadow_tool FP + schema LOWs
     false_positives: 436  # estimated
     fp_rate: 61.0
-    note: "PyPI auto-discovery (>200 DL/wk). 87% error rate — PyPI packages are integration wrappers requiring external services. Highlights: mcp-msaccess-database (VBA/macro execution + prompt injection = RCE chain on Windows, GHSA candidate CRITICAL), arxiv-latex (XSS reflection in 3 tools + unauthenticated log level escalation EXT11, GHSA candidate HIGH). PyPI ecosystem cluster: 9/51 OK servers are arxiv variants, all showing same XSS reflection pattern in arxiv_id — suggests shared upstream template. FP drivers: token_exposure on API-key-required error messages (4 CRITICAL FP), shadow_tool on common filesystem names."
+    note: "PyPI auto-discovery (>200 DL/wk). 87% error rate — PyPI packages are integration wrappers requiring external services. Highlights: mcp-msaccess-database (VBA/macro execution + prompt injection = RCE chain on Windows, GHSA-9jp6-hph9-jm5f HIGH), arxiv-latex (XSS reflection in 4 tools + unauthenticated log level escalation EXT11, GHSA-h6xq-7fpp-q2hf HIGH), localparse-mcp (SSRF × 2 timing signals, GHSA-prc4-649r-564g HIGH). PyPI ecosystem cluster: 9/51 OK servers are arxiv variants, all showing same XSS reflection pattern in arxiv_id — suggests shared upstream template. FP drivers: token_exposure on API-key-required error messages (4 CRITICAL FP), shadow_tool on common filesystem names."
   totals:
     servers: 177  # 126 (CS01-07) + 51 (CS08 OK)
     raw_findings: 2227  # 1511 (CS01-07) + 716 (CS08)
@@ -134,9 +134,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 24
+  total: 27
   published: 3
-  draft: 21
+  draft: 24
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}
