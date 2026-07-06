@@ -157,6 +157,10 @@ echo '{"state": "published"}' | \
 | benborla/mcp-server-mysql                   | benborla            | ✅       | No  |
 | unmateria/MCP-Access                        | unmateria           | ✅       | No  |
 | takashiishida/arxiv-latex-mcp               | takashiishida       | ✅       | No  |
+| MyMedi-AI/mymedi-ai-mcp-server              | OFODevelopment      | ✅       | No  |
+| RipperMercs/tensorfeed-mcp                  | spamcraftgame       | ✅       | No  |
+| martingeidobler/android-mcp-server          | martingeidobler     | ✅       | No  |
+| tadas-github/a2asearch-mcp                  | tadas-github        | ✅       | No  |
 
 **Cómo encontrar maintainer:** `npm show <package> repository.url` → extrae el GitHub username del repo.
 
@@ -207,3 +211,8 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-prc4-649r-564g   | localparse-mcp                       | HIGH        | — (no repo público)          | draft CS08 | 2026-08-04  |
 | GHSA-6jrq-96x4-6pvq   | @agent-infra/mcp-server-browser      | HIGH        | ulivz ✅                     | draft CS10 | 2026-08-05  |
 | GHSA-p2xc-mj3p-7q4x   | @browserbasehq/mcp                   | HIGH        | Kylejeong2 ✅                | draft CS10 | 2026-08-05  |
+| GHSA-6f4g-h4c4-75r8   | @mymedi-ai/mcp-server                | HIGH        | OFODevelopment ✅             | draft CS11 | 2026-08-06  |
+| GHSA-wx78-8jx3-wcv9   | @tensorfeed/mcp-server               | HIGH        | spamcraftgame ✅              | draft CS11 | 2026-08-06  |
+| GHSA-xh32-vqc4-v285   | android-mcp-server                   | HIGH        | martingeidobler ✅            | draft CS11 | 2026-08-06  |
+| GHSA-32vx-mq6h-p8f3   | emilia-protocol                      | HIGH        | — (no repo público)          | draft CS11 | 2026-08-06  |
+| GHSA-2mq4-q772-f26c   | a2asearch-mcp                        | HIGH        | tadas-github ✅               | draft CS11 | 2026-08-06  |

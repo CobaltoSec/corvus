@@ -130,10 +130,20 @@ case_studies:
     false_positives: 170  # estimated
     fp_rate: 69.0
     note: "npm auto-discovery (>25 DL/wk, include-maybe-auth). 34% success rate — better than CS07 (9%) but lower than earlier npm CSes due to maybe-auth servers. Key highlights: (1) @circleci/mcp-server-circleci CRITICAL tool-poisoning in create_prompt_template (30k/wk, LLM instructions in description). (2) SSRF sistémico en browser MCPs: @agent-infra/mcp-server-browser + @browserbasehq/mcp both navigate to 169.254.169.254 AWS metadata — cloud credential theft vector. (3) @midscene/android-mcp: RunAdbShell + act expose arbitrary ADB execution + SSRF. (4) @missionsquad/mcp-msq: apiKey credential field in tool schema (credential harvesting surface). Protocol crash 17/17 = 100% (confirmatory). GHSA candidates: mcp-server-browser SSRF + browserbasehq SSRF."
+  cs11:
+    servers: 39  # 58 targeted, 39 OK, 19 ERROR (67% success rate)
+    targets_total: 58
+    skipped: 0
+    error_startup: 19
+    raw_findings: 490  # estimated from 39 OK servers
+    true_positives: 29  # 16 findings across 11 servers (F01-F16)
+    false_positives: 461  # estimated — FP rate ~74% driven by mcp-discord-bridge (44C) + mcp-reunion (21H)
+    fp_rate: 74.0
+    note: "awesome-mcp-servers discovery (punkpeye+appcypher+wong2+modelcontextprotocol lists, GitHub link resolution). 67% success rate — best since CS02. Key highlights: (1) @mymedi-ai/mcp-server EXT12 prompt injection in 3 medical billing tools (773 dl/wk, GHSA-6f4g-h4c4-75r8). (2) android-mcp-server MCP08 clear_logs anti-forensics + path traversal in screenshot (GHSA-xh32-vqc4-v285). (3) @tensorfeed/mcp-server XSS cluster × 6 tools. (4) emilia-protocol EXT12 × 3 in payment/identity trust gates. (5) a2asearch-mcp SQLi pattern + XSS. FP calibration v3 triggered: crypto ticker FP (x402 token:BTC) + bot token missing FP (discord-bridge 44C) — both fixed in token_exposure.py."
   totals:
-    servers: 195  # 178 (CS01-09) + 17 (CS10 OK)
-    raw_findings: 2485  # 2240 (CS01-09) + 245 (CS10)
-    true_positives: 1220  # 1145 (CS01-09) + 75 (CS10)
+    servers: 234  # 195 (CS01-10) + 39 (CS11 OK)
+    raw_findings: 2975  # 2485 (CS01-10) + 490 (CS11)
+    true_positives: 1249  # 1220 (CS01-10) + 29 (CS11)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -154,9 +164,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 29
+  total: 34
   published: 3
-  draft: 26
+  draft: 31
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

@@ -42,10 +42,27 @@ _CONNECTION_ERROR_RE = re.compile(
     re.I,
 )
 
+_CREDENTIAL_MISSING_RE = re.compile(
+    r"\bnot\s+set\b|\bnot\s+configured\b|\bnot\s+provided\b|\bnot\s+found\b"
+    r"|\bmissing\b|\bplease\s+set\b|\benv(?:ironment)?\s+var(?:iable)?\b"
+    r"|\bis\s+required\b|\bmust\s+be\s+set\b",
+    re.I,
+)
+
 
 def _is_connection_error_text(text: str) -> bool:
     """Return True if text is a connection-error help message, not a real credential leak."""
     return bool(_CONNECTION_ERROR_RE.search(text))
+
+
+def _is_missing_credential_context(text: str) -> bool:
+    """Return True if text is an error about a missing/unconfigured credential.
+
+    Catches bot token / API key missing errors like 'Discord bot token is not set.
+    Please set DISCORD_BOT_TOKEN env var.' — these contain the token NAME but not
+    a real credential value.
+    """
+    return bool(_CREDENTIAL_MISSING_RE.search(text))
 
 
 class TokenExposureModule(ScanModule):
@@ -121,8 +138,11 @@ class TokenExposureModule(ScanModule):
                 for pattern, label, severity, conf in _SIGNALS:
                     m = pattern.search(text)
                     if m:
-                        if label == "credential in response" and _is_type_annotation_match(m.group(0)):
-                            continue  # TypeScript type annotation, not a real credential
+                        if label == "credential in response":
+                            if _is_type_annotation_match(m.group(0)):
+                                continue  # TypeScript type annotation, not a real credential
+                            if _is_missing_credential_context(text):
+                                continue  # missing/unconfigured token error, not a real leak
                         if label == "internal IP address" and _is_connection_error_text(text):
                             continue  # IP in connection-error help text — not a real leak
                         if label in seen_signals:
@@ -180,6 +200,11 @@ def _is_type_annotation_match(match_text: str) -> bool:
     if len(parts) < 2:
         return False
     value = parts[1].strip('"\'').strip()
+    # Array type shorthand check BEFORE stripping (rstrip would eat the `]`)
+    if value.endswith('[]'):
+        return True
+    # Strip trailing JSON punctuation (comma, closing brace/bracket/paren)
+    value = value.rstrip('",}])')
     # Template literal type: starts with backtick (e.g. TOKEN: `${string}`)
     if value.startswith('`'):
         return True
