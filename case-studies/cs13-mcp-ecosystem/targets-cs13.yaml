@@ -1,0 +1,271 @@
+meta:
+  case_study: CS13
+  description: OWASP MCP Ecosystem Audit — CS13 npm round 7 + PyPI curated expansion (2026-07-06)
+  corvus_version: 1.3.1
+  strategy: >
+    npm round 7 (salesforce/stripe/shopify/twilio/discord/notion/calendar/crm/ecommerce queries) +
+    PyPI curated list (12 new additions) + high-DL npm packages missed from CS12.
+    Target: 50+ targets, 300+ total servers.
+  discover_date: '2026-07-06'
+targets:
+
+# ─── npm round 7 — genuinely new (not in CS12 or prior batches) ───────────────
+# Note: @browserbasehq/mcp excluded (scanned in CS10, GHSA-p2xc filed)
+
+# 38,200/wk [maybe-auth] @gongrzhe/server-gmail-autoauth-mcp — Gmail with auto-auth
+- name: gmail-autoauth
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@gongrzhe/server-gmail-autoauth-mcp@latest"]
+  status: pending
+  notes: Gmail MCP server with auto authentication support. Very high DL.
+
+# 33,550/wk [maybe-auth] @transcend-io/mcp-server-admin — Transcend Admin tools
+- name: transcend-admin
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-admin@latest"]
+  status: pending
+  notes: Transcend MCP Server — Admin tools sub-package. Unified scanned in CS12 (errored).
+
+# 33,501/wk [maybe-auth] @transcend-io/mcp-server-assessment — Transcend Assessments
+- name: transcend-assessment
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-assessment@latest"]
+  status: pending
+  notes: Transcend MCP Server — Assessments tools sub-package.
+
+# 33,498/wk [maybe-auth] @transcend-io/mcp-server-dsr — Transcend DSR Automation
+- name: transcend-dsr
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-dsr@latest"]
+  status: pending
+  notes: Transcend MCP Server — DSR (Data Subject Request) Automation tools.
+
+# 33,488/wk [maybe-auth] @transcend-io/mcp-server-consent — Transcend Consent Management
+- name: transcend-consent
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-consent@latest"]
+  status: pending
+  notes: Transcend MCP Server — Consent Management tools sub-package.
+
+# 12,808/wk [maybe-auth] @softeria/ms-365-mcp-server — Microsoft 365
+- name: ms-365
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@softeria/ms-365-mcp-server@latest"]
+  status: pending
+  notes: MCP server for interacting with Microsoft 365 services.
+
+# 8,953/wk [maybe-auth] kubernetes-mcp-server-linux-amd64 — Kubernetes (Linux binary)
+- name: kubernetes
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, kubernetes-mcp-server-linux-amd64@latest]
+  status: pending
+  notes: MCP server for Kubernetes and OpenShift — Linux AMD64 binary. May error on Windows.
+
+# 5,608/wk [maybe-auth] @microsoft/powerbi-modeling-mcp — Power BI modeling
+- name: powerbi
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@microsoft/powerbi-modeling-mcp@latest"]
+  status: pending
+  notes: Power BI Modeling MCP Server — Node.js client for Power BI semantic modeling.
+
+# 3,060/wk [maybe-auth] @transcend-io/mcp-server-base — Transcend shared infrastructure
+- name: transcend-base
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-base@latest"]
+  status: pending
+  notes: Shared infrastructure for Transcend MCP Server packages. Might expose base tool definitions.
+
+# 2,898/wk [maybe-auth] @transcend-io/mcp-server-discovery — Transcend Data Discovery
+- name: transcend-discovery
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-discovery@latest"]
+  status: pending
+  notes: Transcend MCP Server — Data Discovery tools.
+
+# 2,889/wk [maybe-auth] @transcend-io/mcp-server-workflows — Transcend Workflows
+- name: transcend-workflows
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-workflows@latest"]
+  status: pending
+  notes: Transcend MCP Server — Workflows tools sub-package.
+
+# 2,865/wk [maybe-auth] @xeroapi/xero-mcp-server — Xero accounting
+- name: xero
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@xeroapi/xero-mcp-server@latest"]
+  status: pending
+  notes: MCP server implementation for Xero accounting API integration.
+
+# 2,860/wk [maybe-auth] @transcend-io/mcp-server-inventory — Transcend Data Inventory
+- name: transcend-inventory
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-inventory@latest"]
+  status: pending
+  notes: Transcend MCP Server — Data Inventory tools sub-package.
+
+# 2,848/wk [maybe-auth] @transcend-io/mcp-server-preferences — Transcend Preferences
+- name: transcend-preferences
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp-server-preferences@latest"]
+  status: pending
+  notes: Transcend MCP Server — Preference Management tools sub-package.
+
+# 2,962/wk [maybe-auth] @josephyan/qingflow-app-user-mcp — Qingflow no-code user API
+- name: qingflow-user
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@josephyan/qingflow-app-user-mcp@latest"]
+  status: pending
+  notes: Operational end-user MCP for Qingflow records, tasks, comments. Chinese no-code platform.
+
+# 2,826/wk [maybe-auth] @josephyan/qingflow-app-builder-mcp — Qingflow no-code builder
+- name: qingflow-builder
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@josephyan/qingflow-app-builder-mcp@latest"]
+  status: pending
+  notes: Builder MCP for Qingflow app/package/system design. Chinese no-code platform.
+
+# 1,470/wk [maybe-auth] square-mcp-server — Square payment API
+- name: square
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, square-mcp-server@latest]
+  status: pending
+  notes: MCP Server for Square API — payments, customers, orders, inventory.
+
+# 367/wk [maybe-auth] @moneyforward_i/admina-mcp-server — SaaS management
+- name: admina
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@moneyforward_i/admina-mcp-server@latest"]
+  status: pending
+  notes: Admina MCP server — SaaS application management by MoneyForward (Japanese).
+
+# 332/wk [maybe-auth] @memberjunction/ai-mcp-server — MemberJunction AI MCP
+- name: memberjunction
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, "@memberjunction/ai-mcp-server@latest"]
+  status: pending
+  notes: MemberJunction Model Context Protocol — AI server implementation.
+
+# 232/wk [maybe-auth] gezhe-mcp-server — Chinese PPT generation
+- name: gezhe
+  tier: CS13
+  transport: stdio
+  cmd: [npx, -y, gezhe-mcp-server@latest]
+  status: pending
+  notes: Gezhe PPT MCP server — Chinese presentation generation tool (格者).
+
+# ─── PyPI CURATED new additions (12 packages from CS13 expansion) ─────────────
+
+# mcp-server-fetch — Python HTTP fetch tool (if not already in existing)
+- name: mcp-fetch-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-fetch]
+  status: pending
+  notes: Python MCP server for HTTP fetch operations. uvx install.
+
+# mcp-server-filesystem — Python filesystem access
+- name: mcp-filesystem-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-filesystem]
+  status: pending
+  notes: Python MCP server for local filesystem read/write operations.
+
+# duckduckgo-mcp-server — DuckDuckGo search
+- name: duckduckgo-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, duckduckgo-mcp-server]
+  status: pending
+  notes: Python MCP server for DuckDuckGo search integration.
+
+# mcp-server-prometheus — Prometheus metrics querying
+- name: prometheus-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-prometheus]
+  status: pending
+  notes: Python MCP server for Prometheus metrics querying.
+
+# mcp-server-grafana — Grafana dashboard management
+- name: grafana-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-grafana]
+  status: pending
+  notes: Python MCP server for Grafana dashboard management.
+
+# mcp-server-vault — HashiCorp Vault secrets management
+- name: vault-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-vault]
+  status: pending
+  notes: Python MCP server for HashiCorp Vault secrets management.
+
+# mcp-server-k8s — Kubernetes cluster management
+- name: k8s-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-k8s]
+  status: pending
+  notes: Python MCP server for Kubernetes cluster management.
+
+# mcp-server-obsidian — Obsidian knowledge base
+- name: obsidian-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-obsidian]
+  status: pending
+  notes: Python MCP server for Obsidian knowledge base management.
+
+# mcp-server-terraform — Terraform infrastructure management
+- name: terraform-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-terraform]
+  status: pending
+  notes: Python MCP server for Terraform infrastructure management.
+
+# mcp-server-openapi — OpenAPI specification tools
+- name: openapi-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-openapi]
+  status: pending
+  notes: Python MCP server for OpenAPI specification tools.
+
+# mcp-server-arxiv — arXiv academic paper search
+- name: arxiv-py
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, mcp-server-arxiv]
+  status: pending
+  notes: Python MCP server for arXiv academic paper search.
+
+# 217/wk [likely-noauth] zh-file-mcp — Chinese file management (top PyPI new discovery)
+- name: zh-file
+  tier: CS13
+  transport: stdio
+  cmd: [uvx, zh-file-mcp]
+  status: pending
+  notes: Top new PyPI discovery — Chinese file management MCP server, 217/wk.

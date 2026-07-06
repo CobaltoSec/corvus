@@ -1,0 +1,287 @@
+meta:
+  case_study: CS12
+  description: OWASP MCP Ecosystem Audit — CS12 combined awesome+npm round 6 (2026-07-06)
+  corvus_version: 1.3.1
+  strategy: >
+    Combined sources: awesome-lists (ckreiling + punkpeye new packages) +
+    npm round 6 queries (pdf/image/maps/csv/terminal/wiki/graphql/rag).
+    All packages verified new vs CS11 batch. Cross-referenced against 1066 known packages + history DB.
+    Static scan yields tool definitions even for auth-required servers.
+  discover_date: '2026-07-06'
+targets:
+
+# ─── Awesome-list sources (new packages not in CS11 batch scan) ───────────────
+
+# 4,237/wk [maybe-auth] codebase-memory-mcp — local code intelligence, single binary
+- name: codebase-memory
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, codebase-memory-mcp@latest]
+  status: pending
+  notes: Fast code intelligence engine for AI coding agents — single static binary MCP server.
+
+# 1,975/wk [maybe-auth] @sequenzy/mcp — email marketing automation
+- name: sequenzy
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@sequenzy/mcp@latest"]
+  status: pending
+  notes: Sequenzy MCP server for AI-powered email marketing automation.
+
+# 1,713/wk [likely-noauth] @2sio/mcp — 575+ pay-per-call tools, ground-truth data
+- name: 2sio
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@2sio/mcp@latest"]
+  status: pending
+  notes: MCP server for 2s.io — 575+ pay-per-call tools for AI agents.
+
+# 1,385/wk [maybe-auth] pincushion-mcp — visual feedback as agent work packets
+- name: pincushion
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, pincushion-mcp@latest]
+  status: pending
+  notes: Visual feedback as agent work packets. Stakeholders drop pins on live app.
+
+# 469/wk [likely-noauth] whisper-windows-mcp — Windows-native local audio transcription
+- name: whisper-windows
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, whisper-windows-mcp@latest]
+  status: pending
+  notes: Windows-native MCP server for local audio transcription using whisper.cpp with Vulkan GPU.
+
+# 543/wk [maybe-auth] @focusgts/eds-mcp-server — Adobe Edge Delivery Services
+- name: eds
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@focusgts/eds-mcp-server@latest"]
+  status: pending
+  notes: MCP server for Adobe Edge Delivery Services — preview, publish, metrics.
+
+# 346/wk [likely-noauth] @psraghuveer/memento — local-first LLM-agnostic memory layer
+- name: memento
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@psraghuveer/memento@latest"]
+  status: pending
+  notes: Local-first, LLM-agnostic memory layer for AI assistants. Runs entirely locally.
+
+# 313/wk [maybe-auth] spoken-mcp — podcast transcripts as clean Markdown
+- name: spoken
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, spoken-mcp@latest]
+  status: pending
+  notes: MCP server for Spoken — fetch podcast transcripts as clean Markdown with real speaker names.
+
+# 276/wk [maybe-auth] @oraclaw/mcp-server — 17 tools: 11 free + 6 premium
+- name: oraclaw
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@oraclaw/mcp-server@latest"]
+  status: pending
+  notes: OraClaw Decision Intelligence — 17 MCP tools (6 premium + 11 free). Decision/reasoning tools.
+
+# 237/wk [maybe-auth] @mcpware/pagecast — record browser page as GIF/video via Playwright
+- name: pagecast
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@mcpware/pagecast@latest"]
+  status: pending
+  notes: Record any browser page as GIF or video via MCP — powered by Playwright + ffmpeg.
+
+# 212/wk [likely-noauth] live-translate-mcp — local speech translation EN↔中文 via Whisper
+- name: live-translate
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, live-translate-mcp@latest]
+  status: pending
+  notes: MCP server for local speech translation (EN ↔ 中文) via Whisper + Claude + Piper.
+
+# 173/wk [likely-noauth] resend-email-mcp — Resend API (static scan for tool definitions)
+- name: resend-email
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, resend-email-mcp@latest]
+  status: pending
+  notes: MCP server for Resend API — send emails, manage domains, contacts, broadcasts.
+
+# 152/wk [maybe-auth] @katzilla/mcp — 300+ data sources for Claude Desktop
+- name: katzilla
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@katzilla/mcp@latest"]
+  status: pending
+  notes: MCP server for Katzilla — 300+ data sources for Claude Desktop, Cursor, and AI agents.
+
+# 150/wk [maybe-auth] @uploadkitdev/mcp — UploadKit file upload toolkit
+- name: uploadkitdev
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@uploadkitdev/mcp@latest"]
+  status: pending
+  notes: MCP server for UploadKit — gives AI coding assistants file upload capabilities.
+
+# 145/wk [maybe-auth] amazon-in-mcp-server — Amazon India product search
+- name: amazon-in
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, amazon-in-mcp-server@latest]
+  status: pending
+  notes: MCP server for searching Amazon.in — cheapest in-stock listings, best value picks.
+
+# 143/wk [maybe-auth] @hooksense/mcp — webhook/callback layer for AI agents
+- name: hooksense
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@hooksense/mcp@latest"]
+  status: pending
+  notes: MCP server for HookSense — webhook & callback layer for AI agents.
+
+# 118/wk [maybe-auth] @speedofme/mcp — internet speed tests from AI agents
+- name: speedofme
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@speedofme/mcp@latest"]
+  status: pending
+  notes: SpeedOf.Me MCP Server - Run accurate internet speed tests from AI agents.
+
+# 70/wk [maybe-auth] @mmntm/weblate-mcp — Weblate translation management
+- name: weblate
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@mmntm/weblate-mcp@latest"]
+  status: pending
+  notes: MCP server for Weblate translation management.
+
+# 58/wk [likely-noauth] @digicatalyst/dep-diff-mcp — lockfile diff → human-readable upgrade plan
+- name: dep-diff
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@digicatalyst/dep-diff-mcp@latest"]
+  status: pending
+  notes: MCP server that translates a lockfile diff into a human-readable upgrade plan.
+
+# 52/wk [maybe-auth] xcomet-mcp-server — xCOMET translation quality evaluation
+- name: xcomet
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, xcomet-mcp-server@latest]
+  status: pending
+  notes: MCP Server for xCOMET translation quality evaluation.
+
+# 39/wk [likely-noauth] campertunity-ai-tools — campground search and backend
+- name: campertunity
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, campertunity-ai-tools@latest]
+  status: pending
+  notes: AI tools for Campertunity - MCP server, skill files, and backend interfaces for campground search.
+
+# ─── npm round 6 discoveries (higher-download, not in existing dataset) ───────
+
+# 33,441/wk [maybe-auth] @transcend-io/mcp — privacy/consent management unified server
+- name: transcend
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@transcend-io/mcp@latest"]
+  status: pending
+  notes: Transcend MCP Server — unified privacy infrastructure server (DSR, consent, inventory, workflows).
+
+# 22,802/wk [maybe-auth] @currents/mcp — Currents test reporting/replay
+- name: currents
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@currents/mcp@latest"]
+  status: pending
+  notes: Currents MCP server for test reporting and replay.
+
+# 10,768/wk [maybe-auth] @theia/ai-mcp — Theia IDE MCP integration
+- name: theia-ai
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@theia/ai-mcp@latest"]
+  status: pending
+  notes: Theia - MCP Integration (Eclipse Theia IDE).
+
+# 4,413/wk [maybe-auth] @amap/amap-maps-mcp-server — AMap Maps API (Chinese maps platform)
+- name: amap
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@amap/amap-maps-mcp-server@latest"]
+  status: pending
+  notes: MCP server for using the AMap Maps API (高德地图). Chinese mapping platform.
+
+# 2,187/wk [maybe-auth] @nocobase/plugin-mcp-server — NocoBase open-source no-code platform
+- name: nocobase
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@nocobase/plugin-mcp-server@latest"]
+  status: pending
+  notes: MCP server for building NocoBase systems — open-source no-code/low-code platform.
+
+# 2,160/wk [maybe-auth] @penpot/mcp — Penpot open-source design tool
+- name: penpot
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@penpot/mcp@latest"]
+  status: pending
+  notes: MCP server for Penpot — open-source design and prototyping tool.
+
+# 1,904/wk [maybe-auth] langsmith-mcp-server — LangSmith observability/tracing
+- name: langsmith
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, langsmith-mcp-server@latest]
+  status: pending
+  notes: LangSmith MCP Server — TypeScript implementation for LangChain observability.
+
+# 1,567/wk [maybe-auth] @1claw/mcp — secrets vault for AI agents
+- name: 1claw
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@1claw/mcp@latest"]
+  status: pending
+  notes: MCP server for the 1claw secrets vault — lets AI agents fetch, store, secrets.
+
+# 1,161/wk [maybe-auth] lensmcp — MCP observability server for coding agents
+- name: lensmcp
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, lensmcp@latest]
+  status: pending
+  notes: LensMCP CLI — install and run the MCP observability server for coding agents.
+
+# 599/wk [maybe-auth] outline-mcp-server — Outline knowledge base API
+- name: outline
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, outline-mcp-server@latest]
+  status: pending
+  notes: MCP server for interacting with Outline's knowledge base API.
+
+# 225/wk [maybe-auth] @eraserlabs/eraser-mcp — Eraser.io diagram generation
+- name: eraser
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@eraserlabs/eraser-mcp@latest"]
+  status: pending
+  notes: MCP server for generating diagrams with Eraser.io.
+
+# 155/wk [maybe-auth] @aithos/mcp — Aithos AI identity/mandates exposure
+- name: aithos
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, "@aithos/mcp@latest"]
+  status: pending
+  notes: Aithos MCP server — exposes an Aithos identity's ethos and mandates to AI agents.
+
+# 51/wk [maybe-auth] figma-prototype-mcp — Figma prototype interactions
+- name: figma-prototype
+  tier: CS12
+  transport: stdio
+  cmd: [npx, -y, figma-prototype-mcp@latest]
+  status: pending
+  notes: MCP server for creating Figma prototype interactions via natural language.

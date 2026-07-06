@@ -1,0 +1,561 @@
+meta:
+  case_study: CS14
+  description: OWASP MCP Ecosystem Audit — CS14 PyPI non-zero + arxiv cluster + docs servers (2026-07-06)
+  corvus_version: 1.3.1
+  strategy: >
+    PyPI discovery 2026-07-06 — non-zero DL packages + verified packages + arxiv cluster + docs-MCP tier.
+    Target: 80+ targets, 65% OK rate → ~52 OK → reach 300+ total servers.
+  discover_date: '2026-07-06'
+targets:
+
+# ─── PyPI non-zero downloads (high-confidence scannable) ─────────────────────
+
+# 217/wk zh-file-mcp — Chinese file management
+- name: zh-file
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, zh-file-mcp]
+  status: pending
+  notes: Top PyPI new discovery — Chinese file management MCP server.
+
+# 136/wk filevine-mcp — Legal case management
+- name: filevine
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, filevine-mcp]
+  status: pending
+  notes: Legal case management MCP server (Filevine). May require API key.
+
+# 119/wk niche-hackernews-mcp — HackerNews
+- name: hackernews-niche
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, niche-hackernews-mcp]
+  status: pending
+  notes: HackerNews MCP server variant (niche package).
+
+# 49/wk llmdocs-mcp — LLM documentation server
+- name: llmdocs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, llmdocs-mcp]
+  status: pending
+  notes: LLM documentation MCP server.
+
+# 22/wk verified-googledocs-mcp — Google Docs integration
+- name: verified-googledocs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, verified-googledocs-mcp]
+  status: pending
+  notes: Google Docs MCP server — verified docs integration.
+
+# 21/wk shadcn-docs-mcp — shadcn/ui documentation
+- name: shadcn-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, shadcn-docs-mcp]
+  status: pending
+  notes: shadcn/ui component documentation MCP server.
+
+# 20/wk telegram-bot-api-docs-mcp — Telegram Bot API docs
+- name: telegram-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, telegram-bot-api-docs-mcp]
+  status: pending
+  notes: Telegram Bot API documentation MCP server.
+
+# 20/wk canvas-local-mcp — Canvas LMS local
+- name: canvas-local
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, canvas-local-mcp]
+  status: pending
+  notes: Canvas LMS local integration MCP server.
+
+# 15/wk file-downloader-mcp
+- name: file-downloader
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, file-downloader-mcp]
+  status: pending
+  notes: File downloader MCP server.
+
+# 13/wk vipmp-docs-mcp
+- name: vipmp-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, vipmp-docs-mcp]
+  status: pending
+  notes: VIP MP documentation server.
+
+# 12/wk scoutdocs-mcp
+- name: scoutdocs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, scoutdocs-mcp]
+  status: pending
+  notes: Scout documentation MCP server.
+
+# 11/wk secoda-analysis-mcp — data catalog analysis
+- name: secoda-analysis
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, secoda-analysis-mcp]
+  status: pending
+  notes: Secoda data catalog analysis MCP server.
+
+# 11/wk mcp-data-analysis-server
+- name: data-analysis
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, mcp-data-analysis-server]
+  status: pending
+  notes: Data analysis MCP server.
+
+# 10/wk wikipedia-trends-mcp
+- name: wikipedia-trends
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, wikipedia-trends-mcp]
+  status: pending
+  notes: Wikipedia trends and statistics MCP server.
+
+# 10/wk netfile-mcp
+- name: netfile
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, netfile-mcp]
+  status: pending
+  notes: Network file operations MCP server.
+
+# 10/wk file-tools-mcp
+- name: file-tools
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, file-tools-mcp]
+  status: pending
+  notes: File tools MCP server.
+
+# 10/wk docshelf-mcp
+- name: docshelf
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, docshelf-mcp]
+  status: pending
+  notes: Document shelf/storage MCP server.
+
+# 9/wk technical-analysis-mcp — technical trading analysis
+- name: technical-analysis
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, technical-analysis-mcp]
+  status: pending
+  notes: Technical analysis (trading indicators) MCP server.
+
+# 9/wk iflow-mcp-abhishekloiwal-mcp-file-server — iflow file server
+- name: iflow-file-server
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, iflow-mcp-abhishekloiwal-mcp-file-server]
+  status: pending
+  notes: iFlow MCP file server.
+
+# 8/wk your-docs-mcp
+- name: your-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, your-docs-mcp]
+  status: pending
+  notes: Your Docs documentation MCP server.
+
+# 8/wk unifiles-mcp
+- name: unifiles
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, unifiles-mcp]
+  status: pending
+  notes: Unified files MCP server.
+
+# 8/wk oracle-oci-oracle-database-autonomous-recovery-mcp-server
+- name: oracle-oci-recovery
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, oracle-oci-oracle-database-autonomous-recovery-mcp-server]
+  status: pending
+  notes: Oracle OCI Database Autonomous Recovery MCP server.
+
+# 8/wk local-ocr-mcp
+- name: local-ocr
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, local-ocr-mcp]
+  status: pending
+  notes: Local OCR MCP server.
+
+# 8/wk iflow-mcp-sssjiang-pubchem-mcp-server
+- name: pubchem
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, iflow-mcp-sssjiang-pubchem-mcp-server]
+  status: pending
+  notes: PubChem chemistry database MCP server (via iFlow).
+
+# 7/wk reflex-docs-mcp
+- name: reflex-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, reflex-docs-mcp]
+  status: pending
+  notes: Reflex framework documentation MCP server.
+
+# 7/wk oracle-mysql-database-mcp-server
+- name: oracle-mysql
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, oracle-mysql-database-mcp-server]
+  status: pending
+  notes: Oracle MySQL Database MCP server.
+
+# 7/wk openalex-ajg-mcp — OpenAlex academic search
+- name: openalex
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, openalex-ajg-mcp]
+  status: pending
+  notes: OpenAlex academic publications MCP server.
+
+# 7/wk iflow-mcp-wowyuarm-file-converter-mcp
+- name: iflow-file-converter
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, iflow-mcp-wowyuarm-file-converter-mcp]
+  status: pending
+  notes: iFlow file converter MCP server.
+
+# 7/wk file-reader-mcp
+- name: file-reader
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, file-reader-mcp]
+  status: pending
+  notes: File reader MCP server.
+
+# 6/wk iflow-mcp-files-db-mcp
+- name: iflow-files-db
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, iflow-mcp-files-db-mcp]
+  status: pending
+  notes: iFlow files DB MCP server.
+
+# 6/wk fileinone-mcp-server
+- name: fileinone
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, fileinone-mcp-server]
+  status: pending
+  notes: File-in-one MCP server.
+
+# 5/wk oracle-oci-documentation-mcp-server
+- name: oracle-oci-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, oracle-oci-documentation-mcp-server]
+  status: pending
+  notes: Oracle OCI documentation MCP server.
+
+# ─── Verified PyPI packages (exist on PyPI, not in existing dataset) ─────────
+
+# mcp-server-k8s v0.1.2 — Kubernetes cluster management
+- name: k8s-py
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, mcp-server-k8s]
+  status: pending
+  notes: Python MCP server for Kubernetes cluster management. Verified v0.1.2 on PyPI.
+
+# mcp-server-obsidian v0.1.3 — Obsidian knowledge base
+- name: obsidian-py
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, mcp-server-obsidian]
+  status: pending
+  notes: Python MCP server for Obsidian knowledge base management. Verified v0.1.3 on PyPI.
+
+# ─── arxiv cluster (0/wk but real servers — same pattern as CS08 success) ────
+
+# arxiv-latex-mcp
+- name: arxiv-latex
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-latex-mcp]
+  status: pending
+  notes: arXiv LaTeX paper search/fetch MCP server.
+
+# arxiv-mcp
+- name: arxiv-base
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-mcp]
+  status: pending
+  notes: arXiv MCP server (base package).
+
+# arxiv-mcp-pro
+- name: arxiv-pro
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-mcp-pro]
+  status: pending
+  notes: arXiv MCP server Pro variant.
+
+# arxiv-paper-mcp
+- name: arxiv-paper
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-paper-mcp]
+  status: pending
+  notes: arXiv paper search MCP server.
+
+# arxiv-paper-mcp-server
+- name: arxiv-paper-server
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-paper-mcp-server]
+  status: pending
+  notes: arXiv paper MCP server (alternate package name).
+
+# arxiv-query-mcp
+- name: arxiv-query
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-query-mcp]
+  status: pending
+  notes: arXiv query/search MCP server.
+
+# arxiv-research-mcp
+- name: arxiv-research
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-research-mcp]
+  status: pending
+  notes: arXiv research tools MCP server.
+
+# arxiv-search-mcp
+- name: arxiv-search
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-search-mcp]
+  status: pending
+  notes: arXiv search MCP server.
+
+# arxiv-search-mcp-server
+- name: arxiv-search-server
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-search-mcp-server]
+  status: pending
+  notes: arXiv search MCP server (alternate package name).
+
+# arxiv-today-mcp
+- name: arxiv-today
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, arxiv-today-mcp]
+  status: pending
+  notes: Today's arXiv papers MCP server.
+
+# ─── Additional 0/wk but high-probability noauth servers ─────────────────────
+
+# crossref-mcp — academic citation API
+- name: crossref
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, crossref-mcp]
+  status: pending
+  notes: Crossref academic citations MCP server.
+
+# crossref-cite-mcp
+- name: crossref-cite
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, crossref-cite-mcp]
+  status: pending
+  notes: Crossref citation MCP server.
+
+# crossref-academic-mcp-server
+- name: crossref-academic
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, crossref-academic-mcp-server]
+  status: pending
+  notes: Crossref academic MCP server.
+
+# duckdbmcp — DuckDB SQL MCP
+- name: duckdbmcp
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, duckdbmcp]
+  status: pending
+  notes: DuckDB MCP server.
+
+# duckdb-mcp-server — DuckDB SQL MCP
+- name: duckdb-server
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, duckdb-mcp-server]
+  status: pending
+  notes: DuckDB MCP server (alternate package).
+
+# fastmcp-data-analysis-server
+- name: fastmcp-analysis
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, fastmcp-data-analysis-server]
+  status: pending
+  notes: FastMCP data analysis server.
+
+# fastmcp-file-server
+- name: fastmcp-files
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, fastmcp-file-server]
+  status: pending
+  notes: FastMCP file server.
+
+# bibtex-file-mcp — BibTeX management
+- name: bibtex
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, bibtex-file-mcp]
+  status: pending
+  notes: BibTeX file management MCP server.
+
+# audio-analysis-mcp
+- name: audio-analysis
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, audio-analysis-mcp]
+  status: pending
+  notes: Audio analysis MCP server.
+
+# data-analysis-mcp
+- name: data-analysis-py
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, data-analysis-mcp]
+  status: pending
+  notes: Data analysis tools MCP server.
+
+# filesystem-edit-mcp
+- name: filesystem-edit
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, filesystem-edit-mcp]
+  status: pending
+  notes: Filesystem edit operations MCP server.
+
+# filesystem-operations-mcp
+- name: filesystem-ops
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, filesystem-operations-mcp]
+  status: pending
+  notes: Filesystem operations MCP server.
+
+# database-mcp
+- name: database-py
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, database-mcp]
+  status: pending
+  notes: Database MCP server (Python).
+
+# database-universal-mcp
+- name: database-universal
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, database-universal-mcp]
+  status: pending
+  notes: Universal database MCP server.
+
+# bioinformatics-mcp-server
+- name: bioinformatics
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, bioinformatics-mcp-server]
+  status: pending
+  notes: Bioinformatics tools MCP server.
+
+# docs-mcp
+- name: docs-py
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, docs-mcp]
+  status: pending
+  notes: Generic documentation MCP server.
+
+# autodocs-mcp
+- name: autodocs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, autodocs-mcp]
+  status: pending
+  notes: Auto-generated documentation MCP server.
+
+# docsetmcp
+- name: docset
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, docsetmcp]
+  status: pending
+  notes: Docset documentation MCP server.
+
+# convertfilefast-mcp
+- name: convertfilefast
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, convertfilefast-mcp]
+  status: pending
+  notes: Fast file conversion MCP server.
+
+# china-stock-analysis-mcp
+- name: china-stock
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, china-stock-analysis-mcp]
+  status: pending
+  notes: Chinese stock market analysis MCP server.
+
+# crowdsec-local-mcp — CrowdSec security
+- name: crowdsec
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, crowdsec-local-mcp]
+  status: pending
+  notes: CrowdSec threat intelligence MCP server (local).
+
+# awslabs-aws-documentation-mcp-server
+- name: awslabs-docs
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, awslabs-aws-documentation-mcp-server]
+  status: pending
+  notes: AWS Labs documentation MCP server.
+
+# awslabs-aws-cloudformation-mcp-server
+- name: awslabs-cfn
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, awslabs-aws-cloudformation-mcp-server]
+  status: pending
+  notes: AWS Labs CloudFormation MCP server.
+
+# awslabs-cost-analysis-mcp-server
+- name: awslabs-cost
+  tier: CS14
+  transport: stdio
+  cmd: [uvx, awslabs-cost-analysis-mcp-server]
+  status: pending
+  notes: AWS Labs cost analysis MCP server.

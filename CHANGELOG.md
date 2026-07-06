@@ -1,5 +1,18 @@
 # Changelog
 
+## [RT-CORVUS-CS12-SCALE] — 2026-07-06 — CS12/CS13/CS14 ecosystem scans + 8 GHSAs · 288 servers
+
+- **CS12 — npm/PyPI batch scan** — 34 targets (discover.py: npm rounds 5-6 + PyPI curated). 16 OK / 18 ERROR (47% success). 336 raw findings, 7 TPs curated. Key findings: pincushion-mcp MCP09 prompt injection ×14 params, campertunity SSRF → 169.254.169.254, live-translate-mcp write-path traversal, @oraclaw/mcp-server hidden `_debug` param (MCP01), langsmith-mcp-server debug escalation (EXT11), @uploadkitdev/mcp response flooding (MCP06). **250 servers total / 3,311 raw**.
+- **CS13 — npm round 7 + PyPI curated expansion** — 32 targets (heavily SaaS-auth: Transcend×7, Qingflow×2, Xero, PowerBI, Gmail-OAuth). 6 OK / 26 ERROR (81% error — auth-required saturation). 60 raw findings, 2 TPs. EXT11 debug escalation (gezhe-mcp-server); mcp-server-fetch SSRF/injection by-design. **256 servers total / 3,371 raw**.
+- **CS14 — PyPI non-zero downloads + arxiv cluster + docs servers** — 68 targets (zh-file/filevine/vipmp-docs/shadcn-docs/arxiv cluster ×10 + file/database tier). 32 OK / 36 ERROR (47% success). 476 raw findings, 10 TPs curated. **288 servers total / 3,847 raw / ~1,268 TPs**.
+- **CS14-F01 — SSRF + prompt injection (vipmp-docs-mcp)** — SoftwareOne Adobe VIPM documentation server: `search_vipmp_docs.query` makes outbound HTTP to attacker-controlled hosts (SSRF, MCP05) + `review_request_body`/`debug_error_code` reflect injected instructions (MCP09 ×2). Unexpected HTTP calls for a documentation search tool. GHSA-grw7-4f4v-ffq9.
+- **CS14-F02 — Path traversal + shadow tools (fastmcp-file-server)** — `write_file.write-path` has no scope restriction (MCP07, arbitrary filesystem write). Tools named `read_file`/`write_file`/`create_file`/`delete_file` shadow built-in names (MCP03). GHSA-v2cj-6hxv-53r2.
+- **CS14 — arxiv cluster pattern** — 9/10 arxiv package variants successful; all exhibit same XSS reflection from CS08 (upstream template reuse across PyPI namespace squatters).
+- **6 CS12 GHSAs opened** — GHSA-9c4v (pincushion MCP09), GHSA-jgxf (campertunity SSRF), GHSA-554r (live-translate path traversal), GHSA-5f2h (oraclaw hidden param MCP01), GHSA-2h69 (langsmith EXT11), GHSA-3jc8 (uploadkitdev MCP06). 5/6 maintainers invited (campertunity: GitHub org, no personal user).
+- **2 CS14 GHSAs opened** — GHSA-grw7 (vipmp-docs SSRF+injection, smeeks-swo ✅), GHSA-v2cj (fastmcp-file-server path traversal + shadow tools, Luxshan2000 ✅). **42 GHSAs total (3 published, 39 draft)**.
+- **discover.py dedup fix** — npm path now checks `scope_part` (e.g. `browserbasehq`) against existing history — prevents scoped packages like `@browserbasehq/mcp` re-appearing after their scope is in history DB.
+- **PyPI discovery** — 233 new candidates identified from PyPI Simple index + Libraries.io. Non-zero DL tier (top 35 by downloads) used for CS14; zero-DL academic/docs tier available for CS15.
+
 ## [RT-CORVUS-CS11] — 2026-07-06 — CS11 awesome-mcp-servers scan + FP calibration v3 + 5 GHSAs
 
 - **CS11 — awesome-mcp-servers ecosystem scan** — 58 targets from 4 curated lists (punkpeye/appcypher/wong2/modelcontextprotocol) with GitHub link resolution. 39 OK / 19 ERROR (67% success — best rate since CS02). ~490 raw findings, 16 TPs curated (F01–F16) across 11 servers. Dataset: **234 servers total / ~2,975 raw / ~1,249 TPs**.

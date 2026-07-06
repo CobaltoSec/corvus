@@ -140,10 +140,40 @@ case_studies:
     false_positives: 461  # estimated — FP rate ~74% driven by mcp-discord-bridge (44C) + mcp-reunion (21H)
     fp_rate: 74.0
     note: "awesome-mcp-servers discovery (punkpeye+appcypher+wong2+modelcontextprotocol lists, GitHub link resolution). 67% success rate — best since CS02. Key highlights: (1) @mymedi-ai/mcp-server EXT12 prompt injection in 3 medical billing tools (773 dl/wk, GHSA-6f4g-h4c4-75r8). (2) android-mcp-server MCP08 clear_logs anti-forensics + path traversal in screenshot (GHSA-xh32-vqc4-v285). (3) @tensorfeed/mcp-server XSS cluster × 6 tools. (4) emilia-protocol EXT12 × 3 in payment/identity trust gates. (5) a2asearch-mcp SQLi pattern + XSS. FP calibration v3 triggered: crypto ticker FP (x402 token:BTC) + bot token missing FP (discord-bridge 44C) — both fixed in token_exposure.py."
+  cs12:
+    servers: 16  # 34 targeted, 16 OK, 18 ERROR (47% success rate)
+    targets_total: 34
+    skipped: 0
+    error_startup: 18
+    raw_findings: 336  # from 16 OK servers
+    true_positives: 7  # curated F01-F07 (pincushion MCP09, campertunity SSRF, aithos auth, live-translate path traversal, oraclaw hidden behavior, langsmith debug, uploadkitdev flood)
+    false_positives: 329  # estimated — FP rate ~98% due to many proto-crash-only servers
+    fp_rate: 97.9
+    note: "awesome-mcp-servers (ckreiling+punkpeye new pkgs) + npm round 6. 47% success rate. Key highlights: (1) pincushion-mcp MCP09 prompt injection cluster × 14 parameters — verbatim reflection in critiquePolicy/critiqueContext/brandContext + base64 content smuggling (GHSA-PENDING). (2) campertunity-ai-tools SSRF timing confirmed — listing-book.listingId reaches 169.254.169.254 (12s timeout delta, GHSA-PENDING). (3) @aithos/mcp auth bypass NEEDS-VERIFY — ethos_commit tool marked 'do not expose' with no enforcement signal. (4) live-translate-mcp path traversal via write-path parameter. (5) oraclaw/mcp-server hidden _debug parameter. Dedup bug fix: awesome path + npm path scope check applied to discover.py."
+  cs13:
+    servers: 6  # 32 targeted, 6 OK, 26 ERROR (19% success rate)
+    targets_total: 32
+    skipped: 0
+    error_startup: 26
+    raw_findings: 60  # from 6 OK servers
+    true_positives: 2  # mcp-server-fetch (known fetch SSRF + web injection), gezhe debug escalation
+    false_positives: 58  # estimated — majority proto crashes + duplicate duckduckgo
+    fp_rate: 96.7
+    note: "npm round 7 (salesforce/stripe/shopify/twilio/discord/notion) + PyPI curated expansion. 19% success rate — round 7 heavily skewed to auth-required SaaS (transcend×7, qingflow×2, kubernetes binary, xero, powerbi, gmail-oauth). Interesting: mcp-server-fetch SSRF + prompt-injection-via-fetch (known pattern for fetch tools, no GHSA). gezhe-mcp-server external debug escalation (same as langsmith CS12 F06). Dedup fix applied to npm discovery path."
+  cs14:
+    servers: 32  # 68 targeted, 32 OK, 36 ERROR (47% success rate)
+    targets_total: 68
+    skipped: 0
+    error_startup: 36
+    raw_findings: 476  # from 32 OK servers
+    true_positives: 10  # vipmp-docs (SSRF+injection GHSA), fastmcp-file-server (path traversal+shadow tools GHSA), arxiv cluster XSS pattern×9, duckdbmcp SSRF-by-design, secoda injection pending-verify
+    false_positives: 466  # estimated ~98% — arxiv cluster repeats known XSS pattern, proto crashes dominate
+    fp_rate: 97.9
+    note: "PyPI discovery non-zero DL + arxiv cluster + docs servers. 47% success rate. Key highlights: (1) vipmp-docs-mcp CRITICAL SSRF via search_vipmp_docs.query + prompt injection × 2 (GHSA-grw7-4f4v-ffq9, SoftwareOne Adobe VIPM). (2) fastmcp-file-server path traversal write-path + shadow tools read_file/write_file/create_file/delete_file + debug escalation (GHSA-v2cj-6hxv-53r2). (3) arxiv cluster × 9 variants confirmed same XSS reflection pattern from CS08 — systematic upstream template issue. (4) duckdbmcp SSRF in create_table_from_url.url (by-design for URL loader). (5) secoda-analysis injection reflected × 3 IDs — pending manual verify. PyPI ecosystem: docs servers (arxiv, reflex, shadcn, docset) scan cleanly; file servers have consistent path traversal + shadow tool patterns."
   totals:
-    servers: 234  # 195 (CS01-10) + 39 (CS11 OK)
-    raw_findings: 2975  # 2485 (CS01-10) + 490 (CS11)
-    true_positives: 1249  # 1220 (CS01-10) + 29 (CS11)
+    servers: 288  # 234 (CS01-CS11) + 16 (CS12) + 6 (CS13) + 32 (CS14)
+    raw_findings: 3847  # 2975 (CS01-CS11) + 336 (CS12) + 60 (CS13) + 476 (CS14)
+    true_positives: 1268  # 1249 (CS01-CS11) + 7 (CS12) + 2 (CS13) + 10 (CS14)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -164,9 +194,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 34
+  total: 42
   published: 3
-  draft: 31
+  draft: 39
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}
