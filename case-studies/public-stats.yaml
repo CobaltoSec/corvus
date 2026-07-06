@@ -120,10 +120,20 @@ case_studies:
     false_positives: 4
     fp_rate: 31.0
     note: "Smithery registry HTTP servers (cloud-hosted). Key discovery: Smithery's security:null field does NOT indicate public access — most servers require Bearer token; only official partner servers (arxiv) expose /mcp publicly. Updated discover.py to add connectivity probe before including HTTP candidates. arxiv findings: response-flood HIGH (12,479 bytes), schema-bypass MEDIUM (accepts empty required fields), 5× JSON-RPC protocol conformance failures. No GHSAs filed — hosted service, not a codebase package."
+  cs10:
+    servers: 17  # 50 targeted, 17 OK, 33 ERROR (34% success rate)
+    targets_total: 50
+    skipped: 0
+    error_startup: 33  # mostly credentials (OAuth/API keys), some runtime errors
+    raw_findings: 245  # from 17 OK servers
+    true_positives: 75   # estimated — FP rate ~70% driven by schema-audit LOWs + crash noise
+    false_positives: 170  # estimated
+    fp_rate: 69.0
+    note: "npm auto-discovery (>25 DL/wk, include-maybe-auth). 34% success rate — better than CS07 (9%) but lower than earlier npm CSes due to maybe-auth servers. Key highlights: (1) @circleci/mcp-server-circleci CRITICAL tool-poisoning in create_prompt_template (30k/wk, LLM instructions in description). (2) SSRF sistémico en browser MCPs: @agent-infra/mcp-server-browser + @browserbasehq/mcp both navigate to 169.254.169.254 AWS metadata — cloud credential theft vector. (3) @midscene/android-mcp: RunAdbShell + act expose arbitrary ADB execution + SSRF. (4) @missionsquad/mcp-msq: apiKey credential field in tool schema (credential harvesting surface). Protocol crash 17/17 = 100% (confirmatory). GHSA candidates: mcp-server-browser SSRF + browserbasehq SSRF."
   totals:
-    servers: 178  # 177 (CS01-08) + 1 (CS09 OK)
-    raw_findings: 2240  # 2227 (CS01-08) + 13 (CS09)
-    true_positives: 1145  # 1136 (CS01-08) + 9 (CS09)
+    servers: 195  # 178 (CS01-09) + 17 (CS10 OK)
+    raw_findings: 2485  # 2240 (CS01-09) + 245 (CS10)
+    true_positives: 1220  # 1145 (CS01-09) + 75 (CS10)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:

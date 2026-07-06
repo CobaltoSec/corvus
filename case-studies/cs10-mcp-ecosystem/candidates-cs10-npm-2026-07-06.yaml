@@ -1,0 +1,783 @@
+# Auto-discovered MCP candidates — 2026-07-05
+# REQUIRES MANUAL REVIEW — auth_est is heuristic only
+# Run: python scripts/discover.py --help
+#
+# Total candidates: 50 (npm/stdio: 50, pypi: 0, smithery-http: 0)
+# Cross-referenced against: 961 known packages
+# Filtered out — likely requires auth: 43
+# Filtered out — low downloads (<25/wk): 2952
+
+meta:
+  case_study: CS10-NPM
+  description: OWASP MCP Ecosystem Audit — CS10-NPM auto-discovered (2026-07-05)
+  corvus_version: 1.1.0
+  strategy: 'Discovery via discover.py (npm). Filters: >25 dl/wk, likely-noauth heuristic.
+    Cross-referenced against existing dataset (961 known packages). Requires manual
+    review — remove ''status: pending'' or set ''status: skip'' before scanning.'
+  discover_date: '2026-07-05'
+targets:
+
+# 38,365/wk  [maybe-auth]  @gongrzhe/server-gmail-autoauth-mcp — Gmail MCP server with auto authentication support
+- name: server-gmail-autoauth
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@gongrzhe/server-gmail-autoauth-mcp@latest'
+  status: pending
+  notes: 'Gmail MCP server with auto authentication support. discover: 38,365/wk,
+    auth_est=maybe-auth, v1.1.11'
+
+# 33,735/wk  [maybe-auth]  @transcend-io/mcp — Transcend MCP Server — unified server with all domain tools.
+- name: transcend-io
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp@latest'
+  status: pending
+  notes: 'Transcend MCP Server — unified server with all domain tools.. discover:
+    33,735/wk, auth_est=maybe-auth, v0.5.1'
+
+# 30,483/wk  [maybe-auth]  @circleci/mcp-server-circleci — A Model Context Protocol (MCP) server implementation for CircleCI, ena
+- name: mcp-server-circleci
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@circleci/mcp-server-circleci@latest'
+  status: pending
+  notes: 'A Model Context Protocol (MCP) server implementation for CircleCI, enabling
+    natural language interac. discover: 30,483/wk, auth_est=maybe-auth, v0.17.0'
+
+# 22,483/wk  [maybe-auth]  @currents/mcp — Currents MCP server
+- name: currents
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@currents/mcp@latest'
+  status: pending
+  notes: 'Currents MCP server. discover: 22,483/wk, auth_est=maybe-auth, v2.3.3'
+
+# 12,783/wk  [maybe-auth]  @softeria/ms-365-mcp-server —  A Model Context Protocol (MCP) server for interacting with Microsoft 
+- name: ms-365
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@softeria/ms-365-mcp-server@latest'
+  status: pending
+  notes: ' A Model Context Protocol (MCP) server for interacting with Microsoft 365
+    and Office services throug. discover: 12,783/wk, auth_est=maybe-auth, v0.128.2'
+
+# 10,550/wk  [maybe-auth]  @cocal/google-calendar-mcp — Google Calendar MCP Server with extensive support for calendar managem
+- name: google-calendar
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cocal/google-calendar-mcp@latest'
+  status: pending
+  notes: 'Google Calendar MCP Server with extensive support for calendar management.
+    discover: 10,550/wk, auth_est=maybe-auth, v2.6.2'
+
+# 5,740/wk  [maybe-auth]  @fanyangmeng/ghost-mcp — MCP server for using the Ghost API
+- name: ghost
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@fanyangmeng/ghost-mcp@latest'
+  status: pending
+  notes: 'MCP server for using the Ghost API. discover: 5,740/wk, auth_est=maybe-auth,
+    v0.2.0'
+
+# 4,673/wk  [maybe-auth]  @skanda-yutori/mcp-send-email — MCP server for sending emails via Resend API
+- name: mcp-send-email
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@skanda-yutori/mcp-send-email@latest'
+  status: pending
+  notes: 'MCP server for sending emails via Resend API. discover: 4,673/wk, auth_est=maybe-auth,
+    v1.0.0'
+
+# 4,533/wk  [maybe-auth]  @amap/amap-maps-mcp-server — MCP server for using the AMap Maps API
+- name: amap-maps
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@amap/amap-maps-mcp-server@latest'
+  status: pending
+  notes: 'MCP server for using the AMap Maps API. discover: 4,533/wk, auth_est=maybe-auth,
+    v0.0.8'
+
+# 4,381/wk  [maybe-auth]  @browserbasehq/mcp — MCP server for AI web browser automation using Browserbase and Stageha
+- name: browserbasehq
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@browserbasehq/mcp@latest'
+  status: pending
+  notes: 'MCP server for AI web browser automation using Browserbase and Stagehand.
+    discover: 4,381/wk, auth_est=maybe-auth, v3.0.0'
+
+# 2,592/wk  [maybe-auth]  @xeroapi/xero-mcp-server — MCP server implementation for Xero integration
+- name: xero
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@xeroapi/xero-mcp-server@latest'
+  status: pending
+  notes: 'MCP server implementation for Xero integration. discover: 2,592/wk, auth_est=maybe-auth,
+    v0.0.17'
+
+# 2,136/wk  [maybe-auth]  @penpot/mcp — MCP server for Penpot integration
+- name: penpot
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@penpot/mcp@latest'
+  status: pending
+  notes: 'MCP server for Penpot integration. discover: 2,136/wk, auth_est=maybe-auth,
+    v2.15.4'
+
+# 2,040/wk  [maybe-auth]  @nocobase/plugin-mcp-server — An MCP server for building NocoBase systems and supporting business wo
+- name: nocobase-plugin
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@nocobase/plugin-mcp-server@latest'
+  status: pending
+  notes: 'An MCP server for building NocoBase systems and supporting business workflows..
+    discover: 2,040/wk, auth_est=maybe-auth, v2.1.19'
+
+# 1,891/wk  [maybe-auth]  langsmith-mcp-server — LangSmith MCP Server - TypeScript implementation
+- name: langsmith
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - langsmith-mcp-server@latest
+  status: pending
+  notes: 'LangSmith MCP Server - TypeScript implementation. discover: 1,891/wk, auth_est=maybe-auth,
+    v0.1.7'
+
+# 1,473/wk  [maybe-auth]  square-mcp-server — MCP Server for Square API
+- name: square
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - square-mcp-server@latest
+  status: pending
+  notes: 'MCP Server for Square API. discover: 1,473/wk, auth_est=maybe-auth, v0.1.2'
+
+# 1,372/wk  [maybe-auth]  gezhe-mcp-server — gezhe ppt mcp server
+- name: gezhe
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - gezhe-mcp-server@latest
+  status: pending
+  notes: 'gezhe ppt mcp server. discover: 1,372/wk, auth_est=maybe-auth, v0.0.9'
+
+# 1,141/wk  [maybe-auth]  @agent-infra/mcp-server-browser — MCP server for browser use access
+- name: mcp-server-browser
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@agent-infra/mcp-server-browser@latest'
+  status: pending
+  notes: 'MCP server for browser use access. discover: 1,141/wk, auth_est=maybe-auth,
+    v1.2.29'
+
+# 990/wk  [maybe-auth]  @meshy-ai/meshy-mcp-server — MCP server for Meshy AI 3D generation platform
+- name: meshy
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@meshy-ai/meshy-mcp-server@latest'
+  status: pending
+  notes: 'MCP server for Meshy AI 3D generation platform. discover: 990/wk, auth_est=maybe-auth,
+    v0.4.0'
+
+# 772/wk  [likely-noauth]  clean-code-tools — Clean-code pattern corpus and lint tooling.
+- name: clean-code-tools
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - clean-code-tools@latest
+  status: pending
+  notes: 'Clean-code pattern corpus and lint tooling.. discover: 772/wk, auth_est=likely-noauth,
+    v1.0.7'
+
+# 690/wk  [maybe-auth]  @skillit/mcp — Extract and bundle MCP servers as Agent Skills — introspects live MCP 
+- name: skillit
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@skillit/mcp@latest'
+  status: pending
+  notes: 'Extract and bundle MCP servers as Agent Skills — introspects live MCP servers
+    (stdio or HTTP) and pr. discover: 690/wk, auth_est=maybe-auth, v2.0.0'
+
+# 601/wk  [maybe-auth]  outline-mcp-server — An MCP server for interacting with Outline's API
+- name: outline
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - outline-mcp-server@latest
+  status: pending
+  notes: 'An MCP server for interacting with Outline''s API. discover: 601/wk, auth_est=maybe-auth,
+    v5.8.5'
+
+# 415/wk  [maybe-auth]  @lockon0927/woocommerce-mcp — MCP server for WooCommerce integration
+- name: woocommerce
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@lockon0927/woocommerce-mcp@latest'
+  status: pending
+  notes: 'MCP server for WooCommerce integration. discover: 415/wk, auth_est=maybe-auth,
+    v1.0.6'
+
+# 389/wk  [maybe-auth]  @memberjunction/ai-mcp-server — MemberJunction: Model Context Protocol (MCP) - Server Implementation
+- name: memberjunction-ai
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@memberjunction/ai-mcp-server@latest'
+  status: pending
+  notes: 'MemberJunction: Model Context Protocol (MCP) - Server Implementation. discover:
+    389/wk, auth_est=maybe-auth, v5.44.0'
+
+# 384/wk  [maybe-auth]  @moneyforward_i/admina-mcp-server — An MCP server for Admina
+- name: admina
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@moneyforward_i/admina-mcp-server@latest'
+  status: pending
+  notes: 'An MCP server for Admina. discover: 384/wk, auth_est=maybe-auth, v1.0.5'
+
+# 305/wk  [likely-noauth]  @agentailor/mcp — MCP server for Agentailor — search the blog and read articles and open
+- name: agentailor
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@agentailor/mcp@latest'
+  status: pending
+  notes: 'MCP server for Agentailor — search the blog and read articles and open-source
+    repo docs over the Mod. discover: 305/wk, auth_est=likely-noauth, v0.2.0'
+
+# 259/wk  [maybe-auth]  @cariot-labs/cariot-mcp-server — MCP server for Cariot
+- name: cariot
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cariot-labs/cariot-mcp-server@latest'
+  status: pending
+  notes: 'MCP server for Cariot. discover: 259/wk, auth_est=maybe-auth, v1.2.3'
+
+# 250/wk  [maybe-auth]  ncloud-mcp-server — MCP server for managing Naver Cloud Platform (Ncloud) infrastructure
+- name: ncloud
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - ncloud-mcp-server@latest
+  status: pending
+  notes: 'MCP server for managing Naver Cloud Platform (Ncloud) infrastructure. discover:
+    250/wk, auth_est=maybe-auth, v1.8.0'
+
+# 249/wk  [maybe-auth]  @hol-org/hashnet-mcp — HOL MCP server for agentic search, discovery, registration, chat, and 
+- name: hashnet
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@hol-org/hashnet-mcp@latest'
+  status: pending
+  notes: 'HOL MCP server for agentic search, discovery, registration, chat, and more
+    with the Hashgraph Online. discover: 249/wk, auth_est=maybe-auth, v1.0.24'
+
+# 193/wk  [maybe-auth]  @midscene/android-mcp — Midscene MCP Server for Android automation
+- name: android
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@midscene/android-mcp@latest'
+  status: pending
+  notes: 'Midscene MCP Server for Android automation. discover: 193/wk, auth_est=maybe-auth,
+    v1.9.8'
+
+# 161/wk  [maybe-auth]  toolcapsule — AI-first workflow manager for heavy MCP tools with lazy Agent Skills a
+- name: toolcapsule
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - toolcapsule@latest
+  status: pending
+  notes: 'AI-first workflow manager for heavy MCP tools with lazy Agent Skills and
+    patchable runs.. discover: 161/wk, auth_est=maybe-auth, v1.0.9'
+
+# 102/wk  [maybe-auth]  mcp-claw — AI-powered MCP server generator. Turn any API (folder, URL, OpenAPI sp
+- name: mcp-claw
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-claw@latest
+  status: pending
+  notes: 'AI-powered MCP server generator. Turn any API (folder, URL, OpenAPI spec)
+    into a working MCP server.. discover: 102/wk, auth_est=maybe-auth, v0.1.60'
+
+# 78/wk  [maybe-auth]  @abhaybabbar/retellai-mcp-server — RetellAi MCP Server
+- name: retellai
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@abhaybabbar/retellai-mcp-server@latest'
+  status: pending
+  notes: 'RetellAi MCP Server. discover: 78/wk, auth_est=maybe-auth, v1.0.4'
+
+# 77/wk  [maybe-auth]  @sassoftware/sas-score-mcp-serverjs — A mcp server for SAS Viya
+- name: sas-score-mcp-serverjs
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@sassoftware/sas-score-mcp-serverjs@latest'
+  status: pending
+  notes: 'A mcp server for SAS Viya. discover: 77/wk, auth_est=maybe-auth, v1.1.9'
+
+# 73/wk  [maybe-auth]  nuvex-mcp-server — MCP server for Nuvex — generate app store screenshots from Claude Desk
+- name: nuvex
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - nuvex-mcp-server@latest
+  status: pending
+  notes: 'MCP server for Nuvex — generate app store screenshots from Claude Desktop.
+    discover: 73/wk, auth_est=maybe-auth, v1.0.21'
+
+# 70/wk  [maybe-auth]  mcp-server-yandex-wiki — MCP Server for Yandex Wiki API integration. This is a convenience wrap
+- name: mcp-server-yandex-wiki
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - mcp-server-yandex-wiki@latest
+  status: pending
+  notes: 'MCP Server for Yandex Wiki API integration. This is a convenience wrapper
+    for @fractalizer/mcp-serve. discover: 70/wk, auth_est=maybe-auth, v1.7.0'
+
+# 54/wk  [maybe-auth]  @angelogiacco/elevenlabs-mcp-server — An ElevenLabs MCP server
+- name: elevenlabs
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@angelogiacco/elevenlabs-mcp-server@latest'
+  status: pending
+  notes: 'An ElevenLabs MCP server. discover: 54/wk, auth_est=maybe-auth, v1.0.4'
+
+# 51/wk  [maybe-auth]  questrade-mcp-server — MCP server for Questrade API integration
+- name: questrade
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - questrade-mcp-server@latest
+  status: pending
+  notes: 'MCP server for Questrade API integration. discover: 51/wk, auth_est=maybe-auth,
+    v0.0.13'
+
+# 37/wk  [likely-noauth]  @inlustris/youtube-mcp — No-fuss YouTube transcripts for MCP - no API keys required! A Model Co
+- name: youtube
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@inlustris/youtube-mcp@latest'
+  status: pending
+  notes: 'No-fuss YouTube transcripts for MCP - no API keys required! A Model Context
+    Protocol server to get Y. discover: 37/wk, auth_est=likely-noauth, v1.0.9'
+
+# 35/wk  [likely-noauth]  sqlite-mcp-server — SQLite MCP Server - A Model Context Protocol server for SQLite databas
+- name: sqlite
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - sqlite-mcp-server@latest
+  status: pending
+  notes: 'SQLite MCP Server - A Model Context Protocol server for SQLite database
+    operations. discover: 35/wk, auth_est=likely-noauth, v1.0.3'
+
+# 31/wk  [likely-noauth]  image-reader-mcp — An MCP server to list and read image files.
+- name: image-reader
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - image-reader-mcp@latest
+  status: pending
+  notes: 'An MCP server to list and read image files.. discover: 31/wk, auth_est=likely-noauth,
+    v1.0.5'
+
+# 31/wk  [maybe-auth]  @feedmob/imagekit — FeedMob MCP server for ImageKit uploads, cropping, and watermarking.
+- name: imagekit
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@feedmob/imagekit@latest'
+  status: pending
+  notes: 'FeedMob MCP server for ImageKit uploads, cropping, and watermarking.. discover:
+    31/wk, auth_est=maybe-auth, v1.0.4'
+
+# 30/wk  [maybe-auth]  @missionsquad/mcp-msq — MCP server interface for the MissionSquad API
+- name: mcp-msq
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@missionsquad/mcp-msq@latest'
+  status: pending
+  notes: 'MCP server interface for the MissionSquad API. discover: 30/wk, auth_est=maybe-auth,
+    v0.5.3'
+
+# 30/wk  [maybe-auth]  bybit-mcp — Bybit Model Context Protocol (MCP) Server
+- name: bybit
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - bybit-mcp@latest
+  status: pending
+  notes: 'Bybit Model Context Protocol (MCP) Server. discover: 30/wk, auth_est=maybe-auth,
+    v1.0.9'
+
+# 27/wk  [maybe-auth]  @feedmob/femini-reporting — This is a customized MCP server for the Feedmob project, specifically 
+- name: femini-reporting
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@feedmob/femini-reporting@latest'
+  status: pending
+  notes: 'This is a customized MCP server for the Feedmob project, specifically for
+    querying and analyzing ad . discover: 27/wk, auth_est=maybe-auth, v0.0.7'
+
+# 25/wk  [maybe-auth]  @codefundi/code-fundi-mcp — MCP server for the Code-Fundi API — search, research, index, and manag
+- name: code-fundi
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@codefundi/code-fundi-mcp@latest'
+  status: pending
+  notes: 'MCP server for the Code-Fundi API — search, research, index, and manage
+    code repositories via any MC. discover: 25/wk, auth_est=maybe-auth, v0.1.2'
+
+# ─── Manually added — likely-auth, high security interest ────────────────────
+
+# 73,555/wk  [likely-auth/HIGH-VALUE]  @azure-devops/mcp — Azure DevOps MCP server
+- name: azure-devops
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@azure-devops/mcp@latest'
+  status: pending
+  notes: 'Azure DevOps MCP server. 73,555/wk, auth_est=likely-auth (manually added
+    — enterprise DevOps scope, high adoption)'
+
+# 24,395/wk  [likely-auth/HIGH-VALUE]  @github/computer-use-mcp — GitHub computer use MCP
+- name: github-computer-use
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@github/computer-use-mcp@latest'
+  status: pending
+  notes: 'GitHub computer use MCP server. 24,395/wk, auth_est=likely-auth (manually
+    added — computer-use attack surface)'
+
+# 11,644/wk  [likely-auth/HIGH-VALUE]  @stripe/mcp — Stripe payments MCP server
+- name: stripe
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@stripe/mcp@latest'
+  status: pending
+  notes: 'Stripe payments MCP server. 11,644/wk, auth_est=likely-auth (manually added
+    — payment scope, SSRF interest)'
+
+# 3,436/wk  [likely-auth/HIGH-VALUE]  supabase-mcp — Supabase backend MCP server
+- name: supabase
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - supabase-mcp@latest
+  status: pending
+  notes: 'Supabase backend MCP server. 3,436/wk, auth_est=likely-auth (manually added
+    — DB access scope)'
+
+# 1,892/wk  [likely-auth/HIGH-VALUE]  @cloudflare/mcp-server-cloudflare — Cloudflare MCP server
+- name: cloudflare
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@cloudflare/mcp-server-cloudflare@latest'
+  status: pending
+  notes: 'Cloudflare infrastructure MCP server. 1,892/wk, auth_est=likely-auth (manually
+    added — infra scope)'
+
+# ─── Skipped (skip reasons in notes) ────────────────────────────────────────
+
+# 33,851/wk  [maybe-auth]  @transcend-io/mcp-server-admin — Transcend MCP Server — Admin tools.
+- name: mcp-server-admin
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-admin@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Admin tools.. discover: 33,851/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 33,785/wk  [maybe-auth]  @transcend-io/mcp-server-assessment — Transcend MCP Server — Assessments tools.
+- name: mcp-server-assessment
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-assessment@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Assessments tools.. discover: 33,785/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 33,783/wk  [maybe-auth]  @transcend-io/mcp-server-consent — Transcend MCP Server — Consent Management tools.
+- name: mcp-server-consent
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-consent@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Consent Management tools.. discover: 33,783/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 33,775/wk  [maybe-auth]  @transcend-io/mcp-server-dsr — Transcend MCP Server — DSR Automation tools.
+- name: mcp-server-dsr
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-dsr@latest'
+  status: skip
+  notes: 'Transcend MCP Server — DSR Automation tools.. discover: 33,775/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 12,648/wk  [maybe-auth]  kubernetes-mcp-server-linux-amd64 — Model Context Protocol (MCP) server for Kubernetes and OpenShift
+- name: kubernetes-mcp-server-linux-amd64
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - kubernetes-mcp-server-linux-amd64@latest
+  status: skip
+  notes: 'Model Context Protocol (MCP) server for Kubernetes and OpenShift. discover:
+    12,648/wk, auth_est=maybe-auth, v0.0.63'
+
+# 5,731/wk  [maybe-auth]  @microsoft/powerbi-modeling-mcp — Power BI Modeling MCP Server - Node.js client package for installing a
+- name: powerbi-modeling
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@microsoft/powerbi-modeling-mcp@latest'
+  status: skip
+  notes: 'Power BI Modeling MCP Server - Node.js client package for installing and
+    running the Power BI Modeli. discover: 5,731/wk, auth_est=maybe-auth, v0.5.0-beta.11'
+
+# 4,030/wk  [maybe-auth]  ios-simulator-mcp — MCP server for interacting with the iOS simulator
+- name: ios-simulator
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - ios-simulator-mcp@latest
+  status: skip
+  notes: 'MCP server for interacting with the iOS simulator. discover: 4,030/wk, auth_est=maybe-auth,
+    v1.6.0'
+
+# 3,050/wk  [maybe-auth]  @transcend-io/mcp-server-base — Shared infrastructure for Transcend MCP Server packages.
+- name: mcp-server-base
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-base@latest'
+  status: skip
+  notes: 'Shared infrastructure for Transcend MCP Server packages.. discover: 3,050/wk,
+    auth_est=maybe-auth, v0.5.0'
+
+# 2,888/wk  [maybe-auth]  @transcend-io/mcp-server-discovery — Transcend MCP Server — Data Discovery tools.
+- name: mcp-server-discovery
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-discovery@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Data Discovery tools.. discover: 2,888/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 2,883/wk  [maybe-auth]  @transcend-io/mcp-server-workflows — Transcend MCP Server — Workflows tools.
+- name: mcp-server-workflows
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-workflows@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Workflows tools.. discover: 2,883/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 2,856/wk  [maybe-auth]  @transcend-io/mcp-server-inventory — Transcend MCP Server — Data Inventory tools.
+- name: mcp-server-inventory
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-inventory@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Data Inventory tools.. discover: 2,856/wk, auth_est=maybe-auth,
+    v0.4.1'
+
+# 2,846/wk  [maybe-auth]  @transcend-io/mcp-server-preferences — Transcend MCP Server — Preference Management tools.
+- name: mcp-server-preferences
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@transcend-io/mcp-server-preferences@latest'
+  status: skip
+  notes: 'Transcend MCP Server — Preference Management tools.. discover: 2,846/wk,
+    auth_est=maybe-auth, v0.4.1'
+
+# 399/wk  [maybe-auth]  @gleanwork/configure-mcp-server — MCP server configurator for Glean
+- name: configure
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - '@gleanwork/configure-mcp-server@latest'
+  status: skip
+  notes: 'MCP server configurator for Glean. discover: 399/wk, auth_est=maybe-auth,
+    v3.2.1'
+
+# 352/wk  [maybe-auth]  sdl-mcp-tree-sitter-kotlin — sdl-mcp peer-range wrapper around tree-sitter-kotlin. Re-exports upstr
+- name: sdl-mcp-tree-sitter-kotlin
+  tier: CS10-NPM
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - sdl-mcp-tree-sitter-kotlin@latest
+  status: skip
+  notes: 'sdl-mcp peer-range wrapper around tree-sitter-kotlin. Re-exports upstream
+    unchanged with a permissiv. discover: 352/wk, auth_est=maybe-auth, v1.0.1'
+
