@@ -1,7 +1,7 @@
 # Corvus — Public Stats (source of truth for README + web)
 # Update this file after each block, then run: python scripts/update-public.py
 
-version: "1.3.0"
+version: "1.3.1"
 tests_unit: 726
 
 modules:
@@ -110,10 +110,20 @@ case_studies:
     false_positives: 436  # estimated
     fp_rate: 61.0
     note: "PyPI auto-discovery (>200 DL/wk). 87% error rate — PyPI packages are integration wrappers requiring external services. Highlights: mcp-msaccess-database (VBA/macro execution + prompt injection = RCE chain on Windows, GHSA-9jp6-hph9-jm5f HIGH), arxiv-latex (XSS reflection in 4 tools + unauthenticated log level escalation EXT11, GHSA-h6xq-7fpp-q2hf HIGH), localparse-mcp (SSRF × 2 timing signals, GHSA-prc4-649r-564g HIGH). PyPI ecosystem cluster: 9/51 OK servers are arxiv variants, all showing same XSS reflection pattern in arxiv_id — suggests shared upstream template. FP drivers: token_exposure on API-key-required error messages (4 CRITICAL FP), shadow_tool on common filesystem names."
+  cs09:
+    servers: 1  # 30 targeted, 1 OK (arxiv), 29 ERROR (require Smithery API key)
+    targets_total: 30
+    skipped: 0
+    error_startup: 29  # HTTP 404 — most Smithery servers gate /mcp behind their API key; security:null in registry API does NOT mean publicly accessible
+    raw_findings: 13  # from arxiv-smithery only
+    true_positives: 9
+    false_positives: 4
+    fp_rate: 31.0
+    note: "Smithery registry HTTP servers (cloud-hosted). Key discovery: Smithery's security:null field does NOT indicate public access — most servers require Bearer token; only official partner servers (arxiv) expose /mcp publicly. Updated discover.py to add connectivity probe before including HTTP candidates. arxiv findings: response-flood HIGH (12,479 bytes), schema-bypass MEDIUM (accepts empty required fields), 5× JSON-RPC protocol conformance failures. No GHSAs filed — hosted service, not a codebase package."
   totals:
-    servers: 177  # 126 (CS01-07) + 51 (CS08 OK)
-    raw_findings: 2227  # 1511 (CS01-07) + 716 (CS08)
-    true_positives: 1136  # 856 (CS01-07) + 280 (CS08 estimated)
+    servers: 178  # 177 (CS01-08) + 1 (CS09 OK)
+    raw_findings: 2240  # 2227 (CS01-08) + 13 (CS09)
+    true_positives: 1145  # 1136 (CS01-08) + 9 (CS09)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:

@@ -1,5 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-CS09-SMITHERY] — 2026-07-05 — CS09 Smithery scan + discover.py HTTP probe fix · v1.3.1
+
+- **CS09 — Smithery Ecosystem Scan** — First scan of Smithery cloud-hosted HTTP servers. 30 targets (29 HTTP + 1 stdio). 1 OK (arxiv), 29 ERROR (require Smithery API key). 13 raw findings / 9 TPs from arxiv. Dataset: 178 servers total, 2,240 raw findings, 1,145 TPs.
+- **Key discovery: Smithery `security:null` ≠ publicly accessible** — Most Smithery cloud-hosted servers require a Bearer token (Smithery API key) at the root URL (`/`). The registry API `security: null` field only indicates Smithery doesn't inject OAuth tokens — not that the server is public. Only official partner servers (arxiv) expose `/mcp` without auth. Future scans need Smithery API key for full ecosystem coverage.
+- **discover.py fix: Smithery HTTP connectivity probe** — `check_smithery_entry()` now sends a real MCP `initialize` POST to `deploymentUrl/mcp` and verifies 200 + `result` in response before including the server in candidates. Prevents 29-target all-404 batch runs.
+- **discover.py fix: Smithery qname dedup** — `smithery_search()` now deduplicates by `qualifiedName` across pages, preventing duplicate entries in discovery output.
+- **discover.py fix: `smithery_to_pkg_obj` preserves `version`** — Pass-through `entry.get("version", "")` instead of hardcoding `""`.
+- **3 new E2E tests** — `tests/e2e/test_e2e_smithery.py`: `test_smithery_arxiv_http_scan` (HTTP transport enumeration), `test_smithery_arxiv_http_report_structure` (report schema), `test_smithery_discover_produces_candidates` (subprocess smoke test for discover pipeline).
+- **726 tests pass** (2 discover tests updated to use unique mock QNames for dedup correctness).
+- **v1.3.1** — `pyproject.toml` bump.
+
 ## [RT-CORVUS-CS08-DISCLOSURE] — 2026-07-05 — CS08 GHSAs + engine union-type bugfix
 
 - **3 GHSAs abiertos (CS08)** — todos verificados con re-scan antes de abrir:

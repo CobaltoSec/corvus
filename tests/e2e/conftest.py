@@ -6,6 +6,10 @@ from pathlib import Path
 
 import pytest
 
+# ── Repository root ──────────────────────────────────────────────────────────
+
+CORVUS_ROOT = Path(__file__).parent.parent.parent
+
 # ── Absolute paths to local MCP server binaries ─────────────────────────────
 
 KESTREL_EXE = Path(r"C:\Proyectos\Kestrel\.venv\Scripts\kestrel-mcp.exe")

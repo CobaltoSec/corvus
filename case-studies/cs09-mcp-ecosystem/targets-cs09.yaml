@@ -1,0 +1,267 @@
+# CS09 — Smithery Ecosystem Scan
+# Discovery: python scripts/discover.py --source smithery --min-downloads 0 --tier CS09
+# 137 candidates discovered (1 stdio + 136 HTTP). Manual review: ~30 selected.
+# Skipped: auth-required (googlesheets/googlecalendar/googledrive/outlook/gmail/exa/jina/clay)
+#
+# Run: corvus batch case-studies/cs09-mcp-ecosystem/targets-cs09.yaml -j 5
+
+meta:
+  case_study: CS09
+  description: OWASP MCP Ecosystem Audit — CS09 Smithery Registry (2026-07-05)
+  corvus_version: 1.2.0
+  transport_mix: "stdio: 1, http: 29"
+  discover_date: "2026-07-05"
+  notes: >
+    First Smithery-sourced scan. Mix of cloud-hosted HTTP servers (Smithery
+    remote) and stdio packages discovered via GitHub slug resolution.
+    HTTP servers respond to MCP initialize without auth but tool calls may
+    require credentials — static analysis and protocol-level modules run on all.
+
+targets:
+
+# ── Smithery HTTP — public/no-auth tools ──────────────────────────────────────
+
+# useCount=85,045  math/calculator
+- name: math-mcp
+  tier: CS09
+  transport: http
+  url: https://math-mcp--ethanhenrickson.run.tools/mcp
+  status: pending
+  notes: "Enable LLMs to perform accurate numerical calculations. smithery useCount=85,045"
+
+# useCount=63,852  media generation / web scraping toolkit
+- name: sparkforge
+  tier: CS09
+  transport: http
+  url: https://sparkforge--henry-ships.run.tools/mcp
+  status: pending
+  notes: "Versatile media generation, web scraping, search. smithery useCount=63,852"
+
+# useCount=16,413  discourse forum management
+- name: discourse-forum
+  tier: CS09
+  transport: http
+  url: https://discourse-forum-mcp--king-of-the-grackles.run.tools/mcp
+  status: pending
+  notes: "Manage forum communities, search topics, read posts. smithery useCount=16,413"
+
+# useCount=16,279  contemplative reasoning tool
+- name: lotus-wisdom
+  tier: CS09
+  transport: http
+  url: https://lotus-wisdom-mcp--linxule.run.tools/mcp
+  status: pending
+  notes: "Contemplative reasoning inspired by Lotus Sutra. smithery useCount=16,279"
+
+# useCount=13,997  academic paper search (arXiv/PubMed/bioRxiv)
+- name: paper-search
+  tier: CS09
+  transport: http
+  url: https://paper-search-mcp-openai--adamamer20.run.tools/mcp
+  status: pending
+  notes: "Search academic papers from arXiv, PubMed, bioRxiv, medRxiv. smithery useCount=13,997"
+
+# useCount=13,227  web fetching with retry + circuit breaker
+- name: steadyfetch
+  tier: CS09
+  transport: http
+  url: https://steadyfetch--intake-triage.run.tools/mcp
+  status: pending
+  notes: "Reliable web fetching with retry logic, circuit breakers. smithery useCount=13,227"
+
+# useCount=13,126  news intelligence aggregator
+- name: agent-times-news
+  tier: CS09
+  transport: http
+  url: https://news--theagenttimes.run.tools/mcp
+  status: pending
+  notes: "Intelligence layer for agents; sourced news and analysis. smithery useCount=13,126"
+
+# useCount=11,441  academic paper search v2
+- name: paper-search-v2
+  tier: CS09
+  transport: http
+  url: https://paper-search-mcp-openai-v2--titansneaker.run.tools/mcp
+  status: pending
+  notes: "Academic papers from arXiv, PubMed, Semantic Scholar. smithery useCount=11,441"
+
+# useCount=10,837  ClinicalTrials.gov API
+- name: clinicaltrials
+  tier: CS09
+  transport: http
+  url: https://clinicaltrialsgov-mcp-server--cyanheads.run.tools/mcp
+  status: pending
+  notes: "ClinicalTrials.gov v2 API — search trials, retrieve protocol data. smithery useCount=10,837"
+
+# useCount=10,739  data transformation utilities
+- name: agent-utils
+  tier: CS09
+  transport: http
+  url: https://agent-utils--aparajithn.run.tools/mcp
+  status: pending
+  notes: "Data transformation, encoding, format conversion utilities. smithery useCount=10,739"
+
+# useCount=10,641  Chinese stock market data
+- name: akshare
+  tier: CS09
+  transport: http
+  url: https://akshare-one-mcp--zwldarren.run.tools/mcp
+  status: pending
+  notes: "Chinese stock market historical prices, financial data. smithery useCount=10,641"
+
+# useCount=10,385  prediction markets (Polymarket)
+- name: polymarket
+  tier: CS09
+  transport: http
+  url: https://polymarket-mcp--aryankeluskar.run.tools/mcp
+  status: pending
+  notes: "Polymarket prediction markets — discover and filter events. smithery useCount=10,385"
+
+# useCount=10,302  mathematical calculator
+- name: calculator-cyanheads
+  tier: CS09
+  transport: http
+  url: https://calculator-mcp-server--cyanheads.run.tools/mcp
+  status: pending
+  notes: "Calculator MCP server for LLM mathematical computation. smithery useCount=10,302"
+
+# useCount=9,681  global geological data
+- name: macrostrat
+  tier: CS09
+  transport: http
+  url: https://macrostrat-mcp--blake365.run.tools/mcp
+  status: pending
+  notes: "Global geologic data, bedrock formations, rock units. smithery useCount=9,681"
+
+# useCount=9,611  European public transport real-time
+- name: public-transport-eu
+  tier: CS09
+  transport: http
+  url: https://mcp-server-public-transport--mirodn.run.tools/mcp
+  status: pending
+  notes: "Real-time European public transport, departures, journeys. smithery useCount=9,611"
+
+# useCount=8,943  grokipedia article search
+- name: grokipedia
+  tier: CS09
+  transport: http
+  url: https://grokipedia-mcp--skymoore.run.tools/mcp
+  status: pending
+  notes: "Search and retrieve Grokipedia articles. smithery useCount=8,943"
+
+# useCount=8,717  arXiv academic paper search (confirmed no-auth)
+- name: arxiv-smithery
+  tier: CS09
+  transport: http
+  url: https://arxiv.run.tools/mcp
+  status: pending
+  notes: "arXiv academic paper discovery and search. smithery useCount=8,717. Confirmed: security=null, configSchema={}"
+
+# useCount=8,698  Australian economic data
+- name: ausecon
+  tier: CS09
+  transport: http
+  url: https://ausecon-mcp.run.tools/mcp
+  status: pending
+  notes: "Australian economic indicators, ABS data. smithery useCount=8,698"
+
+# useCount=7,799  ferry/boat travel search
+- name: ferryhopper
+  tier: CS09
+  transport: http
+  url: https://ferryhopper.run.tools/mcp
+  status: pending
+  notes: "Search ferry routes and bookings (Mediterranean). smithery useCount=7,799"
+
+# useCount=6,177  HuggingFace models/datasets
+- name: huggingface
+  tier: CS09
+  transport: http
+  url: https://huggingface.run.tools/mcp
+  status: pending
+  notes: "Access HuggingFace models, datasets, spaces. smithery useCount=6,177"
+
+# useCount=6,101  organizational workflow tools
+- name: orgx
+  tier: CS09
+  transport: http
+  url: https://orgx-mcp--useorgx.run.tools/mcp
+  status: pending
+  notes: "Organizational workflow tools and productivity. smithery useCount=6,101"
+
+# useCount=5,258  local intel / OSINT
+- name: local-intel
+  tier: CS09
+  transport: http
+  url: https://local-intel--erik-7clt.run.tools/mcp
+  status: pending
+  notes: "Local intel and information retrieval tools. smithery useCount=5,258"
+
+# useCount=4,966  Tavily web search (may need API key)
+- name: tavily
+  tier: CS09
+  transport: http
+  url: https://tavily.run.tools/mcp
+  status: pending
+  notes: "Fast intelligent web search. smithery useCount=4,966. NOTE: may require API key for tool calls"
+
+# useCount=4,696  Outlook email/calendar (will need auth for tool calls)
+- name: outlook
+  tier: CS09
+  transport: http
+  url: https://outlook.run.tools/mcp
+  status: pending
+  notes: "Outlook email and calendar. smithery useCount=4,696. NOTE: OAuth for tool calls; static+protocol scan only"
+
+# useCount=4,180  Paradex crypto derivatives (public data endpoints)
+- name: paradex
+  tier: CS09
+  transport: http
+  url: https://mcp-paradex.run.tools/mcp
+  status: pending
+  notes: "Paradex crypto derivatives market data. smithery useCount=4,180"
+
+# useCount=4,151  YouTube data (may be public)
+- name: youtube
+  tier: CS09
+  transport: http
+  url: https://youtube.run.tools/mcp
+  status: pending
+  notes: "YouTube video data and search. smithery useCount=4,151"
+
+# useCount=3,726  Context7 — library documentation (known from CS08)
+- name: context7-smithery
+  tier: CS09
+  transport: http
+  url: https://context7-mcp--upstash.run.tools/mcp
+  status: pending
+  notes: "Up-to-date library docs and code examples. smithery useCount=3,726. NOTE: prior GHSA-8ggf open"
+
+# useCount=3,274  Unsplash photo search
+- name: unsplash
+  tier: CS09
+  transport: http
+  url: https://unsplash.run.tools/mcp
+  status: pending
+  notes: "Unsplash high-quality photo search. smithery useCount=3,274"
+
+# useCount=2,847  Maps / geolocation
+- name: maps-mcp
+  tier: CS09
+  transport: http
+  url: https://maps-mcp--adamlevoy.run.tools/mcp
+  status: pending
+  notes: "Maps and geolocation tools. smithery useCount=2,847"
+
+# ── Smithery stdio (resolved from GitHub slug) ────────────────────────────────
+
+# useCount=23,042  metmuseum-mcp (mikechao/metmuseum-mcp → metmuseum-mcp npm)
+- name: metmuseum
+  tier: CS09
+  transport: stdio
+  cmd:
+  - npx
+  - -y
+  - metmuseum-mcp@latest
+  status: pending
+  notes: "Met Museum of Art collection search. smithery useCount=23,042. npm: metmuseum-mcp"

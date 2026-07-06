@@ -51,9 +51,9 @@ def _async_get(responses: list) -> AsyncMock:
 
 @pytest.mark.asyncio
 async def test_smithery_search_returns_items():
-    """smithery_search must paginate and collect items."""
-    page1 = _mock_resp(200, {"servers": [{"qualifiedName": "@foo/mcp-server", "description": "test"}] * 100})
-    page2 = _mock_resp(200, {"servers": [{"qualifiedName": "@bar/mcp-bar", "description": "bar"}] * 3})
+    """smithery_search must paginate and collect unique items (deduplicated by qualifiedName)."""
+    page1 = _mock_resp(200, {"servers": [{"qualifiedName": f"@foo/mcp-{i}", "description": "test"} for i in range(100)]})
+    page2 = _mock_resp(200, {"servers": [{"qualifiedName": f"@bar/mcp-{i}", "description": "bar"} for i in range(3)]})
     page3 = _mock_resp(200, {"servers": []})
 
     client = MagicMock()
@@ -61,7 +61,7 @@ async def test_smithery_search_returns_items():
 
     results = await _discover.smithery_search(client, max_pages=5)
     assert len(results) == 103
-    assert results[0]["qualifiedName"] == "@foo/mcp-server"
+    assert results[0]["qualifiedName"] == "@foo/mcp-0"
 
 
 @pytest.mark.asyncio
