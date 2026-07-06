@@ -1,5 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-CS11] — 2026-07-06 — CS11 awesome-mcp-servers scan + FP calibration v3 + 5 GHSAs
+
+- **CS11 — awesome-mcp-servers ecosystem scan** — 58 targets from 4 curated lists (punkpeye/appcypher/wong2/modelcontextprotocol) with GitHub link resolution. 39 OK / 19 ERROR (67% success — best rate since CS02). ~490 raw findings, 16 TPs curated (F01–F16) across 11 servers. Dataset: **234 servers total / ~2,975 raw / ~1,249 TPs**.
+- **CS11-F01/F12/F09 — EXT12 prompt template injection cluster** — Three independent servers (android-mcp-server, @mymedi-ai/mcp-server healthcare, emilia-protocol payments) with `prompts/get` reflecting `CORVUS_INJECTION_TEST_{{7*7}}` verbatim in LLM message templates. Healthcare context (DMEPOS billing, claim scrubbing, denial analysis) and payment/trust gate context elevate impact.
+- **CS11-F01 — MCP08 anti-forensics (android-mcp-server)** — `clear_logs` tool destroys Android audit trail. Combine with `tap_sequence` (arbitrary UI automation) for exfiltrate-then-cover chain. Same pattern as CS06 godot-mcp `clear_console_log`.
+- **CS11-F04 — XSS cluster ×6 (@tensorfeed/mcp-server)** — `is_service_down`, `failover_verdict`, `pricing_series`, `status_uptime`, `benchmark_series` all reflect `<script>alert(1)</script>` verbatim. AI service monitoring MCP with direct output injection into LLM failover reasoning.
+- **CS11-F10 — SQLi pattern (a2asearch-mcp)** — `' OR '1'='1` reflected in `search_agents` and `list_agents` error context — consistent with raw SQL query construction.
+- **5 GHSAs opened** — GHSA-6f4g (@mymedi-ai healthcare EXT12), GHSA-wx78 (@tensorfeed XSS×6), GHSA-xh32 (android MCP08+MCP02), GHSA-32vx (emilia-protocol payments EXT12), GHSA-2mq4 (a2asearch SQLi+XSS). 4/5 maintainers invited (emilia-protocol: no public repo). Publish deadline: 2026-08-06.
+- **FP calibration v3** — `token_exposure.py`: (1) `_is_type_annotation_match` now strips trailing JSON punctuation (`",}])`) before regex match — fixes crypto ticker FP (`"token": "BTC,"` → `BTC` correctly suppressed). (2) New `_is_missing_credential_context()` function detects "not set"/"not configured"/"env var" error messages — eliminates ~44 CRITICAL FP from mcp-discord-bridge. **18 new tests (744 total)**.
+- **CS11 FP analysis** — mcp-discord-bridge (44 CRITICAL, all FP): Discord bot token not configured → every tool call returns error with "TOKEN" keyword → `token_exposure` fires. x402 (3 CRITICAL, all FP): `"token": "BTC"` is a cryptocurrency ticker field, not a credential. Both patterns now calibrated.
+
 ## [RT-CORVUS-REPO-AUDIT] — 2026-07-06 — Repo cleanup + docs sync (195 servers / 29 GHSAs)
 
 - **Privacy fix** — Removed `case-studies/DISCLOSURE-BATCH2-PROMPT.md` (session context doc accidentally committed to public repo). Added `.gitignore` pattern `case-studies/*-PROMPT.md` to prevent recurrence.
