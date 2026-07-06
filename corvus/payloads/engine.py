@@ -81,5 +81,9 @@ class PayloadEngine:
             if name == target_param:
                 args[name] = payload
             elif name in required:
-                args[name] = self.benign_default(schema.get("type", "string"))
+                raw_type = schema.get("type", "string")
+                # JSON Schema allows "type" to be a list (e.g. ["string", "null"])
+                if isinstance(raw_type, list):
+                    raw_type = next((t for t in raw_type if t != "null"), "string")
+                args[name] = self.benign_default(raw_type)
         return args

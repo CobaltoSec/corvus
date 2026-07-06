@@ -155,6 +155,8 @@ echo '{"state": "published"}' | \
 | GET-Technology-Inc/jamf-docs-mcp-server     | h1431532403240      | ✅       | No  |
 | makenotion/notion-mcp-server                | mquan               | ✅       | No  |
 | benborla/mcp-server-mysql                   | benborla            | ✅       | No  |
+| unmateria/MCP-Access                        | unmateria           | ✅       | No  |
+| takashiishida/arxiv-latex-mcp               | takashiishida       | ✅       | No  |
 
 **Cómo encontrar maintainer:** `npm show <package> repository.url` → extrae el GitHub username del repo.
 
@@ -172,7 +174,7 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 
 ---
 
-## GHSAs activos (2026-07-02)
+## GHSAs activos (2026-07-05)
 
 | GHSA                  | Package                              | Severity    | Collaborator    | Estado             | Publicar    |
 |-----------------------|--------------------------------------|-------------|-----------------|-------------------|-------------|
@@ -200,3 +202,6 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                  | draft CS04 | 2026-08-03  |
 | GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                   | draft CS04 | 2026-08-03  |
 | GHSA-78qj-r76x-2jvh   | @pulsemcp/pulse-fetch                | HIGH        | macoughl + tadasant ✅       | draft CS04 | 2026-08-03  |
+| GHSA-9jp6-hph9-jm5f   | mcp-msaccess-database                | HIGH        | unmateria ✅                 | draft CS08 | 2026-08-04  |
+| GHSA-h6xq-7fpp-q2hf   | arxiv-latex-mcp                      | HIGH        | takashiishida ✅             | draft CS08 | 2026-08-04  |
+| GHSA-prc4-649r-564g   | localparse-mcp                       | HIGH        | — (no repo público)          | draft CS08 | 2026-08-04  |

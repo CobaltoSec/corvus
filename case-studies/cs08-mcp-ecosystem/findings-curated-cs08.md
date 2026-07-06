@@ -76,10 +76,10 @@ access_transfer_data: file_path — "Import/export data between Access and Excel
 
 ---
 
-### CS08-F03 · HIGH · arxiv-latex · MCP10 — XSS Injection Reflection (3 tools)
+### CS08-F03 · HIGH · arxiv-latex · MCP10 — XSS Injection Reflection (4 tools)
 
 **Module:** cmd_injection  
-**Tools:** `get_paper_prompt.arxiv_id`, `get_paper_abstract.arxiv_id`, `list_paper_sections.arxiv_id`  
+**Tools:** `get_paper_prompt.arxiv_id`, `get_paper_abstract.arxiv_id`, `list_paper_sections.arxiv_id`, `get_paper_section.arxiv_id`  
 **Evidence:**
 ```
 Payload: <script>alert(1)</script>
@@ -88,8 +88,8 @@ Payload: <script>alert(1)</script>
 → list_paper_sections: "Error processing arXiv paper <script>alert(1)</script>: expected string..."
 ```
 **OWASP:** MCP10 — Output Encoding (reflected XSS in error messages)  
-**TP.** Same cross-ecosystem XSS reflection pattern as CS06 (functype-npm + awslabs-kendra-PyPI). Confirms this is a systemic issue in Python MCP error handling — unescaped input reflected verbatim in error strings.  
-**GHSA candidate: YES — HIGH.** 3 tools, popular academic research server.
+**TP.** Same cross-ecosystem XSS reflection pattern as CS06 (functype-npm + awslabs-kendra-PyPI). Confirms this is a systemic issue in Python MCP error handling — unescaped input reflected verbatim in error strings. Re-verified 2026-07-05: 4 tools confirmed (original scan missed `get_paper_section`).  
+**GHSA: GHSA-h6xq-7fpp-q2hf — HIGH.** 4 tools, popular academic research server.
 
 ---
 
@@ -122,14 +122,24 @@ parse_url.result_type: 21.1s response time on SSRF payload vs baseline
 
 ---
 
-### CS08-F06 · HIGH · meta-ads-mcp-local · EXT04 — SSRF Timing in get_login_link
+### ~~CS08-F06~~ · meta-ads-mcp-local · EXT04 — SSRF Timing — **FP CONFIRMADO**
+
+**Re-verificado 2026-07-05:** Re-scan con módulo ssrf retornó 0 findings. El timing de 3.3s era variabilidad de red, no SSRF real. Descartado.
+
+---
+
+### CS08-F07 · HIGH · localparse-mcp · EXT04 — SSRF Confirmado en parse_url
 
 **Module:** ssrf  
-**Tool/Surface:** `get_login_link.access_token`  
-**Evidence:** Timing delay on SSRF payload in access_token parameter  
-**OWASP:** EXT04  
-**TP** (low-medium confidence). Timing signal suggests server makes outbound request using token value. Meta Ads API context makes SSRF less impactful but still notable.  
-**Note:** `debug_image_download` auth_bypass (HIGH) — FP candidate. Restricted-access naming convention heuristic triggered on "debug_" prefix, but debug is a documented feature.
+**Tool/Surface:** `parse_url.url` (timeout), `parse_url.result_type` (timing)  
+**Evidence (2 señales independientes):**
+```
+parse_url.url: timeout en payload http://169.254.169.254/latest/meta-data/ (65%)
+parse_url.result_type: 21.1s vs baseline en cloud metadata endpoint (70%)
+```
+**OWASP:** EXT04 — SSRF  
+**TP.** Dos señales independientes confirmadas en re-scan 2026-07-05. El server hace requests outbound sin validar destino. Cloud metadata endpoints accesibles.  
+**GHSA: GHSA-prc4-649r-564g — HIGH.** Sin repo GitHub público accesible para invitar maintainer.
 
 ---
 
@@ -168,10 +178,11 @@ Standard findings pattern (EXT01 + protocol version downgrade + schema issues). 
 
 ## GHSA Candidates
 
-| Target | Severity | Finding | Priority |
-|--------|----------|---------|----------|
-| mcp-msaccess-database | CRITICAL | VBA/Macro execution + prompt injection = RCE chain | Open now |
-| arxiv-latex | HIGH | XSS reflection × 3 + log escalation | Open now |
+| Target | Severity | Finding | GHSA | Status |
+|--------|----------|---------|------|--------|
+| mcp-msaccess-database | HIGH | Prompt injection in access-workflow + VBA RCE chain | [GHSA-9jp6-hph9-jm5f](https://github.com/CobaltoSec/advisories/security-advisories/GHSA-9jp6-hph9-jm5f) | draft, unmateria invited 2026-07-05 |
+| arxiv-latex-mcp | HIGH | XSS reflection × 4 tools + log escalation | [GHSA-h6xq-7fpp-q2hf](https://github.com/CobaltoSec/advisories/security-advisories/GHSA-h6xq-7fpp-q2hf) | draft, takashiishida invited 2026-07-05 |
+| localparse-mcp | HIGH | SSRF confirmado × 2 señales (timeout + timing) | [GHSA-prc4-649r-564g](https://github.com/CobaltoSec/advisories/security-advisories/GHSA-prc4-649r-564g) | draft, sin repo público 2026-07-05 |
 
 ---
 

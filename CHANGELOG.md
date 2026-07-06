@@ -1,5 +1,15 @@
 # Changelog
 
+## [RT-CORVUS-CS08-DISCLOSURE] — 2026-07-05 — CS08 GHSAs + engine union-type bugfix
+
+- **3 GHSAs abiertos (CS08)** — todos verificados con re-scan antes de abrir:
+  - GHSA-9jp6-hph9-jm5f — `mcp-msaccess-database` HIGH: prompt injection en `access-workflow` (db_path reflejado sin sanitizar) + VBA Shell() como vector RCE. PoC confirmado: payload inyectado verbatim en contexto del agente. Maintainer `unmateria` invitado.
+  - GHSA-h6xq-7fpp-q2hf — `arxiv-latex-mcp` HIGH: XSS reflection en 4 tools (original scan reportó 3, re-scan confirmó `get_paper_section` también afectado) + log level escalation sin auth. Maintainer `takashiishida` invitado.
+  - GHSA-prc4-649r-564g — `localparse-mcp` HIGH: SSRF confirmado × 2 señales independientes (timeout en `parse_url.url` + timing en `parse_url.result_type`). Sin repo GitHub público — GHSA sin collaborator.
+- **FP descartado** — `meta-ads-mcp-local` SSRF (CS08-F06): re-scan devolvió 0 findings; timing del scan original era variabilidad de red. Marcado como FP en curated findings.
+- **Bugfix engine.py** — `PayloadEngine.build_args()`: `schema.get("type")` puede devolver `["string", "null"]` (union type JSON Schema). Lista no es hashable → `TypeError` en `benign_default()`. Fix: extraer primer tipo no-null antes de lookup. 726 tests pass.
+- **Curación CS08 corregida** — XSS count 3→4 tools, CS08-F07 (localparse SSRF) documentado, CS08-F06 marcado FP.
+
 ## [RT-CORVUS-SCALE-C] — 2026-07-05 — Scan history DB + discovery fixes · v1.3.0
 
 - **SCALE-C: SQLite scan history** — `corvus/history.py`: módulo con `record_scan()`, `is_recently_scanned()`, `get_scanned_packages()`, `list_scans()`, `aggregate_stats()`. DB en `~/.corvus/history.db` (override: `CORVUS_HISTORY_DB`). Auto-recording en `batch.py` vía `_record_to_history()` (hook post-scan por target, nunca propaga errores al batch). `run_batch()` acepta `case_study: str | None` para tagging. `discover.py` carga `get_scanned_packages()` al inicio y los agrega a `existing` — evita re-descubrir targets ya escaneados.
