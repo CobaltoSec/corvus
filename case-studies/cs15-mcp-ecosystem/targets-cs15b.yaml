@@ -1,0 +1,83 @@
+meta:
+  case_study: CS15B
+  description: OWASP MCP Ecosystem Audit — CS15B supplement (3+ OK needed for 300 total) (2026-07-06)
+  corvus_version: 1.3.1
+  strategy: >
+    Short supplement to CS15. Need 3 more OK servers to reach 300 total (currently 297).
+    Targeting pubmed variants + analysis + local/SQLite servers most likely to succeed.
+  discover_date: '2026-07-06'
+targets:
+
+# pubmed cluster — 3/5 worked in CS15 (60%)
+- name: ryogena-pubmed
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, ryogena-pubmed-mcp]
+  status: pending
+  notes: Ryogena PubMed MCP server variant.
+
+# analysis — bachai worked at 92/100 → similar pattern
+- name: sentiment-analysis
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, sentiment-analysis-ai-mcp]
+  status: pending
+  notes: AI sentiment analysis MCP server.
+
+- name: insurance-analysis
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, insurance-analysis-mcp]
+  status: pending
+  notes: Insurance data analysis MCP server.
+
+- name: league-analysis
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, league-analysis-mcp-server]
+  status: pending
+  notes: League (sports/gaming) analysis MCP server.
+
+- name: accounting-analysis
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, accounting-subject-analysis-mcp-server]
+  status: pending
+  notes: Accounting subject analysis MCP server.
+
+# SQLite — simple local servers, very likely to work
+- name: sqlite-mcp
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, sqlite-mcp]
+  status: pending
+  notes: SQLite MCP server (Python package).
+
+- name: sqlite-mcp-server
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, sqlite-mcp-server]
+  status: pending
+  notes: SQLite MCP server (alternate package).
+
+# local tools
+- name: localdata
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, localdata-mcp]
+  status: pending
+  notes: Local data MCP server.
+
+- name: singlefile
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, singlefile-mcp]
+  status: pending
+  notes: Single file operations MCP server.
+
+- name: local-mcp-server
+  tier: CS15B
+  transport: stdio
+  cmd: [uvx, local-mcp-server]
+  status: pending
+  notes: Local MCP server (generic).

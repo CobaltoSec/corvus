@@ -170,10 +170,20 @@ case_studies:
     false_positives: 466  # estimated ~98% — arxiv cluster repeats known XSS pattern, proto crashes dominate
     fp_rate: 97.9
     note: "PyPI discovery non-zero DL + arxiv cluster + docs servers. 47% success rate. Key highlights: (1) vipmp-docs-mcp CRITICAL SSRF via search_vipmp_docs.query + prompt injection × 2 (GHSA-grw7-4f4v-ffq9, SoftwareOne Adobe VIPM). (2) fastmcp-file-server path traversal write-path + shadow tools read_file/write_file/create_file/delete_file + debug escalation (GHSA-v2cj-6hxv-53r2). (3) arxiv cluster × 9 variants confirmed same XSS reflection pattern from CS08 — systematic upstream template issue. (4) duckdbmcp SSRF in create_table_from_url.url (by-design for URL loader). (5) secoda-analysis injection reflected × 3 IDs — pending manual verify. PyPI ecosystem: docs servers (arxiv, reflex, shadcn, docset) scan cleanly; file servers have consistent path traversal + shadow tool patterns."
+  cs15:
+    servers: 12  # 35 targeted (25 CS15 + 10 CS15B), 12 OK, 23 ERROR (66% error rate)
+    targets_total: 35
+    skipped: 0
+    error_startup: 23  # majority: packages don't exist on PyPI (laravel-docs, mkdocs, dbt-docs, etc.) or auth-required
+    raw_findings: 155  # from 12 OK servers
+    true_positives: 30  # estimated — v1.28.1 XSS cluster × 6 servers + bachai-data-analysis XSS × 4 + suppevo-pubmed protocol
+    false_positives: 125  # estimated ~81% — EXT01 crashes dominate
+    fp_rate: 80.6
+    note: "PyPI 0-DL docs tier + pubmed cluster + analysis servers. Key highlights: (1) v1.28.1 template cluster × 6 packages (adonis-docs-mcp, textual-docs-mcp, byebye-docs-mcp, web3-docs-mcp, autocleaneeg-pubmedmcp, sqlite-mcp-server) — all share same XSS reflection pattern in error messages, different domains (JS framework docs, TUI docs, Web3, EEG research, SQLite browser). (2) bachai-data-analysis-mcp (BACH Studio, Chinese) — XSS reflection in 4 data analysis tools, score 92/100. GHSAs: 2 candidates (adonis-docs-mcp cluster + bachai-data-analysis-mcp). Pattern: template reuse across diverse domains is the 3rd confirmed instance (CS08 arxiv, CS11 tensorfeed, CS15 v1.28.1)."
   totals:
-    servers: 288  # 234 (CS01-CS11) + 16 (CS12) + 6 (CS13) + 32 (CS14)
-    raw_findings: 3847  # 2975 (CS01-CS11) + 336 (CS12) + 60 (CS13) + 476 (CS14)
-    true_positives: 1268  # 1249 (CS01-CS11) + 7 (CS12) + 2 (CS13) + 10 (CS14)
+    servers: 300  # 288 (CS01-CS14) + 12 (CS15)
+    raw_findings: 4002  # 3847 (CS01-CS14) + 155 (CS15)
+    true_positives: 1298  # 1268 (CS01-CS14) + 30 (CS15 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -194,9 +204,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 42
+  total: 44
   published: 3
-  draft: 39
+  draft: 41
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

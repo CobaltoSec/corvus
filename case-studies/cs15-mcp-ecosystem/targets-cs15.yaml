@@ -1,0 +1,216 @@
+meta:
+  case_study: CS15
+  description: OWASP MCP Ecosystem Audit — CS15 PyPI docs cluster + pubmed cluster + analysis (2026-07-06)
+  corvus_version: 1.3.1
+  strategy: >
+    PyPI 0-DL tier candidates from candidates-2026-07-06.yaml not covered in CS14.
+    Focus: docs servers (high hit rate ~60-80%), pubmed academic cluster, analysis tools.
+    Target: 25 targets, 12+ OK → reach 300+ total servers.
+  discover_date: '2026-07-06'
+targets:
+
+# ─── Docs servers — high hit rate ─────────────────────────────────────────────
+
+# adonis-docs-mcp — AdonisJS framework docs
+- name: adonis-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, adonis-docs-mcp]
+  status: pending
+  notes: AdonisJS Node.js framework documentation MCP server.
+
+# aidocs-mcp — AI docs aggregator
+- name: aidocs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, aidocs-mcp]
+  status: pending
+  notes: AI documentation MCP server.
+
+# anydocs-mcp — generic docs server
+- name: anydocs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, anydocs-mcp]
+  status: pending
+  notes: Generic documentation MCP server.
+
+# byebye-docs-mcp
+- name: byebye-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, byebye-docs-mcp]
+  status: pending
+  notes: Docs MCP server.
+
+# custom-docs-mcp
+- name: custom-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, custom-docs-mcp]
+  status: pending
+  notes: Custom documentation MCP server.
+
+# databricks-docs-mcp — Databricks documentation
+- name: databricks-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, databricks-docs-mcp]
+  status: pending
+  notes: Databricks documentation MCP server.
+
+# dbt-docs-mcp — dbt (data build tool) docs
+- name: dbt-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, dbt-docs-mcp]
+  status: pending
+  notes: dbt (data build tool) documentation MCP server.
+
+# minecraft-docs-mcp
+- name: minecraft-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, minecraft-docs-mcp]
+  status: pending
+  notes: Minecraft documentation MCP server.
+
+# python-docs-mcp-server — Python stdlib docs
+- name: python-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, python-docs-mcp-server]
+  status: pending
+  notes: Python standard library documentation MCP server.
+
+# textual-docs-mcp — Textual TUI framework docs
+- name: textual-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, textual-docs-mcp]
+  status: pending
+  notes: Textual TUI framework documentation MCP server.
+
+# laravel-docs-mcp — Laravel PHP framework docs
+- name: laravel-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, laravel-docs-mcp]
+  status: pending
+  notes: Laravel PHP framework documentation MCP server.
+
+# mkdocs-mcp — MkDocs documentation site builder
+- name: mkdocs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, mkdocs-mcp]
+  status: pending
+  notes: MkDocs documentation site MCP server.
+
+# pydocs-mcp — Python docs variant
+- name: pydocs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, pydocs-mcp]
+  status: pending
+  notes: Python documentation MCP server variant.
+
+# web3-docs-mcp — Web3/blockchain docs
+- name: web3-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, web3-docs-mcp]
+  status: pending
+  notes: Web3 and blockchain documentation MCP server.
+
+# esp-idf-docs-mcp — Espressif ESP-IDF embedded docs
+- name: esp-idf-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, esp-idf-docs-mcp]
+  status: pending
+  notes: ESP-IDF (Espressif IoT Development Framework) documentation MCP server.
+
+# api-docs-generator-ai-mcp — AI API docs generator
+- name: api-docs-generator
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, api-docs-generator-ai-mcp]
+  status: pending
+  notes: AI-powered API documentation generator MCP server.
+
+# argus-docs-mcp — Argus framework docs
+- name: argus-docs
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, argus-docs-mcp]
+  status: pending
+  notes: Argus framework documentation MCP server.
+
+# ─── PubMed academic cluster ───────────────────────────────────────────────────
+
+# pubmedmcp — PubMed core client
+- name: pubmedmcp
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, pubmedmcp]
+  status: pending
+  notes: PubMed biomedical literature MCP server (core package).
+
+# autocleaneeg-pubmedmcp — EEG/PubMed research
+- name: autocleaneeg-pubmed
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, autocleaneeg-pubmedmcp]
+  status: pending
+  notes: AutoCleanEEG PubMed MCP server — EEG research literature search.
+
+# bachstudio-pubmedmcp — PubMed via BachStudio
+- name: bachstudio-pubmed
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, bachstudio-pubmedmcp]
+  status: pending
+  notes: BachStudio PubMed MCP server.
+
+# suppevo-pubmed-mcp
+- name: suppevo-pubmed
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, suppevo-pubmed-mcp]
+  status: pending
+  notes: Suppevo PubMed MCP server.
+
+# uh-joan-pubmed-mcp-server
+- name: uh-joan-pubmed
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, uh-joan-pubmed-mcp-server]
+  status: pending
+  notes: UH Joan PubMed MCP server.
+
+# ─── Analysis / misc ──────────────────────────────────────────────────────────
+
+# bachai-data-analysis-mcp — data analysis tools
+- name: bachai-data-analysis
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, bachai-data-analysis-mcp]
+  status: pending
+  notes: Bachai data analysis MCP server.
+
+# openmeteo-mcp-server — Open-Meteo weather API
+- name: openmeteo
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, openmeteo-mcp-server]
+  status: pending
+  notes: Open-Meteo weather data MCP server (free API, no key required).
+
+# stock-analysis-mcp — stock market analysis
+- name: stock-analysis
+  tier: CS15
+  transport: stdio
+  cmd: [uvx, stock-analysis-mcp]
+  status: pending
+  notes: Stock market analysis MCP server.

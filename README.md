@@ -359,13 +359,13 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across 14 case studies — 288 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across 15 case studies — 300 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
 
-| Metric | Total (14 case studies) |
+| Metric | Total (15 case studies) |
 |--------|-------------------------------|
-| Servers audited | **288** |
-| Raw findings | **~3847** |
-| True positives | **~1268** |
+| Servers audited | **300** |
+| Raw findings | **~4002** |
+| True positives | **~1298** |
 
 Key findings from the wild:
 
@@ -389,7 +389,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-42 security advisories filed across 14 case studies — 3 published, 39 in active coordinated disclosure (90-day window).
+44 security advisories filed across 15 case studies — 3 published, 41 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-hv3x-m9fv-4vhf](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) | mcp-server-git | HIGH | DoS via spec-compliant JSON-RPC batch arrays and oversized method names |
 | [GHSA-3f55-qgq4-f88c](https://github.com/advisories/GHSA-3f55-qgq4-f88c) | server-sequential-thinking | MEDIUM | DoS via oversized JSON-RPC method names (CWE-755) |
 
-**Active coordinated disclosure (39 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (41 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
