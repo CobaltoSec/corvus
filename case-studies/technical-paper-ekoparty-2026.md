@@ -3,14 +3,14 @@
 **Nicolás Padilla** — CobaltoSec (Argentina)  
 **Contacto:** nicolas@cobalto-sec.tech  
 **Repositorio:** https://github.com/CobaltoSec/corvus  
-**PyPI:** `pip install cobaltosec-corvus` (v1.0.1)  
+**PyPI:** `pip install cobaltosec-corvus` (v1.3.1)  
 **Fecha:** Julio 2026
 
 ---
 
 ## Resumen
 
-El Model Context Protocol (MCP) es el estándar de facto para conectar agentes de IA con herramientas externas, pero su ecosistema público nunca fue auditado sistemáticamente. Presentamos Corvus, un framework de testing de seguridad open source de 34 módulos que mapea al OWASP MCP Top 10. Auditamos 101 servidores MCP reales en cuatro case studies, generando 1.267 findings brutos con 741 verdaderos positivos confirmados. Reportamos 24 security advisories a maintainers incluyendo Microsoft, SAP, Notion y Atlassian. Entre los hallazgos más relevantes: crash universal en el 100% de los servidores con payload de 37 bytes, un vector de C2 encubierto via sampling, y tres nuevos patrones de ataque específicos de la capa agéntica sin documentación pública previa.
+El Model Context Protocol (MCP) es el estándar de facto para conectar agentes de IA con herramientas externas, pero su ecosistema público nunca fue auditado sistemáticamente. Presentamos Corvus, un framework de testing de seguridad open source de 34 módulos que mapea al OWASP MCP Top 10. Auditamos 195 servidores MCP reales en diez case studies, generando 2.485 findings brutos con 1.220 verdaderos positivos confirmados. Reportamos 29 security advisories a maintainers incluyendo Microsoft, SAP, Notion y Atlassian. Entre los hallazgos más relevantes: crash universal en el 100% de los servidores con payload de 37 bytes, un vector de C2 encubierto via sampling, y tres nuevos patrones de ataque específicos de la capa agéntica sin documentación pública previa.
 
 ---
 
@@ -70,15 +70,21 @@ La calibración de falsos positivos es iterativa: cada case study revela nuevos 
 
 ## 3. Dataset
 
-Cuatro case studies ejecutados entre mayo y julio 2026:
+Diez case studies ejecutados entre mayo y julio 2026:
 
 | Case Study | Servidores | Raw Findings | TPs | FP Rate |
 |------------|-----------|--------------|-----|---------|
-| CS01 — @modelcontextprotocol oficiales | 20 | 288 | 70 | 23.1% |
+| CS01 — @modelcontextprotocol oficiales | 20 | 91 | 70 | 23.1% |
 | CS02 — community ≥100 stars | 29 | 81 | 51 | 20.3% |
-| CS03 — targets ampliados (Smithery) | 8 | 116 | 70 | ~2.6% |
-| CS04 — expansión ecosistema (44 nuevos) | 47 | 979 | ~550 | ~44% |
-| **Total** | **101** | **1.267** | **~741** | |
+| CS03 — targets ampliados | 8 | 116 | 70 | ~2.6% |
+| CS04 — expansión ecosistema (44 nuevos) | 44 | 979 | ~550 | ~44% |
+| CS05 — npm auto-discovered | 12 | 105 | ~50 | ~52% |
+| CS06 — npm+PyPI mixed | 12 | 127 | ~56 | ~56% |
+| CS07 — GitHub topics | 1 | 12 | 9 | 25% |
+| CS08 — PyPI >200 DL/wk | 51 | 716 | ~280 | ~61% |
+| CS09 — Smithery cloud HTTP | 1 | 13 | 9 | 31% |
+| CS10 — npm maybe-auth >25 DL/wk | 17 | 245 | ~75 | ~69% |
+| **Total** | **195** | **~2.485** | **~1.220** | |
 
 CS04 incluye 47 servidores OK (44 únicos nuevos + 3 duplicados de CS01/CS02). El FP rate elevado en CS04 se debe a tres nuevos patrones FP sistemáticos descubiertos durante la curation: lazy-loading de docs servers (195 FP de un único target), reflection de errores Python strptime (33 FP), y echo de mensajes de error de APIs de terceros (62+ FP en 11 servidores). Sin el outlier `sveltejs-mcp`, el FP rate de CS04 es ~30%, comparable a CS01/CS02.
 
@@ -213,12 +219,12 @@ La reducción de ~42% a ~7% en CS03 refleja la madurez acumulada de 5 iteracione
 
 ## 6. Responsible Disclosure
 
-Portfolio total: **24 GHSAs**
+Portfolio total: **29 GHSAs**
 
 | Estado | Cantidad | Detalle |
 |--------|----------|---------|
 | Publicados | 3 | GHSA-43j9 (remnux, MEDIUM), GHSA-hv3x (mcp-server-git, HIGH), GHSA-3f55 (sequential-thinking, MEDIUM) |
-| Draft coordinado | 21 | Ventanas 90d activas con Microsoft, SAP, Notion, Atlassian, + 17 maintainers independientes |
+| Draft coordinado | 26 | Ventanas 90d activas con Microsoft, SAP, Notion, Atlassian, ByteDance, CircleCI, Browserbase + 19 maintainers independientes |
 
 **Herramienta de disclosure:** Script Python que usa la GitHub Security Advisory API para crear advisory drafts automáticamente desde `findings-curated.md`. Disponible en el repositorio.
 
@@ -238,8 +244,8 @@ corvus diff baseline.sarif current.sarif
 ```
 
 Repositorio: https://github.com/CobaltoSec/corvus  
-Versión actual: v1.0.1  
-Tests: 671 unit + 8 E2E  
+Versión actual: v1.3.1  
+Tests: 726 unit + 8 E2E  
 Licencia: MIT  
 
 ---

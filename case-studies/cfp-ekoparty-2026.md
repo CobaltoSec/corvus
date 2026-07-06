@@ -19,7 +19,7 @@
 
 El Model Context Protocol (MCP) se convirtió en el estándar de facto para conectar agentes de IA con herramientas y servicios externos. Está presente en todos los frameworks agénticos relevantes del ecosistema actual, pero la seguridad de este ecosistema nunca fue evaluada sistemáticamente a escala.
 
-Presentamos **Corvus**, un framework de testing de seguridad open source que mapea al **OWASP MCP Top 10**. En cuatro meses, realizamos la primera auditoría de seguridad a escala del ecosistema MCP público: **101 servidores reales** en cuatro case studies, con **1.267 findings brutos** y **741 verdaderos positivos confirmados** usando **34 módulos de detección** (13 estáticos, 21 dinámicos).
+Presentamos **Corvus**, un framework de testing de seguridad open source que mapea al **OWASP MCP Top 10**. En cuatro meses, realizamos la primera auditoría de seguridad a escala del ecosistema MCP público: **195 servidores reales** en diez case studies, con **2.485 findings brutos** y **1.220 verdaderos positivos confirmados** usando **34 módulos de detección** (13 estáticos, 21 dinámicos).
 
 ### Hallazgos principales
 
@@ -47,7 +47,7 @@ Un único advisory de SDK (`@modelcontextprotocol/sdk ≤1.25.1`) se propaga a l
 **Evolución del FP rate.**
 A través de 5 iteraciones de calibración, redujimos la tasa de falsos positivos de ~42% (v0.5.0) a ~7% (v1.0.1/CS03), estableciendo una metodología replicable para investigación de seguridad de protocolos AI.
 
-Coordinamos el responsible disclosure de **24 security advisories (GHSAs)** con maintainers incluyendo Microsoft, SAP, Notion y Atlassian. Tres advisories están publicados; 21 están en disclosure coordinado activo. Corvus es open source (`pip install cobaltosec-corvus`).
+Coordinamos el responsible disclosure de **29 security advisories (GHSAs)** con maintainers incluyendo Microsoft, SAP, Notion y Atlassian. Tres advisories están publicados; 26 están en disclosure coordinado activo. Corvus es open source (`pip install cobaltosec-corvus`).
 
 Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos específicos de arquitecturas agénticas, y se irán con una herramienta para auditar sus propios deployments de MCP.
 
@@ -63,7 +63,7 @@ Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos es
 ### [5:00 – 10:00] Arquitectura de Corvus
 - 34 módulos: análisis estático + testing dinámico de protocolo
 - Metodología: desde stdio subprocess hasta HTTP transport
-- Viaje de calibración de FP: 42% → 7% en 5 iteraciones y 4 case studies
+- Viaje de calibración de FP: 42% → 7% en 5 iteraciones y 10 case studies
 
 ### [10:00 – 25:00] Hallazgos principales + Demo en vivo
 1. **EXT14 crash universal** — payload de 37 bytes, demo en vivo contra servidor real
@@ -73,7 +73,7 @@ Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos es
 5. **Supply chain cascade** — un advisory, N servidores afectados
 
 ### [25:00 – 28:00] Responsible disclosure
-- 24 GHSAs: timeline, respuestas de vendors, calendario de publicación coordinada
+- 29 GHSAs: timeline, respuestas de vendors, calendario de publicación coordinada
 - Trabajando con grandes vendors (Microsoft, SAP, Notion, Atlassian)
 - Qué hicieron bien y mal los vendors al responder CVEs de protocolos AI
 
@@ -86,7 +86,7 @@ Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos es
 
 ## Bio del Speaker
 
-Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad. Es autor de **Corvus** (framework open source de seguridad para servidores MCP, `pip install cobaltosec-corvus`) y de **llamascope-mcp** (herramienta de auditoría de infraestructura AI). Su investigación se centra en seguridad de sistemas agénticos, descubrimiento automatizado de vulnerabilidades a escala, y las implicancias de seguridad del ecosistema Model Context Protocol. Coordinó el responsible disclosure de 24 security advisories con organizaciones como Microsoft, SAP, Notion y Atlassian.
+Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad. Es autor de **Corvus** (framework open source de seguridad para servidores MCP, `pip install cobaltosec-corvus`) y de **llamascope-mcp** (herramienta de auditoría de infraestructura AI). Su investigación se centra en seguridad de sistemas agénticos, descubrimiento automatizado de vulnerabilidades a escala, y las implicancias de seguridad del ecosistema Model Context Protocol. Coordinó el responsible disclosure de 29 security advisories con organizaciones como Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase.
 
 ---
 
@@ -114,10 +114,10 @@ Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad.
 
 | Métrica | Valor |
 |---------|-------|
-| Servers auditados | 101 (CS01–CS04) |
-| Raw findings | 1.267 |
-| True positives | ~741 |
-| GHSAs | 24 (3 publicados, 21 draft) |
+| Servers auditados | 195 (CS01–CS10) |
+| Raw findings | 2.485 |
+| True positives | ~1.220 |
+| GHSAs | 29 (3 publicados, 26 draft) |
 | Módulos | 34 (13 static + 21 dynamic) |
 | FP rate evolución | ~42% (v0.5.0) → ~7% (CS03 v1.0.1) |
 | Vendors notificados | Microsoft, SAP, Notion, Atlassian + 20 maintainers |

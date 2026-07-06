@@ -115,17 +115,22 @@ def build_research_section(stats: dict) -> str:
     cs = stats["case_studies"]
     t = cs["totals"]
     kf = stats.get("key_findings", [])
+    cs_count = len([k for k in cs if k != "totals"])
+
+    # Map count to English word
+    count_words = {1:"one",2:"two",3:"three",4:"four",5:"five",6:"six",7:"seven",8:"eight",9:"nine",10:"ten"}
+    cs_word = count_words.get(cs_count, str(cs_count))
 
     lines = []
-    lines.append(f"Corvus has been battle-tested against the real-world MCP ecosystem across three case studies "
+    lines.append(f"Corvus has been battle-tested against the real-world MCP ecosystem across {cs_word} case studies "
                  f"— {t['servers']} servers audited, spanning official `@modelcontextprotocol` packages, "
-                 f"community servers, and the broader npm ecosystem.\n")
+                 f"community servers, and the broader npm and PyPI ecosystem.\n")
 
-    lines.append(f"| | CS01 | CS02 | CS03 | Combined |")
-    lines.append(f"|---|---|---|---|---|")
-    lines.append(f"| Servers audited | {cs['cs01']['servers']} | {cs['cs02']['servers']} | {cs['cs03']['servers']} | **{t['servers']}** |")
-    lines.append(f"| True positives | {cs['cs01']['true_positives']} | {cs['cs02']['true_positives']} | ~{cs['cs03']['true_positives']} | **~{t['true_positives']}** |")
-    lines.append(f"| FP rate | {cs['cs01']['fp_rate']}% | {cs['cs02']['fp_rate']}% | ~{round(cs['cs03']['false_positives']/cs['cs03']['raw_findings']*100,1)}% | — |")
+    lines.append(f"| Metric | Total ({cs_count} case studies) |")
+    lines.append(f"|--------|-------------------------------|")
+    lines.append(f"| Servers audited | **{t['servers']}** |")
+    lines.append(f"| Raw findings | **~{t['raw_findings']}** |")
+    lines.append(f"| True positives | **~{t['true_positives']}** |")
 
     lines.append("")
     lines.append("Key findings from the wild:\n")
@@ -145,7 +150,8 @@ def build_disclosure_section(stats: dict) -> str:
     draft = g["draft"]
 
     lines = []
-    lines.append(f"{total} security advisories filed across {len(published)} case studies "
+    cs_count = len([k for k in stats.get("case_studies", {}) if k != "totals"])
+    lines.append(f"{total} security advisories filed across {cs_count} case studies "
                  f"— {g['published']} published, {draft} in active coordinated disclosure (90-day window).\n")
 
     lines.append("**Published:**\n")
