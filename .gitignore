@@ -46,6 +46,10 @@ case-studies/cs13-mcp-ecosystem/discover-*.txt
 case-studies/cs14-mcp-ecosystem/scans/
 case-studies/cs14-mcp-ecosystem/candidates-*.yaml
 case-studies/cs14-mcp-ecosystem/skipped-*.txt
+case-studies/cs10-mcp-ecosystem/scans/
+case-studies/cs10-mcp-ecosystem/candidates-*.yaml
+case-studies/cs15-mcp-ecosystem/scans/
+case-studies/cs15-mcp-ecosystem/candidates-*.yaml
 arxiv_cache/
 de421.bsp
 *.heapsnapshot

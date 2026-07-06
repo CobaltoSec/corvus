@@ -1,5 +1,12 @@
 # Changelog
 
+## [RT-CORVUS-CFP-FINAL] — 2026-07-06 — CFP Ekoparty 2026 submitteado · 300 servers · 44 GHSAs
+
+- **CFP submitteado en Sessionize** — "Corvus: Seguridad en el Ecosistema MCP a Escala" enviado a Ekoparty Security Conference 2026 Buenos Aires (Oct 7–9). Primera ronda de notificaciones: 2026-09-04.
+- **Stats finales del submission** — 300 servers (CS01–CS15), 4,002 raw findings, ~1,298 TPs, 44 GHSAs (3 publicados, 41 draft), 34 módulos, 717 tests, v1.3.1.
+- **Materials actualizados** — `cfp-ekoparty-2026.md` (abstract + descripción detallada + outline 30min + bio + corrección "dos meses"), `technical-paper-ekoparty-2026.md` (CS11–CS15 dataset rows + findings §4.8–4.10: healthcare/XSS cluster/template cascade + FP cal v3). Slides deck: 18 slides actualizados (300/4,002/~1,298/44). PDF 929 KB generado vía Chrome headless + Pillow.
+- **Blog post publicado** — https://cobalto-sec.tech/blog/2026-07-04-corvus-mcp-audit-ekoparty — stats actualizados, findings CS11–CS15, FP cal v3, ref al CFP. Slides en producción: `/static/slides/corvus-ekoparty-2026.html`.
+
 ## [RT-CORVUS-CS15-PING] — 2026-07-06 — CS15 ecosystem scan + 2 GHSAs · 300 servers milestone
 
 - **CS15 + CS15B — PyPI zero-DL docs/academic tier** — 35 targets (25 CS15 + 10 CS15B). 12 OK / 23 ERROR (34% success). 155 raw findings, ~30 TPs. **300 servers total / 4,002 raw / ~1,298 TPs**.
