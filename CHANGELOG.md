@@ -1,5 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-CS10-NPM] — 2026-07-06 — CS10 npm (maybe-auth) scan — browser SSRF + CircleCI CRITICAL
+
+- **CS10 — npm maybe-auth ecosystem scan** — 50 targets (auto-discovered via Round 4 queries + 5 manual high-value). 17 OK / 33 ERROR (34% success). 245 raw findings / ~75 TPs (~69% FP). Dataset: **195 servers total / 2,485 raw / 1,220 TPs**.
+- **discover.py Round 4** — +8 npm queries (vscode/cline/zed mcp, mcp-wrapper/bridge/code-server, mcp-search-server, langchain mcp). +2s inter-query delay fix for npm 429 rate limiting. `--include-maybe-auth` flag to capture auth-gated servers at >25 dl/wk threshold.
+- **CS10-F01 — CircleCI CRITICAL (MCP03)** — `@circleci/mcp-server-circleci` (30k dl/wk): `create_prompt_template` tool description embeds multi-paragraph LLM instructions ("ABOUT THIS TOOL:" heading with numbered steps). First CRITICAL tool-poisoning finding in a CI/CD provider's official MCP server.
+- **CS10-F02 — Browser SSRF sistémico (EXT04)** — Two independent browser MCP servers both navigate to `169.254.169.254` (AWS metadata endpoint) without RFC-1918 blocking: `@agent-infra/mcp-server-browser` (16.5s timeout) + `@browserbasehq/mcp` (12.0s timeout). Cloud IAM credential theft vector. 2 GHSA candidates.
+- **CS10-F03 — Arbitrary JS execution** — `@agent-infra/mcp-server-browser`: `browser_evaluate` exposes full `page.evaluate()`. Attack chain: `browser_navigate(attacker-page)` → `browser_evaluate("document.cookie")` → exfiltrate.
+- **CS10-F04/F05 — Android MCP ADB shell + SSRF** — `@midscene/android-mcp`: `RunAdbShell` + `act` shadow-tools expose arbitrary ADB shell on connected device. `Scroll` tool params (deviceId/aiActContext) trigger SSRF timeout.
+- **CS10-F06 — Credential field in schema (MCP02)** — `@missionsquad/mcp-msq`: `msq_add_provider.apiKey` in inputSchema — prompt injection could instruct agent to transmit API keys via MCP tool call.
+- **CS10-F07 — Protocol crash 100%** — 17/17 OK targets crash on batch array, oversized method, or nested params (EXT01/EXT14). Third consecutive CS with 100% crash prevalence.
+
 ## [RT-CORVUS-CS09-SMITHERY] — 2026-07-05 — CS09 Smithery scan + discover.py HTTP probe fix · v1.3.1
 
 - **CS09 — Smithery Ecosystem Scan** — First scan of Smithery cloud-hosted HTTP servers. 30 targets (29 HTTP + 1 stdio). 1 OK (arxiv), 29 ERROR (require Smithery API key). 13 raw findings / 9 TPs from arxiv. Dataset: 178 servers total, 2,240 raw findings, 1,145 TPs.
