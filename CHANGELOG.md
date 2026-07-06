@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-REPO-AUDIT] — 2026-07-06 — Repo cleanup + docs sync (195 servers / 29 GHSAs)
+
+- **Privacy fix** — Removed `case-studies/DISCLOSURE-BATCH2-PROMPT.md` (session context doc accidentally committed to public repo). Added `.gitignore` pattern `case-studies/*-PROMPT.md` to prevent recurrence.
+- **CFP + technical paper sync** — `cfp-ekoparty-2026.md` + `technical-paper-ekoparty-2026.md`: updated all stats to CS10 baseline (101→195 servers, 1.267→2.485 raw, 741→1.220 TPs, 24→29 GHSAs, 4→10 case studies). Technical paper dataset table extended with CS05-CS10 rows. Version header v1.0.1→v1.3.1.
+- **update-public.py fix** — Case study count now derived dynamically from `public-stats.yaml` keys (was hardcoded "three"). Disclosure section uses real case study count (was using `len(published_list)`). README research table simplified to aggregate format.
+- **README sync** — Re-run update-public.py: "three case studies" → "ten case studies", disclosure: "3" → "10 case studies".
+- **CobaltoSec-Web portada sync** — `StatsStrip.tsx`: 101→195, 741→1220 TPs, 24→29 advisories. `Hero.tsx`: "24 advisories, 101 servers" → "29 advisories, 195 servers".
+
 ## [RT-CORVUS-CS10-NPM] — 2026-07-06 — CS10 npm (maybe-auth) scan — browser SSRF + CircleCI CRITICAL
 
 - **CS10 — npm maybe-auth ecosystem scan** — 50 targets (auto-discovered via Round 4 queries + 5 manual high-value). 17 OK / 33 ERROR (34% success). 245 raw findings / ~75 TPs (~69% FP). Dataset: **195 servers total / 2,485 raw / 1,220 TPs**.
