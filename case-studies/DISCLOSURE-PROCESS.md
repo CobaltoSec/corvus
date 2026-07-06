@@ -205,3 +205,5 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | GHSA-9jp6-hph9-jm5f   | mcp-msaccess-database                | HIGH        | unmateria ✅                 | draft CS08 | 2026-08-04  |
 | GHSA-h6xq-7fpp-q2hf   | arxiv-latex-mcp                      | HIGH        | takashiishida ✅             | draft CS08 | 2026-08-04  |
 | GHSA-prc4-649r-564g   | localparse-mcp                       | HIGH        | — (no repo público)          | draft CS08 | 2026-08-04  |
+| GHSA-6jrq-96x4-6pvq   | @agent-infra/mcp-server-browser      | HIGH        | ulivz ✅                     | draft CS10 | 2026-08-05  |
+| GHSA-p2xc-mj3p-7q4x   | @browserbasehq/mcp                   | HIGH        | Kylejeong2 ✅                | draft CS10 | 2026-08-05  |
