@@ -16,7 +16,7 @@ Notes: Errors dominated by packages that don't exist on PyPI (laravel-docs, mkdo
 | Severity    | HIGH |
 | Status      | TP — GHSA filed |
 | GHSA        | GHSA-c7g2-vrm2-mrr4 (adonis-docs-mcp + byebye-docs-mcp + sqlite-mcp-server) |
-| Maintainers | pimentelleo / pon-tanuki / stevefordev (invite manual — API endpoint 404) |
+| Maintainers | pimentelleo ✅ / pon-tanuki ✅ / stevefordev ✅ |
 
 **What**: All 6 packages report server version `1.28.1` and exhibit the same XSS reflection pattern — `<script>alert(1)</script>` payloads injected into tool parameters are returned verbatim in error messages without sanitization.
 
@@ -54,7 +54,7 @@ Evidence: Unknown version '<script>alert(1)</script>'. Available: v7, v6, v5, ed
 | Status      | TP — GHSA filed |
 | GHSA        | GHSA-hg5p-5fpm-rxc5 |
 | GitHub      | github.com/BACH-AI-Tools/data-analysis-mcp |
-| Maintainers | KiisMyGun / FuguoAI (invite manual — API endpoint 404) |
+| Maintainers | KiisMyGun ✅ |
 
 **What**: 4 tools reflect `<script>alert(1)</script>` payloads verbatim in Chinese-language error messages:
 1. `load_data.file_type` → `错误: 不支持的文件类型 - <script>alert(1)</script>`
@@ -106,4 +106,4 @@ Server exposes 5 tools for data analysis (load/describe/analyze/correlate/visual
 | F02 | bachai-data-analysis-mcp | MCP05 XSS | HIGH | TP | GHSA pending |
 | F03 | suppevo-pubmed-mcp | EXT04+EXT11 | HIGH | TP (protocol) | NO — universal |
 
-**CS15 GHSAs: 2 filed** — GHSA-c7g2-vrm2-mrr4 (v1.28.1 cluster) + GHSA-hg5p-5fpm-rxc5 (bachai). Maintainer invitations: pendientes manual (GitHub collaborators API endpoint returning 404 — probable API change).
+**CS15 GHSAs: 2 filed** — GHSA-c7g2-vrm2-mrr4 (v1.28.1 cluster) + GHSA-hg5p-5fpm-rxc5 (bachai). Maintainers invitados: 4/4 ✅. Fix: usar PATCH con `collaborating_users` (no PUT a /collaborators que ya no existe).
