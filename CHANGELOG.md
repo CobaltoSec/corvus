@@ -1,5 +1,13 @@
 # Changelog
 
+## [RT-CORVUS-CS15-PING] — 2026-07-06 — CS15 ecosystem scan + 2 GHSAs · 300 servers milestone
+
+- **CS15 + CS15B — PyPI zero-DL docs/academic tier** — 35 targets (25 CS15 + 10 CS15B). 12 OK / 23 ERROR (34% success). 155 raw findings, ~30 TPs. **300 servers total / 4,002 raw / ~1,298 TPs**.
+- **CS15-F01 — v1.28.1 docs template cluster (MCP05 XSS ×6)** — Six PyPI packages from completely different domains (AdonisJS docs, Textual TUI docs, byebye-docs, Web3 docs, EEG/PubMed research, SQLite browser) all share the same v1.28.1 codebase/template: `<script>alert(1)</script>` payloads reflected verbatim in error messages. Same template reuse pattern as CS08 arxiv cluster. GHSA-c7g2-vrm2-mrr4. Maintainers: pimentelleo ✅, pon-tanuki ✅, stevefordev ✅.
+- **CS15-F02 — bachai-data-analysis-mcp (MCP05 XSS ×4)** — BACH Studio AI Tools (Chinese data analysis server): `load_data`, `describe_data`, `analyze_column`, `correlation_analysis` all reflect `<script>alert(1)</script>` in Chinese error messages (`错误: 不支持的文件类型 - <script>alert(1)</script>`). Score 92/100. GHSA-hg5p-5fpm-rxc5. KiisMyGun ✅.
+- **2 GHSAs opened** — GHSA-c7g2 (v1.28.1 cluster XSS) + GHSA-hg5p (bachai XSS). **44 GHSAs total (3 published, 41 draft)**. 4/4 maintainers invited via PATCH `collaborating_users` (PUT `/collaborators` endpoint deprecated by GitHub).
+- **DISCLOSURE-PING deferred** — 4 GHSAs without response (GHSA-mf64/7763/pr6r/7w27, deadline 2026-07-09): no REST API for advisory comments → manual action in GitHub web.
+
 ## [RT-CORVUS-CS12-SCALE] — 2026-07-06 — CS12/CS13/CS14 ecosystem scans + 8 GHSAs · 288 servers
 
 - **CS12 — npm/PyPI batch scan** — 34 targets (discover.py: npm rounds 5-6 + PyPI curated). 16 OK / 18 ERROR (47% success). 336 raw findings, 7 TPs curated. Key findings: pincushion-mcp MCP09 prompt injection ×14 params, campertunity SSRF → 169.254.169.254, live-translate-mcp write-path traversal, @oraclaw/mcp-server hidden `_debug` param (MCP01), langsmith-mcp-server debug escalation (EXT11), @uploadkitdev/mcp response flooding (MCP06). **250 servers total / 3,311 raw**.
