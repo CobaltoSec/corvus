@@ -1,5 +1,11 @@
 # Changelog
 
+## [RT-CORVUS-GHSA-CREDITS] — 2026-07-07 — Credits nicoPadi1002 en todos los GHSAs
+
+- **Batch-patch 55 GHSAs** — 52 drafts + 3 published: todos actualizados vía `gh api PATCH` para creditar `nicoPadi1002` como `reporter`. GitHub permite editar credits en advisories publicados (no documentado explícitamente).
+- **DISCLOSURE-PROCESS.md actualizado** — payload de creación de advisory ahora incluye `"credits": [{"login": "nicoPadi1002", "type": "reporter"}]` por defecto. Todo GHSA futuro ya nace con el crédito correcto.
+- **Decisión de marca** — reporter = nicoPadi1002 (brand personal, estándar industry: CVEs/GHSAs siempre crédito individual); advisory hosteado en CobaltoSec/advisories (brand org). Setup idéntico a Google Project Zero.
+
 ## [RT-CORVUS-CFP-FINAL] — 2026-07-06 — CFP Ekoparty 2026 submitteado · 300 servers · 44 GHSAs
 
 - **CFP submitteado en Sessionize** — "Corvus: Seguridad en el Ecosistema MCP a Escala" enviado a Ekoparty Security Conference 2026 Buenos Aires (Oct 7–9). Primera ronda de notificaciones: 2026-09-04.

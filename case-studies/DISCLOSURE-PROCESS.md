@@ -60,6 +60,7 @@ GHSA_ID=$(echo '{
   "description": "...",
   "severity": "high",
   "cwe_ids": ["CWE-77"],
+  "credits": [{"login": "nicoPadi1002", "type": "reporter"}],
   "vulnerabilities": [{
     "package": {"ecosystem": "npm", "name": "'"$PKG_NAME"'"},
     "vulnerable_version_range": "'"$PKG_VERSION"'",
