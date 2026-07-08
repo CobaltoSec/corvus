@@ -389,6 +389,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
+> Our coordinated disclosure process is governed by the [CobaltoSec Responsible Disclosure Policy](https://github.com/CobaltoSec/disclosure-policy).
 44 security advisories filed across 15 case studies — 3 published, 41 in active coordinated disclosure (90-day window).
 
 **Published:**
