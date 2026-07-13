@@ -1,9 +1,16 @@
 # Changelog
 
+## [RT-CORVUS-ROADMAP-ANALYSIS] — 2026-07-13 — Análisis multi-agente + roadmap de mejoras
+
+- **Análisis 5 dominios en paralelo** — scanner/FP calibration, discovery pipeline, disclosure management, CLI/DX, y estrategia post-CFP. 28 mejoras identificadas y clasificadas en 4 fases por esfuerzo/impacto.
+- **Roadmap publicado** — artifact interactivo con fases, prioridades y detalles de implementación por dominio: https://claude.ai/code/artifact/bc3474cb-e294-41e3-90a6-164f257e0fa4
+- **RT-CORVUS-IMPROVE-1 documentado** — SIGUIENTE.md actualizado con el plan completo de mejoras (Fase 1 XS → Fase 4 Estratégico).
+- **Hallazgos clave**: scope-part dedup bug activo en discover.py (bloquea orgs completas), response_flood.py es el mayor FP driver (60-70% en data tools), 21 GHSAs de CS12-CS15 sin documentar en DISCLOSURE-PROCESS.md, arXiv paper al 90% ready.
+
 ## [RT-CORVUS-GHSA-CREDITS] — 2026-07-07 — Credits nicoPadi1002 en todos los GHSAs
 
 - **Batch-patch 55 GHSAs** — 52 drafts + 3 published: todos actualizados vía `gh api PATCH` para creditar `nicoPadi1002` como `reporter`. GitHub permite editar credits en advisories publicados (no documentado explícitamente).
-- **DISCLOSURE-PROCESS.md actualizado** — payload de creación de advisory ahora incluye `"credits": [{"login": "nicoPadi1002", "type": "reporter"}]` por defecto. Todo GHSA futuro ya nace con el crédito correcto.
+- **DISCLOSURE-PROCESS.md actualizado** — payload de creación de advisory ahora incluye `"credits": [{"login": "nicoPadi1002", "type": "reporter"}]` por defecto. Todo GHSA futuro ya nace con el crédito correcto. Protocolo de lookup de contacto documentado: 3 pasos (npm metadata + owner type + top committers), estrategia de invitar ≥2 contactos distintos por GHSA.
 - **Decisión de marca** — reporter = nicoPadi1002 (brand personal, estándar industry: CVEs/GHSAs siempre crédito individual); advisory hosteado en CobaltoSec/advisories (brand org). Setup idéntico a Google Project Zero.
 
 ## [RT-CORVUS-CFP-FINAL] — 2026-07-06 — CFP Ekoparty 2026 submitteado · 300 servers · 44 GHSAs

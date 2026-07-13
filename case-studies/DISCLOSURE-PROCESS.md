@@ -137,33 +137,81 @@ echo '{"state": "published"}' | \
 
 ---
 
+## Protocolo: lookup de contacto
+
+Antes de crear un GHSA, ejecutar estos 3 pasos para identificar todos los contactos posibles.
+
+### Paso 1 — npm metadata
+
+```bash
+npm show <package> repository.url maintainers
+```
+
+Anota:
+- `repository.url` → URL del repo GitHub
+- `maintainers` → email del npm maintainer (fallback si GitHub no responde)
+
+### Paso 2 — Tipo de owner del repo
+
+```bash
+gh api repos/<owner>/<repo> --jq '{owner: .owner.login, type: .owner.type}'
+```
+
+- **User** → el owner es una persona, incluirlo en `collaborating_users`
+- **Organization** → el owner es una org; el repo URL solo da la org, no la persona
+
+### Paso 3 — Top committers humanos
+
+```bash
+gh api "repos/<owner>/<repo>/contributors?per_page=5" \
+  --jq '.[] | select(.type == "User") | .login'
+```
+
+Identifica quién escribe el código. Puede ser distinto al repo owner (cuentas separadas).
+
+### Estrategia de contacto (regla)
+
+**Invitar siempre al menos 2 contactos distintos** cuando estén disponibles:
+- Siempre: repo owner (si es User) + top committer humano (si es distinto al owner)
+- Si Org: los 2 contributors humanos top
+- Documentar en tabla: npm maintainer email como fallback fuera de GitHub
+
+Si solo hay un contacto posible → documentarlo explícitamente en la tabla con `⚠️ contacto único`.
+
+```bash
+# Invitar múltiples en un solo PATCH
+echo '{"collaborating_users": ["owner-login", "committer-login"]}' | \
+  gh api repos/CobaltoSec/advisories/security-advisories/$GHSA_ID \
+  -X PATCH -H "Content-Type: application/json" --input -
+```
+
+---
+
 ## Maintainers conocidos
 
-| Repo / Package                              | Maintainer GitHub   | Invitado | PVR |
-|---------------------------------------------|---------------------|----------|-----|
-| modelcontextprotocol/servers                | olaservo            | ✅       | No  |
-| modelcontextprotocol/mcp-server-sqlite      | olaservo            | ✅       | No  |
-| nicholasgasior/mcp-shell-server             | nicholasgasior (mako10k) | ✅  | No  |
-| REMnux/remnux-mcp-server                    | lennyzeltser        | N/A (published) | No |
-| microsoft/playwright                        | pavelfeldman        | ✅       | No  |
-| Dusheh/myclaw-toolkit                       | Dusheh              | ✅       | No  |
-| KyrieTangSheng/mcp-server-nationalparks     | KyrieTangSheng      | ✅       | No  |
-| cyanheads/pubmed-mcp-server                 | cyanheads           | ✅       | No  |
-| idachev/mcp-javadc                          | idachev             | ✅       | No  |
-| nrwl/nx-console (nx-mcp)                    | vsavkin             | ✅       | No  |
-| Jpisnice/shadcn-ui-mcp-server               | Jpisnice            | ✅       | No  |
-| Hack23/European-Parliament-MCP-Server       | pethers             | ✅       | No  |
-| GET-Technology-Inc/jamf-docs-mcp-server     | h1431532403240      | ✅       | No  |
-| makenotion/notion-mcp-server                | mquan               | ✅       | No  |
-| benborla/mcp-server-mysql                   | benborla            | ✅       | No  |
-| unmateria/MCP-Access                        | unmateria           | ✅       | No  |
-| takashiishida/arxiv-latex-mcp               | takashiishida       | ✅       | No  |
-| MyMedi-AI/mymedi-ai-mcp-server              | OFODevelopment      | ✅       | No  |
-| RipperMercs/tensorfeed-mcp                  | spamcraftgame       | ✅       | No  |
-| martingeidobler/android-mcp-server          | martingeidobler     | ✅       | No  |
-| tadas-github/a2asearch-mcp                  | tadas-github        | ✅       | No  |
-
-**Cómo encontrar maintainer:** `npm show <package> repository.url` → extrae el GitHub username del repo.
+| Repo / Package                              | Invitados GitHub              | npm contact              | PVR |
+|---------------------------------------------|-------------------------------|--------------------------|-----|
+| modelcontextprotocol/servers                | olaservo                      | —                        | No  |
+| modelcontextprotocol/mcp-server-sqlite      | olaservo                      | —                        | No  |
+| nicholasgasior/mcp-shell-server             | nicholasgasior + mako10k      | —                        | No  |
+| REMnux/remnux-mcp-server                    | lennyzeltser (N/A, published) | —                        | No  |
+| microsoft/playwright                        | pavelfeldman                  | —                        | No  |
+| Dusheh/myclaw-toolkit                       | Dusheh                        | —                        | No  |
+| KyrieTangSheng/mcp-server-nationalparks     | KyrieTangSheng                | —                        | No  |
+| cyanheads/pubmed-mcp-server                 | cyanheads                     | —                        | No  |
+| idachev/mcp-javadc                          | idachev                       | —                        | No  |
+| nrwl/nx-console (nx-mcp)                    | vsavkin                       | —                        | No  |
+| Jpisnice/shadcn-ui-mcp-server               | Jpisnice                      | —                        | No  |
+| Hack23/European-Parliament-MCP-Server       | pethers                       | —                        | No  |
+| GET-Technology-Inc/jamf-docs-mcp-server     | h1431532403240                | —                        | No  |
+| makenotion/notion-mcp-server                | mquan                         | —                        | No  |
+| benborla/mcp-server-mysql                   | benborla                      | —                        | No  |
+| unmateria/MCP-Access                        | unmateria                     | —                        | No  |
+| takashiishida/arxiv-latex-mcp               | takashiishida                 | —                        | No  |
+| MyMedi-AI/mymedi-ai-mcp-server              | OFODevelopment                | —                        | No  |
+| RipperMercs/tensorfeed-mcp                  | RipperMercs + spamcraftgame ⚠️ se removió | eatpizzarbt (evan@pizzarobotstudios.com) | No |
+| martingeidobler/android-mcp-server          | martingeidobler               | —                        | No  |
+| tadas-github/a2asearch-mcp                  | tadas-github                  | —                        | No  |
 
 PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen deshabilitado → siempre usar `CobaltoSec/advisories` + invitar via `collaborating_users`.
 
@@ -176,44 +224,71 @@ PVR = Private Vulnerability Reporting. Todos los targets conocidos lo tienen des
 | `PUT /security-advisories/{ghsa}/collaborators` | 404 siempre en repos distintos al del package | `PATCH /security-advisories/{ghsa}` con `collaborating_users` |
 | Usar Shrike (`shrike_disclose_github`) para GHSAs de Corvus | Shrike es para huntr/0din/google_vrp — GHSAs de Corvus van via `gh api` directo | `gh api` como en el flujo completo de arriba |
 | Crear GHSA sin invitar collaborador en el mismo paso | Quedan huérfanos sin notificación al maintainer | Crear + invitar como bloque único (ver flujo completo) |
+| Invitar solo 1 contacto | Si se remueve, quedamos sin vendor contact y sin forma de recontactar | Siempre invitar owner + committer (si distintos); documentar npm email como fallback |
+| Usar solo la URL del repo para identificar el contacto | El owner del repo puede ser distinto al committer real (ej: `RipperMercs` vs `spamcraftgame`) | Correr los 3 pasos del protocolo de lookup antes de cada GHSA |
+
+---
+
+## Si un collaborador se remueve
+
+```bash
+# 1. Verificar estado actual de collaborators
+gh api repos/CobaltoSec/advisories/security-advisories/<GHSA> \
+  --jq '{collaborators: [.collaborating_users[].login], state: .state}'
+```
+
+**Si quedan 0 collaborators:**
+
+1. Re-invitar el **repo owner** (si no era el contacto original)
+2. Si el repo owner también falla o no responde en 7d → usar el **npm maintainer email** para contacto directo fuera de GitHub (no hay API para esto, acción manual)
+3. Si ninguna vía funciona → publicar según el **calendario original** sin esperar respuesta del vendor; documentar en la tabla que el vendor no cooperó
+
+```bash
+# Re-invitar repo owner
+echo '{"collaborating_users": ["repo-owner-login"]}' | \
+  gh api repos/CobaltoSec/advisories/security-advisories/<GHSA> \
+  -X PATCH -H "Content-Type: application/json" --input -
+```
+
+Actualizar la tabla "GHSAs activos" con el nuevo estado del contacto.
 
 ---
 
 ## GHSAs activos (2026-07-05)
 
-| GHSA                  | Package                              | Severity    | Collaborator    | Estado             | Publicar    |
-|-----------------------|--------------------------------------|-------------|-----------------|-------------------|-------------|
-| GHSA-mf64-cgv4-ppcx   | @playwright/mcp                      | HIGH        | pavelfeldman ✅  | draft, 90d        | 2026-09-25  |
-| GHSA-7763-c5gf-v5fj   | mcp-shell-server                     | HIGH        | mako10k ✅       | draft             | 2026-07-25  |
-| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | HIGH     | olaservo ✅      | draft             | 2026-07-25  |
-| GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH        | olaservo ✅      | draft             | 2026-07-25  |
-| GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM      | N/A             | **published** ✅   | —           |
-| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL**| Dusheh ✅        | draft (LFI+SSRF)  | 2026-07-29  |
-| GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH        | N/A             | **published** ✅   | —           |
-| GHSA-3f55-qgq4-f88c   | server-sequential-thinking           | MEDIUM      | N/A             | **published** ✅   | —           |
-| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅| draft            | 2026-08-01  |
-| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅     | draft            | 2026-08-01  |
-| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅       | draft            | 2026-08-01  |
-| GHSA-m9p4-rqc7-2fqx   | nx-mcp                               | HIGH        | vsavkin ✅       | draft            | 2026-08-01  |
-| GHSA-q974-p8xv-f7c7   | @jpisnice/shadcn-ui-mcp-server       | HIGH        | Jpisnice ✅      | draft            | 2026-08-01  |
-| GHSA-qc46-wfh2-238g   | european-parliament-mcp-server       | HIGH        | pethers ✅       | draft            | 2026-08-01  |
-| GHSA-rqqv-9rxr-gj2h   | @get-technology-inc/jamf-docs-mcp-server | HIGH    | h1431532403240 ✅| draft            | 2026-08-01  |
-| GHSA-gpm5-mj27-94gp   | @notionhq/notion-mcp-server          | HIGH        | mquan ✅         | draft            | 2026-08-01  |
-| GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅      | draft            | 2026-08-01  |
-| GHSA-vrmg-6pw3-qwfg   | @sap-ux/fiori-mcp-server             | HIGH        | IainSAP + mikicvi-SAP ✅ | draft CS03  | 2026-10-03  |
-| GHSA-frqj-945w-4qp2   | markitdown-mcp                       | HIGH        | afourney ✅              | draft CS03  | 2026-10-03  |
-| GHSA-8ggf-fm7g-7pxf   | @upstash/context7-mcp                | MEDIUM      | enesgules + fahreddinozcan ✅ | draft CS03 | 2026-10-03  |
-| GHSA-4r48-4m95-6rm8   | @heroku/mcp-server                   | HIGH        | justinwilaby + sbosio ✅     | draft CS03 | 2026-10-03  |
-| GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                  | draft CS04 | 2026-08-03  |
-| GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                   | draft CS04 | 2026-08-03  |
-| GHSA-78qj-r76x-2jvh   | @pulsemcp/pulse-fetch                | HIGH        | macoughl + tadasant ✅       | draft CS04 | 2026-08-03  |
-| GHSA-9jp6-hph9-jm5f   | mcp-msaccess-database                | HIGH        | unmateria ✅                 | draft CS08 | 2026-08-04  |
-| GHSA-h6xq-7fpp-q2hf   | arxiv-latex-mcp                      | HIGH        | takashiishida ✅             | draft CS08 | 2026-08-04  |
-| GHSA-prc4-649r-564g   | localparse-mcp                       | HIGH        | — (no repo público)          | draft CS08 | 2026-08-04  |
-| GHSA-6jrq-96x4-6pvq   | @agent-infra/mcp-server-browser      | HIGH        | ulivz ✅                     | draft CS10 | 2026-08-05  |
-| GHSA-p2xc-mj3p-7q4x   | @browserbasehq/mcp                   | HIGH        | Kylejeong2 ✅                | draft CS10 | 2026-08-05  |
-| GHSA-6f4g-h4c4-75r8   | @mymedi-ai/mcp-server                | HIGH        | OFODevelopment ✅             | draft CS11 | 2026-08-06  |
-| GHSA-wx78-8jx3-wcv9   | @tensorfeed/mcp-server               | HIGH        | spamcraftgame ✅              | draft CS11 | 2026-08-06  |
-| GHSA-xh32-vqc4-v285   | android-mcp-server                   | HIGH        | martingeidobler ✅            | draft CS11 | 2026-08-06  |
-| GHSA-32vx-mq6h-p8f3   | emilia-protocol                      | HIGH        | — (no repo público)          | draft CS11 | 2026-08-06  |
-| GHSA-2mq4-q772-f26c   | a2asearch-mcp                        | HIGH        | tadas-github ✅               | draft CS11 | 2026-08-06  |
+| GHSA                  | Package                              | Severity    | Invitados GitHub                    | npm contact fallback | Estado             | Publicar    |
+|-----------------------|--------------------------------------|-------------|-------------------------------------|----------------------|--------------------|-------------|
+| GHSA-mf64-cgv4-ppcx   | @playwright/mcp                      | HIGH        | pavelfeldman ✅                      | —                    | draft, 90d         | 2026-09-25  |
+| GHSA-7763-c5gf-v5fj   | mcp-shell-server                     | HIGH        | mako10k ✅                           | —                    | draft              | 2026-07-25  |
+| GHSA-pr6r-h66r-m47j   | @modelcontextprotocol/server-everything | HIGH     | olaservo ✅                          | —                    | draft              | 2026-07-25  |
+| GHSA-7w27-7xwv-x6x2   | mcp-server-sqlite                    | HIGH        | olaservo ✅                          | —                    | draft              | 2026-07-25  |
+| GHSA-43j9-hmpq-cgv7   | remnux-mcp-server                    | MEDIUM      | N/A                                 | —                    | **published** ✅    | —           |
+| GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL**| Dusheh ✅                            | —                    | draft (LFI+SSRF)   | 2026-07-29  |
+| GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH        | N/A                                 | —                    | **published** ✅    | —           |
+| GHSA-3f55-qgq4-f88c   | server-sequential-thinking           | MEDIUM      | N/A                                 | —                    | **published** ✅    | —           |
+| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅                    | —                    | draft              | 2026-08-01  |
+| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅                         | —                    | draft              | 2026-08-01  |
+| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅                           | —                    | draft              | 2026-08-01  |
+| GHSA-m9p4-rqc7-2fqx   | nx-mcp                               | HIGH        | vsavkin ✅                           | —                    | draft              | 2026-08-01  |
+| GHSA-q974-p8xv-f7c7   | @jpisnice/shadcn-ui-mcp-server       | HIGH        | Jpisnice ✅                          | —                    | draft              | 2026-08-01  |
+| GHSA-qc46-wfh2-238g   | european-parliament-mcp-server       | HIGH        | pethers ✅                           | —                    | draft              | 2026-08-01  |
+| GHSA-rqqv-9rxr-gj2h   | @get-technology-inc/jamf-docs-mcp-server | HIGH    | h1431532403240 ✅                    | —                    | draft              | 2026-08-01  |
+| GHSA-gpm5-mj27-94gp   | @notionhq/notion-mcp-server          | HIGH        | mquan ✅                             | —                    | draft              | 2026-08-01  |
+| GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅                          | —                    | draft              | 2026-08-01  |
+| GHSA-vrmg-6pw3-qwfg   | @sap-ux/fiori-mcp-server             | HIGH        | IainSAP + mikicvi-SAP ✅             | —                    | draft CS03         | 2026-10-03  |
+| GHSA-frqj-945w-4qp2   | markitdown-mcp                       | HIGH        | afourney ✅                          | —                    | draft CS03         | 2026-10-03  |
+| GHSA-8ggf-fm7g-7pxf   | @upstash/context7-mcp                | MEDIUM      | enesgules + fahreddinozcan ✅         | —                    | draft CS03         | 2026-10-03  |
+| GHSA-4r48-4m95-6rm8   | @heroku/mcp-server                   | HIGH        | justinwilaby + sbosio ✅             | —                    | draft CS03         | 2026-10-03  |
+| GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                          | —                    | draft CS04         | 2026-08-03  |
+| GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                           | —                    | draft CS04         | 2026-08-03  |
+| GHSA-78qj-r76x-2jvh   | @pulsemcp/pulse-fetch                | HIGH        | macoughl + tadasant ✅               | —                    | draft CS04         | 2026-08-03  |
+| GHSA-9jp6-hph9-jm5f   | mcp-msaccess-database                | HIGH        | unmateria ✅                         | —                    | draft CS08         | 2026-08-04  |
+| GHSA-h6xq-7fpp-q2hf   | arxiv-latex-mcp                      | HIGH        | takashiishida ✅                     | —                    | draft CS08         | 2026-08-04  |
+| GHSA-prc4-649r-564g   | localparse-mcp                       | HIGH        | — (no repo público)                 | —                    | draft CS08         | 2026-08-04  |
+| GHSA-6jrq-96x4-6pvq   | @agent-infra/mcp-server-browser      | HIGH        | ulivz ✅                             | —                    | draft CS10         | 2026-08-05  |
+| GHSA-p2xc-mj3p-7q4x   | @browserbasehq/mcp                   | HIGH        | Kylejeong2 ✅                        | —                    | draft CS10         | 2026-08-05  |
+| GHSA-6f4g-h4c4-75r8   | @mymedi-ai/mcp-server                | HIGH        | OFODevelopment ✅                    | —                    | draft CS11         | 2026-08-06  |
+| GHSA-wx78-8jx3-wcv9   | @tensorfeed/mcp-server               | HIGH        | RipperMercs + spamcraftgame ⚠️ removido | evan@pizzarobotstudios.com | draft CS11 | 2026-08-06  |
+| GHSA-xh32-vqc4-v285   | android-mcp-server                   | HIGH        | martingeidobler ✅                   | —                    | draft CS11         | 2026-08-06  |
+| GHSA-32vx-mq6h-p8f3   | emilia-protocol                      | HIGH        | — (no repo público)                 | —                    | draft CS11         | 2026-08-06  |
+| GHSA-2mq4-q772-f26c   | a2asearch-mcp                        | HIGH        | tadas-github ✅                      | —                    | draft CS11         | 2026-08-06  |
