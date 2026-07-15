@@ -8,6 +8,11 @@ import time
 from pathlib import Path
 from typing import Annotated, List, Optional
 
+try:
+    from cobalt_hub_client import emit as _hub_emit
+except ImportError:
+    _hub_emit = None
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -540,6 +545,15 @@ async def _scan(
         f"\n[dim]Scan complete · {n_findings} finding{'s' if n_findings != 1 else ''}"
         f" · {elapsed:.1f}s · {report_path}[/dim]"
     )
+    if _hub_emit:
+        _hub_emit("scan.completed", {
+            "target": result.target,
+            "transport": result.transport,
+            "duration_seconds": round(elapsed, 2),
+            "findings_total": n_findings,
+            "severity_counts": result.finding_count,
+            "modules_run": result.modules_run,
+        }, source_tool="corvus")
 
     if write_sarif:
         sarif_path = gen.write_sarif(result)
