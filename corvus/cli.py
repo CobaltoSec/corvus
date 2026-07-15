@@ -546,7 +546,7 @@ async def _scan(
         f" · {elapsed:.1f}s · {report_path}[/dim]"
     )
     if _hub_emit:
-        _hub_emit("scan.completed", {
+        _hub_emit("corvus.scan.completed", {
             "target": result.target,
             "transport": result.transport,
             "duration_seconds": round(elapsed, 2),

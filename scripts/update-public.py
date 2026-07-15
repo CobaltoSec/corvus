@@ -174,11 +174,10 @@ def build_disclosure_section(stats: dict) -> str:
 def update_readme(stats: dict) -> None:
     content = README.read_text(encoding="utf-8")
 
-    # Fix version in demo block (simple text replace, no marker needed)
-    old_version = "Corvus v0.9.1"
-    if old_version in content:
-        content = content.replace(old_version, f"Corvus v{stats['version']}")
-        print(f"  Fixed version: {old_version} → Corvus v{stats['version']}")
+    # Fix version in demo block (regex, works regardless of previous version)
+    content, n_ver = re.subn(r"Corvus v\d+\.\d+\.\d+", f"Corvus v{stats['version']}", content)
+    if n_ver:
+        print(f"  Fixed version: → Corvus v{stats['version']} ({n_ver} occurrence{'s' if n_ver != 1 else ''})")
 
     # Replace marked sections
     content = replace_section(content, "MODULES", build_modules_section(stats))
