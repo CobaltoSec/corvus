@@ -161,7 +161,7 @@ async def test_response_flood_skips_admin_list_tool():
 async def test_response_flood_still_flags_non_admin_large_tool():
     """A non-admin tool returning 10KB should still trigger ResponseFlood."""
     surface = _surface_with(
-        ("search_everything", "Returns all matching content.", {}),
+        ("process_request", "Processes the given request.", {}),
     )
     transport = _MockTransport(large_response=True)
     findings = await ResponseFloodModule().run(surface, transport, None)
