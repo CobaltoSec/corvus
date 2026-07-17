@@ -7,7 +7,7 @@ regex_patterns:
   - "you are now"
   - "new (system )?prompt"
   - "act as (a )?(different|new|another)"
-  - "SYSTEM\\s*:"
+  - "\\bSYSTEM\\s*:"
   - "\\[INST\\]"
   - "###[A-Z_]+###"
   - "new instructions? follow"

@@ -72,6 +72,7 @@ class StdioTransport(MCPTransport):
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     env=proc_env,
+                    limit=10 * 1024 * 1024,
                 )
             else:
                 self._process = await asyncio.create_subprocess_exec(
@@ -80,6 +81,7 @@ class StdioTransport(MCPTransport):
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     env=proc_env,
+                    limit=10 * 1024 * 1024,
                 )
         else:
             self._process = await asyncio.create_subprocess_exec(
@@ -88,6 +90,7 @@ class StdioTransport(MCPTransport):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 env=proc_env,
+                limit=10 * 1024 * 1024,
             )
         # Detect immediate crash: wait up to 5s for the process to exit.
         # If it exits, it crashed before handling any requests.
