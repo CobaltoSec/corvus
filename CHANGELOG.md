@@ -1,5 +1,14 @@
 # Changelog
 
+## [RT-CORVUS-IMPROVE-1] — 2026-07-17 — Pre-Run 2 fixes: response_flood 32KB gate + schema_bypass behavioral diff + batch CLI flags
+
+- **D1 — response_flood.py FP reduction (60-70% en data tools)** — Agregado `_DATA_TOOL_RE` (search|query|fetch|retrieve|get|list|read|find|lookup|scrape|extract|parse|download|load|index) con `_SIZE_THRESHOLD_DATA = 32_768` (32KB). Data tools reciben 4× el threshold default (8KB), eliminando la mayoría de FP LOWs en HF Spaces/Gradio donde respuestas grandes son esperadas.
+- **D2 — schema_bypass.py behavioral diff gate para `__proto__`** — Test 3 (prototype pollution) ahora requiere diff de comportamiento: baseline vs respuesta con `__proto__`. Solo flagea si la respuesta cambia. Nuevo método `_response_str()`. Elimina ~20-40 LOW FP por target donde el server ignora correctamente campos desconocidos.
+- **D3 — `corvus batch` CLI: `--skip-existing` + `--case-study`** — Ambos flags ya estaban wired en `run_batch()` pero no expuestos en el CLI. Ahora visibles en `corvus batch --help`. Habilita runs reanudables y tagging de case study (e.g. `--case-study CS16`).
+- **Fix — test_discover.py PYPI_CURATED size** — `test_pypi_search_by_name_filters_mcp` usaba `range(30)` hardcodeado pero PYPI_CURATED creció de 25 a 37 entradas; `30 > 37` → False → fallback. Cambiado a `len(_discover.PYPI_CURATED) + 10`.
+- **Fix — test_fp_calibration_v4.py tool name** — `search_everything` matcheaba `_DATA_TOOL_RE` vía "search" substring, haciendo que el mock de 10KB cayera bajo el nuevo threshold de 32KB. Cambiado a `process_request` (non-data tool, preserva la intención del test).
+- **744 tests pass** (sin regresiones).
+
 ## [RT-CORVUS-ROADMAP-ANALYSIS] — 2026-07-13 — Análisis multi-agente + roadmap de mejoras
 
 - **Análisis 5 dominios en paralelo** — scanner/FP calibration, discovery pipeline, disclosure management, CLI/DX, y estrategia post-CFP. 28 mejoras identificadas y clasificadas en 4 fases por esfuerzo/impacto.
