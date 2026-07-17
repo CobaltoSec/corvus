@@ -171,8 +171,8 @@ def test_github_to_pkg_obj():
 @pytest.mark.asyncio
 async def test_pypi_search_by_name_filters_mcp():
     """pypi_search_by_name returns only packages with 'mcp' in the name when count exceeds PYPI_CURATED."""
-    # Must produce more mcp packages than PYPI_CURATED (25) to avoid falling back
-    mcp_pkgs = [f"mcp-tool-{i}" for i in range(30)]
+    # Must produce more mcp packages than PYPI_CURATED to avoid falling back
+    mcp_pkgs = [f"mcp-tool-{i}" for i in range(len(_discover.PYPI_CURATED) + 10)]
     other_pkgs = ["requests", "flask", "django"]
     all_pkgs = mcp_pkgs + other_pkgs
     html_parts = [f'<a href="/simple/{p}/">{p}</a>' for p in all_pkgs]

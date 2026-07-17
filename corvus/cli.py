@@ -221,6 +221,8 @@ async def _run_batch_with_progress(
     sarif: bool,
     modules: list[str] | None,
     concurrency: int,
+    skip_existing: bool = False,
+    case_study: str | None = None,
 ):
     from .batch import run_batch
     from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
@@ -276,6 +278,8 @@ async def _run_batch_with_progress(
             modules=modules,
             concurrency=concurrency,
             on_status=on_status,
+            skip_existing=skip_existing,
+            case_study=case_study,
         )
 
     return result
@@ -636,9 +640,13 @@ def batch(
     module: Annotated[Optional[List[str]], typer.Option(
         "--module", "-m",
         help="all | static | dynamic | <module-name> (repeatable)")] = None,
+    skip_existing: Annotated[bool, typer.Option(
+        "--skip-existing", help="Skip targets that already have a report.json in the output directory")] = False,
+    case_study: Annotated[Optional[str], typer.Option(
+        "--case-study", help="Tag results with a case study label (e.g. CS16)")] = None,
 ):
     """Scan multiple MCP servers from a targets YAML file or inline --stdio/--http flags."""
-    asyncio.run(_batch(config, stdio, http, concurrency, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module))
+    asyncio.run(_batch(config, stdio, http, concurrency, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module, skip_existing, case_study))
 
 
 async def _batch(
@@ -653,6 +661,8 @@ async def _batch(
     sarif: bool,
     min_confidence: int | None,
     modules: list[str] | None = None,
+    skip_existing: bool = False,
+    case_study: str | None = None,
 ) -> None:
     from .batch import load_batch_targets, run_batch
 
@@ -706,6 +716,8 @@ async def _batch(
             sarif=sarif,
             modules=modules,
             concurrency=concurrency,
+            skip_existing=skip_existing,
+            case_study=case_study,
         )
     else:
         result = await run_batch(
@@ -716,6 +728,8 @@ async def _batch(
             sarif=sarif,
             modules=modules,
             concurrency=concurrency,
+            skip_existing=skip_existing,
+            case_study=case_study,
         )
 
     summary_path = output_dir / "summary.md"

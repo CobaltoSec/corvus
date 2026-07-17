@@ -29,6 +29,13 @@ _SLOW_BY_DESIGN_RE = re.compile(
     re.I,
 )
 
+# Data/analysis/search tools legitimately return large payloads — use a higher threshold
+_DATA_TOOL_RE = re.compile(
+    r"search|query|fetch|retrieve|get|list|read|find|lookup|scrape|extract|parse|download|load|index",
+    re.I,
+)
+_SIZE_THRESHOLD_DATA = 32_768  # 32 KB for data/search/analysis tools
+
 
 class ResponseFloodModule(ScanModule):
     owasp_id = "MCP10"
@@ -91,14 +98,15 @@ class ResponseFloodModule(ScanModule):
 
                 byte_size = len(text.encode("utf-8"))
 
-                if byte_size > _SIZE_THRESHOLD:
+                threshold = _SIZE_THRESHOLD_DATA if _DATA_TOOL_RE.search(tool.name) else _SIZE_THRESHOLD
+                if byte_size > threshold:
                     findings.append(Finding(
                         owasp_category=OWASPCategory.MCP10_CONTEXT_INJECTION,
                         severity=Severity.HIGH,
                         title=f"Response Flooding — '{tool.name}' returns oversized response",
                         description=(
                             f"Tool '{tool.name}' returned {byte_size:,} bytes "
-                            f"(threshold: {_SIZE_THRESHOLD:,} bytes). "
+                            f"(threshold: {threshold:,} bytes). "
                             "Large responses can overflow LLM context windows, push out system "
                             "prompts, or cause denial-of-service in agent pipelines."
                         ),

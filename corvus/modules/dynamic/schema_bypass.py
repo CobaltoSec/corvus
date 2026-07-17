@@ -67,25 +67,40 @@ class SchemaBypassModule(ScanModule):
                         ))
                         break  # one finding per param
 
-            # Test 3: prototype pollution via extra fields
+            # Test 3: prototype pollution — only flag if response changes vs baseline (behavioral diff)
             if properties:
                 first_required = required[0] if required else next(iter(properties))
                 ptype = properties.get(first_required, {}).get("type", "string")
-                args = self.engine.build_args(properties, required, first_required,
-                                              self.engine.benign_default(ptype))
-                args["__proto__"] = {"polluted": True}
-                if await self._accepted(transport, tool.name, args):
+                args_base = self.engine.build_args(properties, required, first_required,
+                                                   self.engine.benign_default(ptype))
+                args_proto = {**args_base, "__proto__": {"polluted": True}}
+                baseline = await self._response_str(transport, tool.name, args_base)
+                proto_resp = await self._response_str(transport, tool.name, args_proto)
+                if proto_resp is not None and proto_resp != baseline:
                     findings.append(Finding(
                         owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
                         severity=Severity.LOW,
-                        title=f"'{tool.name}' accepts undeclared extra fields",
-                        description="Tool accepted arguments containing '__proto__' without error.",
+                        title=f"'{tool.name}' response changes with '__proto__' injection",
+                        description=(
+                            "Tool response differed when called with a '__proto__' extra field, "
+                            "suggesting the server may process undeclared parameters."
+                        ),
                         tool_name=tool.name,
                         remediation="Reject calls containing parameters not declared in inputSchema.",
-                        confidence=80,
+                        confidence=70,
                     ))
 
         return findings
+
+    async def _response_str(self, transport: MCPTransport, tool_name: str, args: dict) -> str | None:
+        """Return response as a string for diff comparison, or None on error/rejection."""
+        try:
+            result = await transport.send_request("tools/call", {"name": tool_name, "arguments": args})
+            if isinstance(result, dict) and result.get("isError"):
+                return None
+            return str(result)
+        except Exception:
+            return None
 
     async def _accepted(self, transport: MCPTransport, tool_name: str, args: dict) -> bool:
         """Return True if the tool call succeeded without an error response.
