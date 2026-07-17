@@ -7,7 +7,7 @@
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
-Corvus v1.0.1  MCP Security Scanner
+Corvus v1.3.1  MCP Security Scanner
 Target     : python my_mcp_server.py
 Transport  : stdio
 Modules    : tool-poisoning, scope-audit, shadow-tool, supply-chain, osv-supply-chain,
@@ -389,7 +389,6 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-> Our coordinated disclosure process is governed by the [CobaltoSec Responsible Disclosure Policy](https://github.com/CobaltoSec/disclosure-policy).
 44 security advisories filed across 15 case studies — 3 published, 41 in active coordinated disclosure (90-day window).
 
 **Published:**
