@@ -4,6 +4,8 @@
 [![Tests](https://github.com/CobaltoSec/corvus/actions/workflows/ci.yml/badge.svg)](https://github.com/CobaltoSec/corvus/actions)
 [![Python](https://img.shields.io/pypi/pyversions/cobaltosec-corvus)](https://pypi.org/project/cobaltosec-corvus/)
 
+> ⭐ **If Corvus found a vulnerability in your MCP server, [star the repo](https://github.com/CobaltoSec/corvus)** — it helps other security teams discover the tool.
+
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
@@ -416,3 +418,7 @@ pytest
 ## License
 
 MIT
+
+---
+
+> ⭐ **Corvus is open source and actively maintained.** If it helped you secure your MCP stack, a [GitHub star](https://github.com/CobaltoSec/corvus) goes a long way.
