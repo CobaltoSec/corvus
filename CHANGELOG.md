@@ -1,5 +1,14 @@
 # Changelog
 
+## [RT-CORVUS-CS16] — 2026-07-20 — CS16: 134 HTTP targets (Petrel Run 2) · 3 GHSAs · 315 servers
+
+- **CS16 — Petrel Run 2 HTTP scan (134 targets)** — `corvus batch` concurrency 5, todos los módulos, SARIF. 15/134 OK (11%), 119 ERROR/auth/offline. 188 raw findings, ~16 TPs. FP rate 91.5% (esperado para internet-facing; petrel-critical/no-auth pre-filter 59% conversion).
+- **GHSA-7rqv-4g54-hcxh — glimind-oracle SSRF CRITICAL** — `watch_tool` acepta URLs link-local y RFC-1918 sin validación. 3 vectores confirmados (toolId/webhook/minSeverity) → AWS IMDS (ami-id/instance-id) + Alibaba Cloud IMDS. IAM credential chain exploitable vía `/iam/security-credentials/`. CVSS 8.6. No auth required.
+- **GHSA-j62x-hg79-www6 — FinanceMCP XSS ×4 HIGH** — `finvestai.top`: inputs de stock_data/index_data/macro_econ reflejados verbatim en mensajes de error de Tushare API.
+- **GHSA-hx6w-3q3r-h3j8 — omi.me injection + EXT11 HIGH** — `storefront-renderer`: prompt injection via `update_cart.note` + `logging/setLevel` unauthenticated accepted → customer PII en logs.
+- **public-stats.yaml** — 315 servers (+15), 53 GHSAs (+3), 4,190 raw findings (+188), ~1,314 TPs (+16). CS16 entry added.
+- **744 tests pass** (sin regresiones).
+
 ## [RT-CORVUS-IMPROVE-1] — 2026-07-17 — Pre-Run 2 fixes: response_flood 32KB gate + schema_bypass behavioral diff + batch CLI flags
 
 - **D1 — response_flood.py FP reduction (60-70% en data tools)** — Agregado `_DATA_TOOL_RE` (search|query|fetch|retrieve|get|list|read|find|lookup|scrape|extract|parse|download|load|index) con `_SIZE_THRESHOLD_DATA = 32_768` (32KB). Data tools reciben 4× el threshold default (8KB), eliminando la mayoría de FP LOWs en HF Spaces/Gradio donde respuestas grandes son esperadas.

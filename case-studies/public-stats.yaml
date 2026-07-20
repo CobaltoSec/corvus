@@ -180,10 +180,21 @@ case_studies:
     false_positives: 125  # estimated ~81% — EXT01 crashes dominate
     fp_rate: 80.6
     note: "PyPI 0-DL docs tier + pubmed cluster + analysis servers. Key highlights: (1) v1.28.1 template cluster × 6 packages (adonis-docs-mcp, textual-docs-mcp, byebye-docs-mcp, web3-docs-mcp, autocleaneeg-pubmedmcp, sqlite-mcp-server) — all share same XSS reflection pattern in error messages, different domains (JS framework docs, TUI docs, Web3, EEG research, SQLite browser). (2) bachai-data-analysis-mcp (BACH Studio, Chinese) — XSS reflection in 4 data analysis tools, score 92/100. GHSAs: 2 candidates (adonis-docs-mcp cluster + bachai-data-analysis-mcp). Pattern: template reuse across diverse domains is the 3rd confirmed instance (CS08 arxiv, CS11 tensorfeed, CS15 v1.28.1)."
+  cs16:
+    servers: 15  # 134 targeted (HTTP internet-facing from Petrel Run 2), 15 OK, 119 ERROR (89% error rate — majority auth-required or offline)
+    targets_total: 134
+    skipped: 0
+    error_startup: 119  # HTTP auth required (OAuth/Bearer), server offline, or endpoint changed since Petrel Run 2
+    raw_findings: 188  # from 15 OK servers
+    true_positives: 16  # glimind-com SSRF×3+cred (CRITICAL), finvestai-top XSS×4 (HIGH), omi-me injection+EXT11 (HIGH), archive-35 XSS×2 (HIGH) — rest LOW/schema noise
+    false_positives: 172  # estimated ~91% — schema-audit LOWs + protocol crash noise
+    fp_rate: 91.5
+    note: "Petrel Run 2 targets (134 HTTP internet-facing). 11% OK rate expected — Petrel confirms MCP handshake, not full tool execution. Key highlights: (1) glimind-com SSRF CRITICAL via watch_tool.toolId/webhook/minSeverity → AWS+Alibaba Cloud metadata confirmed (GHSA-7rqv-4g54-hcxh). (2) finvestai-top XSS×4 in Chinese financial data tools (GHSA-j62x-hg79-www6). (3) omi-me injection+EXT11 unauthenticated log escalation (GHSA-hx6w-3q3r-h3j8). (4) archive-35.com XSS×2 in photography e-commerce (low severity, no GHSA). Pattern: all vulnerabilities in no-auth petrel-critical targets — confirms Petrel pre-filter effective."
+
   totals:
-    servers: 300  # 288 (CS01-CS14) + 12 (CS15)
-    raw_findings: 4002  # 3847 (CS01-CS14) + 155 (CS15)
-    true_positives: 1298  # 1268 (CS01-CS14) + 30 (CS15 estimated)
+    servers: 315  # 300 (CS01-CS15) + 15 (CS16)
+    raw_findings: 4190  # 4002 (CS01-CS15) + 188 (CS16)
+    true_positives: 1314  # 1298 (CS01-CS15) + 16 (CS16 estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -204,9 +215,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 44
+  total: 53
   published: 3
-  draft: 41
+  draft: 50
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

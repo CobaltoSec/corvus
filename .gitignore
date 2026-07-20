@@ -50,6 +50,9 @@ case-studies/cs10-mcp-ecosystem/scans/
 case-studies/cs10-mcp-ecosystem/candidates-*.yaml
 case-studies/cs15-mcp-ecosystem/scans/
 case-studies/cs15-mcp-ecosystem/candidates-*.yaml
+case-studies/cs16-mcp-ecosystem/scans/
+case-studies/cs16-mcp-ecosystem/scan-*.log
+run_cs16.py
 arxiv_cache/
 de421.bsp
 *.heapsnapshot
