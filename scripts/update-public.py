@@ -214,6 +214,18 @@ def update_projects_ts(stats: dict) -> None:
     )
     new_content = old_pattern.sub(lambda m: m.group(1) + new_desc + m.group(3), content)
 
+    # Update metrics[] array card values
+    metrics_map = [
+        ('Servers audited', str(t['servers'])),
+        ('True positives', str(t['true_positives'])),
+        ('Advisories filed', str(g['total'])),
+    ]
+    for label, value in metrics_map:
+        pat = re.compile(
+            r"(\{\s*label:\s*'" + re.escape(label) + r"',\s*value:\s*')\d+(')"
+        )
+        new_content = pat.sub(lambda m, v=value: m.group(1) + v + m.group(2), new_content)
+
     if not old_pattern.search(content):
         print("  [warn] projectsData.ts: pattern not matched, manual update needed")
     elif new_content == content:
