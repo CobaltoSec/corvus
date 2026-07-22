@@ -1,5 +1,11 @@
 # Changelog
 
+## [RT-CORVUS-METRICS-IBIS] — 2026-07-22 — Metrics pipeline fix (7 published) + ibis sync --source corvus
+
+- **public-stats.yaml fix** — `published: 3 → 7`, `draft: 50 → 46`. 4 GHSAs erróneamente como draft: GHSA-jgxf (campertunity SSRF), GHSA-prc4 (localparse SSRF), GHSA-32vx (emilia-protocol prompt injection), GHSA-wx78 (tensorfeed XSS). README + projectsData.ts + toolsData.ts regenerados — web/GH en sync.
+- **update-public.py fix** — hardcode `"CS01+CS02+CS03:"` → dinámico `f"CS01–CS{cs_count:02d}:"`.
+- **ibis/sync/corvus.py** — nuevo sync path Corvus→Ibis. `sync_curated(path)` parsea findings-curated markdown con GHSA IDs reales (idempotente); `sync_report(path, min_confidence=60)` parsea report.json con IDs sintéticos `CORVUS-<slug>-NNN`. CLI: `ibis sync --source corvus --curated <path>` o `--report <path>`. 15 tests nuevos; 111/111 pass.
+
 ## [RT-CORVUS-CS16] — 2026-07-20 — CS16: 134 HTTP targets (Petrel Run 2) · 3 GHSAs · 315 servers
 
 - **CS16 — Petrel Run 2 HTTP scan (134 targets)** — `corvus batch` concurrency 5, todos los módulos, SARIF. 15/134 OK (11%), 119 ERROR/auth/offline. 188 raw findings, ~16 TPs. FP rate 91.5% (esperado para internet-facing; petrel-critical/no-auth pre-filter 59% conversion).
