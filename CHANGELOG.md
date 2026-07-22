@@ -1,5 +1,11 @@
 # Changelog
 
+## [RT-IBIS-HUB D4] — 2026-07-22 — Corvus → Ibis auto-registration post-scan
+
+- `corvus/cli.py` — `_ibis_report_findings(scan_result)` llamada post-scan: registra findings HIGH/CRITICAL + confidence ≥ 60 en Ibis DB. Package derivado del target URL (netloc) o primer token del comando.
+- `corvus/batch.py` — `_ibis_report_findings_batch(name, scan_result)` en run_batch loop. Usa el `name` de config YAML (limpio, no URL parsing).
+- Import guard `try/except ImportError` — silent no-op si `cobaltosec-ibis` no instalado. Integración activa: instalado en `.venv`.
+
 ## [RT-CORVUS-METRICS-IBIS] — 2026-07-22 — Metrics pipeline fix (7 published) + ibis sync --source corvus
 
 - **public-stats.yaml fix** — `published: 3 → 7`, `draft: 50 → 46`. 4 GHSAs erróneamente como draft: GHSA-jgxf (campertunity SSRF), GHSA-prc4 (localparse SSRF), GHSA-32vx (emilia-protocol prompt injection), GHSA-wx78 (tensorfeed XSS). README + projectsData.ts + toolsData.ts regenerados — web/GH en sync.

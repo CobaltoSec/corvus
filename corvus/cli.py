@@ -559,6 +559,8 @@ async def _scan(
             "modules_run": result.modules_run,
         }, source_tool="corvus")
 
+    _ibis_report_findings(result)
+
     if write_sarif:
         sarif_path = gen.write_sarif(result)
         console.print(f"SARIF  : {sarif_path}")
@@ -572,6 +574,38 @@ async def _scan(
         tidx = _SEVERITY_ORDER.index(threshold)
         if any(_SEVERITY_ORDER.index(f.severity) <= tidx for f in result.findings):
             raise typer.Exit(1)
+
+
+def _ibis_report_findings(scan_result) -> None:
+    """Register high/critical findings with Ibis. Silent no-op if ibis is not installed."""
+    try:
+        from ibis.core import register_finding
+    except ImportError:
+        return
+    from urllib.parse import urlparse
+    _HIGH = {"high", "critical"}
+    _MIN_CONF = 60
+    target = scan_result.target or ""
+    try:
+        parsed = urlparse(target)
+        pkg = parsed.netloc or target.split()[0]
+    except Exception:
+        pkg = target
+    for f in scan_result.findings:
+        if f.severity.value.lower() not in _HIGH:
+            continue
+        if f.confidence < _MIN_CONF:
+            continue
+        try:
+            register_finding(
+                package=pkg,
+                severity=f.severity.value.lower(),
+                description=f.title,
+                source="corvus",
+                ecosystem="mcp",
+            )
+        except Exception:
+            pass
 
 
 def _resolve_modules(

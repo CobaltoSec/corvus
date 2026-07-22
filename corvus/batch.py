@@ -397,6 +397,31 @@ def _record_to_history(
         pass  # history errors must never break the batch
 
 
+def _ibis_report_findings_batch(name: str, scan_result) -> None:
+    """Register high/critical findings from a batch scan with Ibis. Silent no-op if ibis not installed."""
+    try:
+        from ibis.core import register_finding
+    except ImportError:
+        return
+    _HIGH = {"high", "critical"}
+    _MIN_CONF = 60
+    for f in scan_result.findings:
+        if f.severity.value.lower() not in _HIGH:
+            continue
+        if f.confidence < _MIN_CONF:
+            continue
+        try:
+            register_finding(
+                package=name,
+                severity=f.severity.value.lower(),
+                description=f.title,
+                source="corvus",
+                ecosystem="mcp",
+            )
+        except Exception:
+            pass
+
+
 async def run_batch(
     targets: list[BatchTarget],
     output_dir: Path,
@@ -443,6 +468,8 @@ async def run_batch(
         if scan_result is not None:
             named_scans.append((name, scan_result))
         _record_to_history(name, finding_count, error_category, scan_result, case_study)
+        if scan_result is not None:
+            _ibis_report_findings_batch(name, scan_result)
 
     if sarif and named_scans:
         from .reporting.report import write_combined_sarif
