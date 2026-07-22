@@ -1,5 +1,8 @@
 CVP-ELIGIBILITY-APPEAL.md
 SIGUIENTE.md
+*-STATUS.md
+*.err
+skipped-*.txt
 .venv/
 __pycache__/
 *.pyc
