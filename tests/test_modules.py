@@ -51,6 +51,17 @@ async def test_tool_poisoning_clean_tool():
 
 
 @pytest.mark.asyncio
+async def test_tool_poisoning_detects_llm_instruction():
+    async with StdioTransport(MOCK_SERVER_CMD) as t:
+        surface = await MCPEnumerator(t).enumerate()
+        session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+        findings = await ToolPoisoningModule().run(surface, t, session)
+
+    critical = [f for f in findings if f.severity == Severity.CRITICAL and f.tool_name == "fetch_data"]
+    assert critical, "Expected CRITICAL finding for fetch_data (NOTE TO AI pattern)"
+
+
+@pytest.mark.asyncio
 async def test_info_disclosure_detects_leak():
     async with StdioTransport(MOCK_SERVER_CMD) as t:
         surface = await MCPEnumerator(t).enumerate()

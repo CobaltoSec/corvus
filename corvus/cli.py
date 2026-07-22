@@ -325,7 +325,7 @@ def scan(
     delay: Annotated[float, typer.Option(
         "--delay", help="Seconds to wait between probes (rate limiting / WAF)")] = 0.0,
     show_score: Annotated[bool, typer.Option(
-        "--score", help="Print Risk Score (0-100) at end of scan")] = False,
+        "--score", help="Print Risk Score (0-100) at end of scan")] = True,
     fast: Annotated[bool, typer.Option(
         "--fast", "-F", help="Fast mode: static modules only (no live probes)")] = False,
 ):

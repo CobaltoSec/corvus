@@ -304,8 +304,10 @@ async def _scan_one(
                     # 2. direct_io — bypass reader loop (reader PAUSED, sequential)
                     # 3. rug_pull — re-enumerates surface (reader RESUMED, serial)
                     # 4. cancellation_probe — crashes server (reader PAUSED, last)
-                    parallel_mods  = [m for m in active_modules if m not in _POST_MODS]
-                    direct_io_mods = [m for m in active_modules if m in _DIRECT_IO_MODS]
+                    # ProtoFuzz uses _send_raw_http for HTTP targets — no reader conflict.
+                    http_parallel = frozenset((ProtoFuzzModule,)) if isinstance(xport, HttpTransport) else frozenset()
+                    parallel_mods  = [m for m in active_modules if m not in _POST_MODS or m in http_parallel]
+                    direct_io_mods = [m for m in active_modules if m in _DIRECT_IO_MODS and m not in http_parallel]
                     serial_mods    = [m for m in active_modules if m in _SERIAL_POST_MODS]
                     crash_mods     = [m for m in active_modules if m in _CRASH_MODS]
 

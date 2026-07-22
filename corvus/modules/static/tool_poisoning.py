@@ -25,7 +25,7 @@ class ToolPoisoningModule(ScanModule):
     def __init__(self):
         with open(_PATTERNS_FILE) as f:
             data = yaml.safe_load(f)
-        self._patterns = [re.compile(p, re.IGNORECASE) for p in data["regex_patterns"]]
+        self._patterns = [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in data["regex_patterns"]]
         self._unicode = data["unicode_suspicious"]
         self._max_len = data.get("max_description_length", 1000)
         self._entropy_threshold = data.get("high_entropy_threshold", 5.0)

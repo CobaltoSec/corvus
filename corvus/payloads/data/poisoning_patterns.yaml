@@ -16,6 +16,10 @@ regex_patterns:
   - "your (new|updated|real) (role|purpose|goal|mission)"
   - "\\<\\|im_start\\|\\>"
   - "\\[SYSTEM\\]"
+  - "ABOUT THIS TOOL\\s*:"
+  - "NOTE TO (AI|LLM|ASSISTANT|MODEL|CLAUDE|GPT)\\s*:"
+  - "^#{1,3}\\s+(instructions?|for (ai|llm|assistant)|ai notes?)"
+  - "\\n\\d+\\.\\s+\\S.{5,}\\n\\d+\\."
 
 # Zero-width and directional override characters
 unicode_suspicious:
