@@ -246,6 +246,7 @@ def update_tools_ts(stats: dict) -> None:
     t = cs["totals"]
     g = stats["ghsas"]
     m = stats["modules"]
+    cs_count = len([k for k in cs if k != "totals"])
     content = TOOLS_TS.read_text(encoding="utf-8")
 
     # Replace tagline
@@ -261,7 +262,7 @@ def update_tools_ts(stats: dict) -> None:
     new_desc = (
         f"Framework for auditing MCP servers against the OWASP MCP Top 10. "
         f"{m['total']} modules ({m['static']} static + {m['dynamic']} dynamic), {stats['tests_unit']} tests. "
-        f"CS01+CS02+CS03: {t['servers']} real production servers audited, ~{t['true_positives']} confirmed vulnerabilities. "
+        f"CS01–CS{cs_count:02d}: {t['servers']} real production servers audited, ~{t['true_positives']} confirmed vulnerabilities. "
         f"{g['total']} responsible disclosures: {g['published']} published — "
         + ", ".join(f"{p['ghsa']} ({p['pkg']})" for p in g["published_list"][:2])
         + f", and {g['total'] - 2} more."
