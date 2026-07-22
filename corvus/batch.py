@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import shlex
 import sys
 from collections.abc import Callable
@@ -206,6 +207,14 @@ _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-
 # These must run with the reader paused to avoid race conditions on stdout.
 _DIRECT_IO_MODS = frozenset((BatchDosModule, ProtoFuzzModule, SamplingProbeModule, ElicitationProbeModule))
 
+_INVALID_DIR_CHARS = re.compile(r'[?*<>:"|]')
+
+def _safe_dir_name(name: str) -> str:
+    """Sanitize a target name for use as a directory name on Windows/POSIX."""
+    name = name.split("?")[0].rstrip("/")
+    name = _INVALID_DIR_CHARS.sub("_", name)
+    return name[:200] or "_target"
+
 # Modules that re-enumerate surface after all probes (needs reader active, must be serial).
 _SERIAL_POST_MODS = frozenset((RugPullModule,))
 
@@ -270,7 +279,8 @@ async def _scan_one(
     on_status: Callable[[str, str, dict], None] | None = None,
 ) -> tuple[str, str, dict, int | None, ScanResult | None]:
     """Scan one target. Returns (name, transport, finding_count, risk_score, scan_result)."""
-    target_dir = output_dir / target.name
+    safe_name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", target.name)[:200]
+    target_dir = output_dir / safe_name
 
     if skip_existing and (target_dir / "report.json").exists():
         if on_status:
