@@ -6,6 +6,8 @@
 
 > ⭐ **If Corvus found a vulnerability in your MCP server, [star the repo](https://github.com/CobaltoSec/corvus)** — it helps other security teams discover the tool.
 
+> **Vulnerabilities found:** [GHSA-hv3x](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) (mcp-server-git, DoS HIGH) · [GHSA-43j9](https://github.com/advisories/GHSA-43j9-hmpq-cgv7) (remnux-mcp-server, RCE MEDIUM) · [GHSA-jgxf](https://github.com/advisories/GHSA-jgxf-j67w-w284) (campertunity-ai-tools, SSRF HIGH) · [GHSA-3f55](https://github.com/advisories/GHSA-3f55-qgq4-f88c) (server-sequential-thinking, DoS MEDIUM) — [+46 in coordinated disclosure](case-studies/DISCLOSURE-PROCESS.md)
+
 MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
 
 ```
@@ -56,6 +58,12 @@ pip install -e ".[dev]"
 ```
 
 ## Quick Start
+
+```bash
+# Try it now — scan a real MCP server in one command (needs Node.js):
+pip install cobaltosec-corvus
+corvus scan "npx -y @modelcontextprotocol/server-filesystem /tmp"
+```
 
 ```bash
 # Scan a stdio MCP server
@@ -391,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-53 security advisories filed across 16 case studies — 3 published, 50 in active coordinated disclosure (90-day window).
+53 security advisories filed across 16 case studies — 7 published, 46 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -400,11 +408,40 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-43j9-hmpq-cgv7](https://github.com/advisories/GHSA-43j9-hmpq-cgv7) | remnux-mcp-server | MEDIUM | Unauthenticated RCE via HTTP transport on non-loopback deployments |
 | [GHSA-hv3x-m9fv-4vhf](https://github.com/advisories/GHSA-hv3x-m9fv-4vhf) | mcp-server-git | HIGH | DoS via spec-compliant JSON-RPC batch arrays and oversized method names |
 | [GHSA-3f55-qgq4-f88c](https://github.com/advisories/GHSA-3f55-qgq4-f88c) | server-sequential-thinking | MEDIUM | DoS via oversized JSON-RPC method names (CWE-755) |
+| [GHSA-jgxf-j67w-w284](https://github.com/advisories/GHSA-jgxf-j67w-w284) | campertunity-ai-tools | HIGH | SSRF via booking API URL parameter — internal metadata endpoints reachable |
+| [GHSA-prc4-649r-564g](https://github.com/advisories/GHSA-prc4-649r-564g) | localparse-mcp | HIGH | SSRF confirmed in parse_url — timing and timeout signals confirmed (CWE-918) |
+| [GHSA-32vx-mq6h-p8f3](https://github.com/advisories/GHSA-32vx-mq6h-p8f3) | emilia-protocol | HIGH | Prompt template injection via trust_decision/receipt_quality_check + forced compliance gate (EXT03/EXT12) |
+| [GHSA-wx78-8jx3-wcv9](https://github.com/advisories/GHSA-wx78-8jx3-wcv9) | @tensorfeed/mcp-server | HIGH | XSS reflection cluster across 6 tools — unsanitized payloads echoed verbatim (MCP05) |
 
-**Active coordinated disclosure (50 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (46 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
+
+## FAQ
+
+**How does Corvus compare to mcp-scan / Snyk Agent Scan?**
+
+[mcp-scan](https://github.com/invariantlabs-ai/mcp-scan) (acquired by Snyk in 2025, now [Snyk Agent Scan](https://github.com/snyk/agent-scan)) is the most widely deployed MCP security tool and does a great job on prompt injection and tool poisoning. If that's your primary concern, it's worth running both.
+
+The tools approach MCP security from different angles:
+
+| | mcp-scan / Snyk Agent Scan | Corvus |
+|---|---|---|
+| **Scope** | Prompt injection, tool poisoning, toxic flows, cross-origin escalation | Full [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — 34 modules |
+| **Perspective** | Client-side: reads your MCP config file | Server-side: connects directly via stdio or HTTP |
+| **Probing** | Static analysis + optional proxy monitoring | Static analysis + live dynamic probing (actual tool calls with payloads) |
+| **CI/CD** | Basic | SARIF output, `--fail-on high`, batch scanning |
+| **Coverage** | Prompt injection / poisoning focused | Adds cmd injection, SSRF, auth bypass, supply chain, schema bypass, parameter smuggling, DoS, OAuth, sampling/elicitation misuse |
+| **Real-time** | ✅ Proxy mode for live monitoring | ❌ Point-in-time scan only |
+| **Disclosures** | No public advisory program | 50 coordinated GHSAs filed |
+| **Backing** | Snyk (enterprise) | Independent, security research focused |
+
+**When to use mcp-scan:** you want real-time proxy monitoring of agent traffic, or you need the Snyk enterprise integration.
+
+**When to use Corvus:** you're doing a full security audit, need CI/CD-compatible output, or want to test attack surfaces beyond prompt injection (command injection, SSRF, auth bypass, supply chain, etc.).
+
+They're complementary — mcp-scan excels at runtime monitoring, Corvus at point-in-time depth.
 
 ## Development
 
