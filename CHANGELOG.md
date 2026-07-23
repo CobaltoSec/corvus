@@ -1,5 +1,15 @@
 # Changelog
 
+## [RT-CORVUS-CS17] — 2026-07-22 — CS17: 450 HTTP targets (Petrel Run 3) · 3 GHSAs · 397 servers
+
+- **CS17 — Petrel Run 3 HTTP scan (450 targets)** — `corvus batch` all modules, `--skip-existing`. 82/450 OK (18%), 370 ERROR/auth/offline. 1,376 raw findings (98 CRITICAL — majority FP), 3 confirmed TPs.
+- **GHSA-m8qh-p8m5-8c48 — lectorium-corpus-mcp CRITICAL SQLi** — Error-based PostgreSQL SQLi via null byte injection in `lang` parameters (SQLSTATE 22021). `exploitation_confirmed: true` on CORVUS-004/005. CDN URL reflection on `id` (CORVUS-003). Target: `mcp.listentosadhu.app`. No repo público — sin colaborador.
+- **GHSA-r9fx-qwmc-rvx3 — epwforge.com HIGH SSRF + prompt injection** — SSRF timing-confirmed: `analyze_weather`/`chart_weather.url` → Alibaba Cloud IMDS 100.100.100.200 (11.9s/10.8s, ~35× baseline). Prompt template injection × 3 (`climate-stress-test`, `future-cooling-load`, `site-weather-overview`). Colaborador: tunaguzzy ✅.
+- **GHSA-5h8f-r9g8-5w5p — frootai.dev HIGH prompt injection** — MCP prompts `design_architecture` + `pick_mcp_servers` sin sanitización (exploitation_confirmed: true). `recommend_mcp_stack.goal` refleja SQL payloads verbatim. Colaboradores: psbali + gitpavleenmali ✅.
+- **2 FP patterns documentados** — FP-1: auth-audit flags "No auth required" en descriptions como CRITICAL auth bypass (fix: cap MEDIUM para description-only; CRITICAL requiere validación de respuesta real). FP-2: resource_uri flags content educativo/API docs/JS minificado como credential exposure (fix: match solo en value positions, no en prose).
+- **public-stats.yaml** — 397 servers (+82), 56 GHSAs (+3), 5,566 raw findings (+1,376), ~1,325 TPs (+11). CS17 entry added.
+- **Curated findings** → `case-studies/cs17-petrel-run3/findings-curated-cs17.md`. `ibis sync --source corvus --curated`: 3 drafts importados a Ibis DB + IDs actualizados.
+
 ## [RT-IBIS-HUB D4] — 2026-07-22 — Corvus → Ibis auto-registration post-scan
 
 - `corvus/cli.py` — `_ibis_report_findings(scan_result)` llamada post-scan: registra findings HIGH/CRITICAL + confidence ≥ 60 en Ibis DB. Package derivado del target URL (netloc) o primer token del comando.

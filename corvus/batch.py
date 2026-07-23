@@ -207,14 +207,6 @@ _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-
 # These must run with the reader paused to avoid race conditions on stdout.
 _DIRECT_IO_MODS = frozenset((BatchDosModule, ProtoFuzzModule, SamplingProbeModule, ElicitationProbeModule))
 
-_INVALID_DIR_CHARS = re.compile(r'[?*<>:"|]')
-
-def _safe_dir_name(name: str) -> str:
-    """Sanitize a target name for use as a directory name on Windows/POSIX."""
-    name = name.split("?")[0].rstrip("/")
-    name = _INVALID_DIR_CHARS.sub("_", name)
-    return name[:200] or "_target"
-
 # Modules that re-enumerate surface after all probes (needs reader active, must be serial).
 _SERIAL_POST_MODS = frozenset((RugPullModule,))
 

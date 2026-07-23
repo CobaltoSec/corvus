@@ -190,11 +190,21 @@ case_studies:
     false_positives: 172  # estimated ~91% — schema-audit LOWs + protocol crash noise
     fp_rate: 91.5
     note: "Petrel Run 2 targets (134 HTTP internet-facing). 11% OK rate expected — Petrel confirms MCP handshake, not full tool execution. Key highlights: (1) glimind-com SSRF CRITICAL via watch_tool.toolId/webhook/minSeverity → AWS+Alibaba Cloud metadata confirmed (GHSA-7rqv-4g54-hcxh). (2) finvestai-top XSS×4 in Chinese financial data tools (GHSA-j62x-hg79-www6). (3) omi-me injection+EXT11 unauthenticated log escalation (GHSA-hx6w-3q3r-h3j8). (4) archive-35.com XSS×2 in photography e-commerce (low severity, no GHSA). Pattern: all vulnerabilities in no-auth petrel-critical targets — confirms Petrel pre-filter effective."
+  cs17:
+    servers: 82  # 450 targeted (HTTP internet-facing from Petrel Run 3 targets-v07.yaml), 82 OK, 370 ERROR (82% error rate)
+    targets_total: 450
+    skipped: 0
+    error_startup: 370  # HTTP auth required, server offline, or endpoint changed since Petrel scan
+    raw_findings: 1376  # from 82 OK servers (98 CRITICAL, majority FP)
+    true_positives: 11  # 3 GHSAs: lectorium SQLi×3 (CRITICAL), epwforge SSRF×2+injection×3 (HIGH), frootai injection×3+echo×1 (HIGH)
+    false_positives: 1365  # estimated ~99% — dominated by FP-1 (auth-audit on "No auth required" docs) + FP-2 (resource_uri on educational content/API docs/minified JS)
+    fp_rate: 99.2
+    note: "Petrel Run 3 targets (450 HTTP internet-facing, targets-v07.yaml). 18% OK rate — higher than CS16 (11%) due to larger/more curated target pool. Two systematic FP patterns identified: FP-1 auth-audit flags 'No auth required' in tool descriptions as CRITICAL auth bypass (FP — validate actual response, not description text); FP-2 resource_uri flags educational markdown/API docs/minified JS as credential exposure (FP — match only in value positions, not prose). GHSAs: (1) GHSA-m8qh-p8m5-8c48 CRITICAL — lectorium-corpus-mcp PostgreSQL SQLi via null byte in lang params (exploitation_confirmed, SQLSTATE 22021 leak + CDN URL reflection). (2) GHSA-r9fx-qwmc-rvx3 HIGH — epwforge.com SSRF timing-confirmed Alibaba Cloud IMDS 100.100.100.200 (11s/10s delta) + prompt template injection × 3 confirmed. (3) GHSA-5h8f-r9g8-5w5p HIGH — frootai.dev prompt template injection × 2 confirmed + arbitrary input echo in recommend_mcp_stack.goal. Pattern: high-CRITICAL count in summary.md can be stale — report.json is authoritative (sports-bzzoiro-com and iwantmymtg-net showed 35C/33C in summary but 0C in report.json)."
 
   totals:
-    servers: 315  # 300 (CS01-CS15) + 15 (CS16)
-    raw_findings: 4190  # 4002 (CS01-CS15) + 188 (CS16)
-    true_positives: 1314  # 1298 (CS01-CS15) + 16 (CS16 estimated)
+    servers: 397  # 300 (CS01-CS15) + 15 (CS16) + 82 (CS17)
+    raw_findings: 5566  # 4002 (CS01-CS15) + 188 (CS16) + 1376 (CS17)
+    true_positives: 1325  # 1298 (CS01-CS15) + 16 (CS16) + 11 (CS17)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -215,9 +225,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 53
+  total: 56
   published: 7
-  draft: 46
+  draft: 49
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

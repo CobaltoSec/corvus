@@ -369,13 +369,13 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across 16 case studies — 315 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across 17 case studies — 397 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
 
-| Metric | Total (16 case studies) |
+| Metric | Total (17 case studies) |
 |--------|-------------------------------|
-| Servers audited | **315** |
-| Raw findings | **~4190** |
-| True positives | **~1314** |
+| Servers audited | **397** |
+| Raw findings | **~5566** |
+| True positives | **~1325** |
 
 Key findings from the wild:
 
@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-53 security advisories filed across 16 case studies — 7 published, 46 in active coordinated disclosure (90-day window).
+56 security advisories filed across 17 case studies — 7 published, 49 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -413,7 +413,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-32vx-mq6h-p8f3](https://github.com/advisories/GHSA-32vx-mq6h-p8f3) | emilia-protocol | HIGH | Prompt template injection via trust_decision/receipt_quality_check + forced compliance gate (EXT03/EXT12) |
 | [GHSA-wx78-8jx3-wcv9](https://github.com/advisories/GHSA-wx78-8jx3-wcv9) | @tensorfeed/mcp-server | HIGH | XSS reflection cluster across 6 tools — unsanitized payloads echoed verbatim (MCP05) |
 
-**Active coordinated disclosure (46 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (49 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
