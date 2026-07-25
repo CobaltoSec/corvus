@@ -24,10 +24,20 @@ async def test_auth_audit_detects_no_auth_required():
         session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
         findings = await AuthAuditModule().run(surface, t, session)
 
+    # admin_reset description: "No authentication required" → HIGH (absent auth, not active bypass)
     admin_findings = [f for f in findings if f.tool_name == "admin_reset"]
     assert admin_findings, "Expected finding for admin_reset tool"
     assert any(f.owasp_category == OWASPCategory.MCP07_AUTH_AUDIT for f in admin_findings)
-    assert any(f.severity == Severity.CRITICAL for f in admin_findings)
+    assert any(f.severity == Severity.HIGH for f in admin_findings)
+
+
+def test_auth_audit_bypass_pattern_is_critical():
+    """Active bypass phrases (bypasses/skips auth) must remain CRITICAL."""
+    module = AuthAuditModule()
+    for phrase in ("bypasses authentication", "skips auth verification", "skip validation"):
+        findings = module._check("sensitive_tool", f"This tool {phrase} for convenience.")
+        assert findings, f"Expected finding for phrase: {phrase!r}"
+        assert findings[0].severity == Severity.CRITICAL, f"Expected CRITICAL for: {phrase!r}"
 
 
 @pytest.mark.asyncio
@@ -37,8 +47,7 @@ async def test_auth_audit_detects_admin_name_prefix():
         session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
         findings = await AuthAuditModule().run(surface, t, session)
 
-    # admin_reset has CRITICAL from description pattern; also verify name-based detection
-    # works by checking a hypothetical — the real tool hits description CRITICAL first
+    # admin_reset description matches _HIGH_AUTH_ABSENT → HIGH finding
     flagged_tools = {f.tool_name for f in findings if f.owasp_category == OWASPCategory.MCP07_AUTH_AUDIT}
     assert "admin_reset" in flagged_tools
 

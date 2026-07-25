@@ -7,11 +7,15 @@ from ...core.models import Finding, MCPSurface, OWASPCategory, Severity
 from ...core.session import ScanSession
 from ...transport.base import MCPTransport
 
-# Description patterns that indicate privileged access with explicitly absent auth
+# Description patterns that indicate an active auth bypass (CRITICAL)
 _CRITICAL_DESC: list[re.Pattern[str]] = [
-    re.compile(r"no\s+auth(entication)?\s+required", re.I),
     re.compile(r"bypass(es|ing)?\s+auth(entication)?", re.I),
     re.compile(r"skip(s|ping)?\s+(auth|verification|validation)", re.I),
+]
+
+# Description patterns that state auth is absent — descriptive, not an active bypass (HIGH)
+_HIGH_AUTH_ABSENT: list[re.Pattern[str]] = [
+    re.compile(r"no\s+auth(entication)?\s+required", re.I),
     re.compile(r"without\s+auth(entication)?", re.I),
 ]
 
@@ -83,6 +87,29 @@ class AuthAuditModule(ScanModule):
                     confidence=85,
                 ))
                 return found  # one critical per tool is enough
+
+        # HIGH: description states auth is absent (descriptive — may be accurate for public tools)
+        for pattern in _HIGH_AUTH_ABSENT:
+            m = pattern.search(description)
+            if m:
+                found.append(Finding(
+                    owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
+                    severity=Severity.HIGH,
+                    title=f"Auth Absent — '{name}' explicitly states no authentication needed",
+                    description=(
+                        f"Description of '{name}' states authentication is not required: "
+                        f"'{m.group()}'. If this tool accesses sensitive data or actions, "
+                        "missing auth is a security risk."
+                    ),
+                    tool_name=name,
+                    evidence=description[:300],
+                    remediation=(
+                        "If this tool exposes sensitive operations, enforce authentication. "
+                        "If it is intentionally public, document the trust boundary explicitly."
+                    ),
+                    confidence=70,
+                ))
+                return found
 
         # HIGH: description implies privileged/restricted access
         for pattern in _HIGH_DESC:

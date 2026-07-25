@@ -65,6 +65,19 @@ def _is_missing_credential_context(text: str) -> bool:
     return bool(_CREDENTIAL_MISSING_RE.search(text))
 
 
+_PLACEHOLDER_RE = re.compile(
+    r"^(your[-_]|example[-_]|replace[-_]|my[-_]|test[-_]|sample[-_]|demo[-_]|fake[-_]|mock[-_])"
+    r"|^<[^>]+>$|^\[.*\]$|^x{3,}$|^0{4,}$|^9{4,}$"
+    r"|placeholder|changeme|insert.here",
+    re.I,
+)
+
+
+def _is_placeholder_value(value: str) -> bool:
+    """Return True if value looks like a documentation placeholder, not a real credential."""
+    return bool(_PLACEHOLDER_RE.search(value))
+
+
 class TokenExposureModule(ScanModule):
     owasp_id = "MCP01"
     category = "Token Mismanagement & Secret Exposure"
@@ -143,6 +156,9 @@ class TokenExposureModule(ScanModule):
                                 continue  # TypeScript type annotation, not a real credential
                             if _is_missing_credential_context(text):
                                 continue  # missing/unconfigured token error, not a real leak
+                            parts = re.split(r'[=:]\s*', m.group(0), maxsplit=1)
+                            if len(parts) == 2 and _is_placeholder_value(parts[1].strip('"').strip("'")):
+                                continue  # documentation placeholder value, not a real credential
                         if label == "internal IP address" and _is_connection_error_text(text):
                             continue  # IP in connection-error help text — not a real leak
                         if label in seen_signals:

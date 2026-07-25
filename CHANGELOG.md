@@ -1,5 +1,15 @@
 # Changelog
 
+## [RT-CORVUS-IMPROVE-2] — 2026-07-24 — FP calibration v4 + ProtoFuzz paralelo · 766 tests
+
+- **D1 — auth_audit.py FP reduction** — `no auth required` / `without auth` en descriptions → HIGH (no CRITICAL). CRITICAL reservado para bypasses activos (`bypasses/skips authentication`). Nueva lista `_HIGH_AUTH_ABSENT`. Eliminado FP-CS17 donde servidores documentaban auth ausente en tools públicas. +2 tests (HIGH confirmado + CRITICAL bypass preservado).
+- **D2 — resource_uri.py FP reduction (dual fix)** — (A) `_CRITICAL_URI_PATTERNS` con guard `_WEB_URI_RE`: URIs `https://`, `http://`, `docs://` no disparan CRITICAL (FP educativo/API docs como `docs://private_key_management`). (B) `_CREDENTIAL_QUERY_RE` ahora captura valor del query param; `_PLACEHOLDER_URI_RE` filtra `your-api-key`, `example-token`, etc. +3 tests.
+- **D3 — token_exposure.py FP reduction** — Nueva función `_is_placeholder_value()` con `_PLACEHOLDER_RE`: filtra `your-/example-/replace-/my-/test-/sample-/demo-/fake-/mock-`, `<...>`, `[...]`, `xxxx`, `0000`, `placeholder`, `changeme`. Aplicada en signal "credential in response" tras los guards existentes. +10 tests (12 valores placeholder + 5 reales).
+- **D4 — ssrf.py speedup** — `asyncio.wait_for(..., timeout=12.0)` → `timeout=8.0`. Signal threshold es 3s; 8s da 2.67× margen, suficiente. Reduce latencia por probe en ~33% sin perder señal (epwforge CS17 con 11.9s delay sigue siendo detectado vía `TimeoutError`).
+- **D5 — ProtoFuzz a Group 1 paralelo** — Eliminado `ProtoFuzzModule` de `_DIRECT_IO_MODS`. Probes 6-7 (missing jsonrpc field / array request ID) cambiados a HTTP-only (`_send_raw_http` si `is_http else None`): evita conflicto con `_reader_loop` en stdio sin perder detección en HTTP servers. `batch.py` simplificado: removida variable `http_parallel` (código muerto tras el cambio).
+- **D6 — CLI show_score default** — `_scan()` firma interna: `show_score: bool = False` → `True`. Consistencia con CLI que ya tenía `default=True`; relevante si `_scan()` se llama directamente desde tests.
+- **766 tests pass** (+22 nuevos: +2 auth_audit, +3 resource_uri, +10 token_exposure, +7 resource_uri/auth_audit integration).
+
 ## [RT-CORVUS-CS17] — 2026-07-22 — CS17: 450 HTTP targets (Petrel Run 3) · 3 GHSAs · 397 servers
 
 - **CS17 — Petrel Run 3 HTTP scan (450 targets)** — `corvus batch` all modules, `--skip-existing`. 82/450 OK (18%), 370 ERROR/auth/offline. 1,376 raw findings (98 CRITICAL — majority FP), 3 confirmed TPs.

@@ -236,6 +236,39 @@ async def test_resource_uri_no_findings_empty_surface():
     assert findings == []
 
 
+@pytest.mark.asyncio
+async def test_resource_uri_web_scheme_private_key_no_critical():
+    """https:// URIs with 'private_key' in path are educational/API docs — not CRITICAL."""
+    surface = _resource_surface(
+        ("https://docs.example.com/guides/private_key_management", "Private key guide"),
+    )
+    findings = await ResourceUriModule().run(surface, None, None)
+    critical = [f for f in findings if f.severity == Severity.CRITICAL]
+    assert not critical, "Web-scheme URI with private_key in path should not be CRITICAL"
+
+
+@pytest.mark.asyncio
+async def test_resource_uri_credential_query_placeholder_no_finding():
+    """Credential query params with placeholder values should not trigger HIGH."""
+    surface = _resource_surface(
+        ("https://api.example.com/data?api_key=your-api-key-here", "Docs example"),
+    )
+    findings = await ResourceUriModule().run(surface, None, None)
+    high = [f for f in findings if f.severity == Severity.HIGH and "credential" in f.title.lower()]
+    assert not high, "Placeholder credential query param should not trigger HIGH"
+
+
+@pytest.mark.asyncio
+async def test_resource_uri_credential_query_real_value_triggers():
+    """Real credential values in query params must still trigger HIGH."""
+    surface = _resource_surface(
+        ("https://api.internal.corp/data?api_key=sk-prod-abc123real", "Internal data"),
+    )
+    findings = await ResourceUriModule().run(surface, None, None)
+    assert findings, "Real credential query param should trigger finding"
+    assert any(f.severity == Severity.HIGH for f in findings)
+
+
 # ---------------------------------------------------------------------------
 # EXT06 — ToolChainingModule: imperative cross-tool directives
 # ---------------------------------------------------------------------------

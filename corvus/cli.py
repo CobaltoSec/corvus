@@ -354,7 +354,7 @@ async def _scan(
     min_confidence: int | None = None,
     cli_env: list[str] | None = None,
     delay: float = 0.0,
-    show_score: bool = False,
+    show_score: bool = True,
     fast: bool = False,
 ) -> None:
     if sys.platform == "win32":

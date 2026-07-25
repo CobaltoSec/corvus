@@ -19,12 +19,22 @@ _CRITICAL_URI_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"credentials\.json", re.I),
 ]
 
+# Web-scheme URIs are not filesystem paths — skip CRITICAL_URI_PATTERNS (educational/API docs FP)
+_WEB_URI_RE = re.compile(r"^(https?|ftp|docs|mailto)://", re.I)
+
 # file:// URIs outside safe sandboxed dirs → HIGH
 _SAFE_FILE_DIRS = ("/tmp", "/var/app", "/tmp/", "/var/app/")
 
-# URI credential query params → HIGH
+# URI credential query params → HIGH (captures param name + value for placeholder check)
 _CREDENTIAL_QUERY_RE = re.compile(
-    r"[?&](token|api_key|secret|password|auth|key|access_token)=",
+    r"[?&](token|api_key|secret|password|auth|key|access_token)=([^&\s#]*)",
+    re.I,
+)
+
+_PLACEHOLDER_URI_RE = re.compile(
+    r"^(your[-_]|example[-_]|replace[-_]|my[-_]|test[-_]|sample[-_]|demo[-_]|fake[-_]|mock[-_])"
+    r"|^<[^>]+>$|^\[.*\]$|^x{3,}$|^0{4,}$"
+    r"|placeholder|changeme",
     re.I,
 )
 
@@ -56,9 +66,9 @@ class ResourceUriModule(ScanModule):
         for resource in surface.resources:
             uri = resource.uri
 
-            # CRITICAL: URI points to sensitive system file
+            # CRITICAL: URI points to sensitive system file (skip web-scheme URIs — educational FP)
             for pattern in _CRITICAL_URI_PATTERNS:
-                if pattern.search(uri):
+                if pattern.search(uri) and not _WEB_URI_RE.match(uri):
                     findings.append(Finding(
                         owasp_category=OWASPCategory.EXT05_RESOURCE_URI,
                         severity=Severity.CRITICAL,
@@ -100,8 +110,8 @@ class ResourceUriModule(ScanModule):
                             confidence=80,
                         ))
 
-                # HIGH: credential material in URI query params
-                elif _CREDENTIAL_QUERY_RE.search(uri):
+                # HIGH: credential material in URI query params (skip placeholder values)
+                elif (m := _CREDENTIAL_QUERY_RE.search(uri)) and not _PLACEHOLDER_URI_RE.search(m.group(2)):
                     findings.append(Finding(
                         owasp_category=OWASPCategory.EXT05_RESOURCE_URI,
                         severity=Severity.HIGH,

@@ -101,7 +101,7 @@ class SSRFModule(ScanModule):
                     try:
                         result = await asyncio.wait_for(
                             transport.send_request("tools/call", {"name": tool.name, "arguments": args}),
-                            timeout=12.0,
+                            timeout=8.0,
                         )
                         elapsed = time.monotonic() - t0
                         text = _extract_text(result)

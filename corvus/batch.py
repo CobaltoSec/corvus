@@ -205,7 +205,7 @@ _TARGET_SCAN_TIMEOUT = 600  # seconds — hard cap per target regardless of per-
 
 # Modules that read stdout directly (bypass the multiplexed reader).
 # These must run with the reader paused to avoid race conditions on stdout.
-_DIRECT_IO_MODS = frozenset((BatchDosModule, ProtoFuzzModule, SamplingProbeModule, ElicitationProbeModule))
+_DIRECT_IO_MODS = frozenset((BatchDosModule, SamplingProbeModule, ElicitationProbeModule))
 
 # Modules that re-enumerate surface after all probes (needs reader active, must be serial).
 _SERIAL_POST_MODS = frozenset((RugPullModule,))
@@ -306,10 +306,8 @@ async def _scan_one(
                     # 2. direct_io — bypass reader loop (reader PAUSED, sequential)
                     # 3. rug_pull — re-enumerates surface (reader RESUMED, serial)
                     # 4. cancellation_probe — crashes server (reader PAUSED, last)
-                    # ProtoFuzz uses _send_raw_http for HTTP targets — no reader conflict.
-                    http_parallel = frozenset((ProtoFuzzModule,)) if isinstance(xport, HttpTransport) else frozenset()
-                    parallel_mods  = [m for m in active_modules if m not in _POST_MODS or m in http_parallel]
-                    direct_io_mods = [m for m in active_modules if m in _DIRECT_IO_MODS and m not in http_parallel]
+                    parallel_mods  = [m for m in active_modules if m not in _POST_MODS]
+                    direct_io_mods = [m for m in active_modules if m in _DIRECT_IO_MODS]
                     serial_mods    = [m for m in active_modules if m in _SERIAL_POST_MODS]
                     crash_mods     = [m for m in active_modules if m in _CRASH_MODS]
 

@@ -11,6 +11,7 @@ from corvus.modules.dynamic.token_exposure import (
     TokenExposureModule,
     _check_http_headers,
     _is_missing_credential_context,
+    _is_placeholder_value,
     _is_type_annotation_match,
 )
 from corvus.transport.http import HttpTransport
@@ -152,3 +153,34 @@ def test_missing_credential_context_not_suppressed_for_real_leaks(text):
     assert not _is_missing_credential_context(text), (
         f"Expected no missing-credential context for real leak: {text!r}"
     )
+
+
+@pytest.mark.parametrize("value", [
+    "your-api-key",
+    "your_api_key_here",
+    "example-token",
+    "<INSERT_TOKEN>",
+    "<your-token>",
+    "[TOKEN_HERE]",
+    "xxxx",
+    "xxxxxx",
+    "00000000",
+    "placeholder",
+    "changeme",
+    "replace-me-with-real-key",
+])
+def test_placeholder_value_detected(value):
+    """Documentation placeholder values must be detected and suppressed."""
+    assert _is_placeholder_value(value), f"Expected placeholder: {value!r}"
+
+
+@pytest.mark.parametrize("value", [
+    "sk-proj-abcdefghijklmnop",
+    "ghp_RealGitHubTokenHere12345",
+    "eyJhbGciOiJIUzI1NiJ9.payload",
+    "AKIA1234567890ABCDEF",
+    "real-prod-secret-value",
+])
+def test_placeholder_value_not_detected_for_real_credentials(value):
+    """Real credential values must NOT be filtered by the placeholder check."""
+    assert not _is_placeholder_value(value), f"Expected real credential: {value!r}"

@@ -138,13 +138,11 @@ class ProtoFuzzModule(ScanModule):
             ))
 
         # Probe 6: Missing jsonrpc field — server should reject as invalid request
+        # Only runs for HTTP — stdio probes 6/7 require direct stdout access (_send_raw_stdio)
+        # which conflicts with the multiplexed reader when running in Group 1 parallel.
         is_http = isinstance(transport, HttpTransport)
         body6 = {"id": 9600, "method": "tools/list", "params": {}}
-        resp6 = (
-            await _send_raw_http(transport.url, body6)
-            if is_http
-            else await _send_raw_stdio(transport, body6)
-        )
+        resp6 = await _send_raw_http(transport.url, body6) if is_http else None
         if resp6 is not None and "result" in resp6 and "error" not in resp6:
             findings.append(Finding(
                 owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
@@ -164,11 +162,7 @@ class ProtoFuzzModule(ScanModule):
 
         # Probe 7: Array request ID — spec requires ID to be string, number, or null
         body7 = {"jsonrpc": "2.0", "id": [1, 2, 3], "method": "tools/list", "params": {}}
-        resp7 = (
-            await _send_raw_http(transport.url, body7)
-            if is_http
-            else await _send_raw_stdio(transport, body7)
-        )
+        resp7 = await _send_raw_http(transport.url, body7) if is_http else None
         if resp7 is not None and "result" in resp7 and "error" not in resp7:
             findings.append(Finding(
                 owasp_category=OWASPCategory.EXT01_SCHEMA_BYPASS,
