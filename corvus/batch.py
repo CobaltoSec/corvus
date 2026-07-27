@@ -387,11 +387,17 @@ def _record_to_history(
             raw_count = (
                 sum(finding_count.values()) if isinstance(finding_count, dict) else finding_count
             )
+        tp_count = fp_count = None
+        if scan_result is not None and status == "ok":
+            tp_count = sum(1 for f in scan_result.findings if f.confidence >= 60)
+            fp_count = sum(1 for f in scan_result.findings if f.confidence < 60)
         record_scan(
             pkg_name=name,
             status=status,
             raw_count=raw_count,
             error_category=error_category,
+            tp_count=tp_count,
+            fp_count=fp_count,
             corvus_version=__version__,
             case_study=case_study,
         )
@@ -407,11 +413,16 @@ def _ibis_report_findings_batch(name: str, scan_result) -> None:
         return
     _HIGH = {"high", "critical"}
     _MIN_CONF = 60
+    _ibis_seen: set = set()
     for f in scan_result.findings:
         if f.severity.value.lower() not in _HIGH:
             continue
         if f.confidence < _MIN_CONF:
             continue
+        _key = (getattr(f, 'package_name', ''), getattr(f, 'module_name', getattr(f, 'module', '')), f.severity)
+        if _key in _ibis_seen:
+            continue
+        _ibis_seen.add(_key)
         try:
             register_finding(
                 package=name,

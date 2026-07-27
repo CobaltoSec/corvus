@@ -550,6 +550,8 @@ async def _scan(
         f" · {elapsed:.1f}s · {report_path}[/dim]"
     )
     if _hub_emit:
+        from .scoring import compute_risk_score as _crs
+        _risk_sc = _crs(result.findings)
         _hub_emit("corvus.scan.completed", {
             "target": result.target,
             "transport": result.transport,
@@ -557,6 +559,7 @@ async def _scan(
             "findings_total": n_findings,
             "severity_counts": result.finding_count,
             "modules_run": result.modules_run,
+            "risk_score": _risk_sc,
         }, source_tool="corvus")
 
     _ibis_report_findings(result)
@@ -591,11 +594,16 @@ def _ibis_report_findings(scan_result) -> None:
         pkg = parsed.netloc or target.split()[0]
     except Exception:
         pkg = target
+    _ibis_seen: set = set()
     for f in scan_result.findings:
         if f.severity.value.lower() not in _HIGH:
             continue
         if f.confidence < _MIN_CONF:
             continue
+        _key = (getattr(f, 'package_name', ''), getattr(f, 'module_name', f.module if hasattr(f, 'module') else ''), f.severity)
+        if _key in _ibis_seen:
+            continue
+        _ibis_seen.add(_key)
         try:
             register_finding(
                 package=pkg,
@@ -775,6 +783,25 @@ async def _batch(
         combined_path = output_dir / "combined.sarif"
         if combined_path.exists():
             console.print(f"SARIF   : {combined_path}")
+
+    if _hub_emit:
+        _ok = [t for t in result.targets if "error" not in t["finding_count"] and "skipped" not in t["finding_count"]]
+        _err = [t for t in result.targets if "error" in t["finding_count"]]
+        _sev: dict[str, int] = {}
+        for _t in _ok:
+            for _s in ("critical", "high", "medium", "low"):
+                _sev[_s] = _sev.get(_s, 0) + _t["finding_count"].get(_s, 0)
+        _hub_emit("corvus.batch.completed", {
+            "targets_total": len(result.targets),
+            "ok_count": len(_ok),
+            "error_count": len(_err),
+            "critical_count": _sev.get("critical", 0),
+            "high_count": _sev.get("high", 0),
+            "medium_count": _sev.get("medium", 0),
+            "low_count": _sev.get("low", 0),
+            "case_study": case_study,
+            "output_dir": str(output_dir),
+        }, source_tool="corvus")
 
     if fail_on:
         try:
@@ -1006,15 +1033,24 @@ def report(
         console.print(f"[red]Unknown format: {fmt}. Choose from: {', '.join(sorted(valid_formats))}[/red]")
         raise typer.Exit(1)
 
+    generated_formats: list[str] = []
     if fmt in ("md", "all"):
         p = gen.write_md(result)
         console.print(f"MD     : {p}")
+        generated_formats.append("md")
     if fmt in ("sarif", "all"):
         p = gen.write_sarif(result)
         console.print(f"SARIF  : {p}")
+        generated_formats.append("sarif")
     if fmt in ("html", "all"):
         p = gen.write_html(result)
         console.print(f"HTML   : {p}")
+        generated_formats.append("html")
+    try:
+        from cobalt_hub_client import emit as _hub_emit
+        _hub_emit("corvus.report.generated", {"formats": generated_formats}, "corvus")
+    except Exception:
+        pass
 
 
 @app.command()
