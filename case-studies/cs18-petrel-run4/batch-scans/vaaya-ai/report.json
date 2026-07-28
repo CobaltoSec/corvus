@@ -1,0 +1,452 @@
+{
+  "target": "https://vaaya.ai/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "vaaya",
+    "server_version": "1.0.0",
+    "protocol_version": "2025-06-18",
+    "tools": [
+      {
+        "name": "vaaya_test_connection",
+        "description": "Round-trip ping that confirms the agent → Vaaya connection and whether the user is linked. Returns { ok:true, userId, scope, version, server_time } when linked, or { ok:false, needs_auth:true, verification_uri, signup_uri, instructions } when not linked yet — relay that to the user so they can connect (and sign up if new).",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "vaaya_onboard",
+        "description": "Public onboarding hint for an agent whose user isn't linked to Vaaya yet. Returns where the human should go to connect (and sign up if new). Call this when vaaya_test_connection reports needs_auth, or any tool returns unauthorized, then relay the instructions to the user.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "vaaya_account",
+        "description": "Show which Vaaya account this connection is linked to and its money state. Returns { email, name, user_id, connected_client, scopes, balance_cents, premium_allowance, credits_url, switch_account }. Call it whenever the user asks \"which account is connected\", \"what's my balance\", \"how much premium/media credit is left\", or \"how do I switch accounts\" — and relay the answer. `premium_allowance` is the gated free-tier ledger for premium services (media generation, enrichment, compute, scraping): it is SEPARATE from wallet balance, and only credit-pack purchases raise it.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "vaaya_logout",
+        "description": "Disconnect this client from the current Vaaya account: revokes this connection's authorization server-side, so every later call fails with 401 until the user reconnects. Call it when the user asks to log out, sign out, disconnect, or switch Vaaya accounts — then relay the returned switch steps VERBATIM (the browser sign-out step is what actually enables switching accounts).",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "consult",
+        "description": "Vaaya's consultant. Describe ANY external capability you or the user might want — generate an image/video, search or scrape the web, run code in a sandbox, send/receive email, enrich a contact — and it helps figure out the best way, teaching the user what Vaaya can do. It is CONVERSATIONAL and remembers prior turns. It returns: mode='converse' (a reply to RELAY to the user verbatim — questions, options, ideas; get the user's response and call consult again with it, so the conversation continues), mode='call' (an ordered list of calls to run via `use`, with a message explaining the preferred choice + alternatives + why; multi-step results may contain placeholders like '<from step 1: sandbox_id>' — run earlier steps first and substitute), or mode='unsupported'. Every reply includes `suggestions` (2-3 things to do next) — surface these to the user. AFTER you run a `call` result's calls via `use`, call consult ONE more time with a short note on the outcome (what was produced / any failures) — it returns result-aware, Vaaya-grounded next steps to offer the user (the `call` result's `after_running` field reminds you). Call consult whenever you hit a capability gap or the user wants to know what's possible. It does NOT execute or bill — you run returned calls via `use`. ALWAYS show the user consult's `message` and `suggestions` and let them steer.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "intent": {
+              "type": "string",
+              "description": "Plain-English description of what you want, or your answer to a previous clarify question. Be concrete — include the prompt text, URL, budget, or target the task implies."
+            }
+          },
+          "required": [
+            "intent"
+          ]
+        }
+      },
+      {
+        "name": "use",
+        "description": "Execute a single call that `consult` handed you, and bill on success. Used for any external capability (image/video/audio generation, web search, scraping, email, document parsing, code sandbox, browser automation, embeddings, etc.). The server validates params against a registered schema and proxies to the upstream — you never pass URLs or API keys. Always get the exact (service, action, params, max_cost_cents) from `consult` first — don't guess them.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string",
+              "description": "Service identifier, taken verbatim from the call `consult` returned."
+            },
+            "action": {
+              "type": "string",
+              "description": "Action within the service (e.g. \"search\", \"generate\", \"create_session\"), taken from the call `consult` returned."
+            },
+            "params": {
+              "type": "object",
+              "description": "Parameters from the call `consult` returned, validated against the service's registered schema.",
+              "additionalProperties": true
+            },
+            "max_cost_cents": {
+              "type": "number",
+              "description": "Hard ceiling in cents on what you will be charged. `use` refuses if the registry price exceeds this. Pick at least 2× the listed price so retries work."
+            },
+            "intent": {
+              "type": "string",
+              "description": "Optional: the one-line `why` from the consult call you're running (or the user's goal for it). Used only for internal transaction visibility — it never affects validation, billing, or execution. Pass it through when you have it."
+            }
+          },
+          "required": [
+            "service",
+            "action",
+            "params",
+            "max_cost_cents"
+          ]
+        }
+      },
+      {
+        "name": "result",
+        "description": "Fetch the status + output of an async job started by `use` (e.g. a video render). Pass the `job_id` that `use` returned with `{ async: true }`. Returns `{ status, result?, progress?, charged_cents }`: `running` (still working — when the job reports it, `progress` carries `{ phase, percent, rendered_frames, total_frames, eta_sec }` and `hint` is a one-line summary like \"rendering 42% (380/900 frames, ~120s left)\", so you can tell real progress from a hang; wait a bit and call again), `succeeded` (`result` holds the output, e.g. the video URL; the call is charged now), or `failed`/`cancelled` (no charge; on `failed`, read `error` AND `hint` — `hint` carries the service's usage notes, which usually explain how to fix the call). Safe to call repeatedly — it never starts new work or double-charges. ALWAYS use this to retrieve an async result instead of re-running `use` (re-running starts a new paid job).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "description": "The job_id returned by an async `use` call."
+            }
+          },
+          "required": [
+            "job_id"
+          ]
+        }
+      },
+      {
+        "name": "session",
+        "description": "Run a command or code in an open E2B sandbox session (started by `use` with action `create_session`, which returns a `session_id`). Pass `session_id` plus either `command` (a shell command) or `code` (+ optional `language`: python/javascript/bash). Returns stdout/stderr/exit_code (or the code result). The sandbox stays alive — and billed per second of uptime — until you `close` it; re-running reuses the SAME box, so filesystem + process state persist between calls. ALWAYS `close` when done.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "session_id": {
+              "type": "string",
+              "description": "The session_id returned by create_session."
+            },
+            "command": {
+              "type": "string",
+              "description": "Shell command to run in the sandbox."
+            },
+            "code": {
+              "type": "string",
+              "description": "Code to execute (alternative to `command`)."
+            },
+            "language": {
+              "type": "string",
+              "description": "Language for `code`: python (default), javascript, or bash."
+            }
+          },
+          "required": [
+            "session_id"
+          ]
+        }
+      },
+      {
+        "name": "close",
+        "description": "Close an E2B sandbox session and stop its billing. Pass the `session_id`. Captures the final metered uptime cost and releases the hold. ALWAYS call this when finished with a session — an open session keeps billing per second of uptime. Safe to call repeatedly (idempotent).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "session_id": {
+              "type": "string",
+              "description": "The session_id to close."
+            }
+          },
+          "required": [
+            "session_id"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'consult'",
+      "description": "Description is 1362 chars (limit 1000). May contain hidden content.",
+      "tool_name": "consult",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'consult' description reveals arbitrary execution intent",
+      "description": "Tool 'consult' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "consult",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Vaaya's consultant. Describe ANY external capability you or the user might want — generate an image/video, search or scrape the web, run code in a sandbox, send/receive email, enrich a contact — and it helps figure out the best way, teaching the user what Vaaya can do. It is CONVERSATIONAL and remem",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT03",
+      "severity": "high",
+      "title": "Shadow Tool — 'use' description reveals arbitrary execution intent",
+      "description": "Tool 'use' description contains keywords associated with arbitrary command or shell execution. This may enable sandbox escape or privilege escalation.",
+      "tool_name": "use",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Execute a single call that `consult` handed you, and bill on success. Used for any external capability (image/video/audio generation, web search, scraping, email, document parsing, code sandbox, browser automation, embeddings, etc.). The server validates params against a registered schema and proxie",
+      "remediation": "Restrict the tool to a well-defined, scoped operation. Do not expose generic shell execution capabilities via MCP tools.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'consult' directs LLM to call use",
+      "description": "Tool 'consult' description references tool(s) 'use', 'result' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "consult",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Vaaya's consultant. Describe ANY external capability you or the user might want — generate an image/video, search or scrape the web, run code in a sandbox, send/receive email, enrich a contact — and it helps figure out the best way, teaching the user what Vaaya can do. It is CONVERSATIONAL and remem",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'use' directs LLM to call consult",
+      "description": "Tool 'use' description references tool(s) 'consult' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "use",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Execute a single call that `consult` handed you, and bill on success. Used for any external capability (image/video/audio generation, web search, scraping, email, document parsing, code sandbox, browser automation, embeddings, etc.). The server validates params against a registered schema and proxie",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'result' directs LLM to call use",
+      "description": "Tool 'result' description references tool(s) 'use' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "result",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Fetch the status + output of an async job started by `use` (e.g. a video render). Pass the `job_id` that `use` returned with `{ async: true }`. Returns `{ status, result?, progress?, charged_cents }`: `running` (still working — when the job reports it, `progress` carries `{ phase, percent, rendered_",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'session' directs LLM to call use",
+      "description": "Tool 'session' description references tool(s) 'use', 'result', 'close' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "session",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Run a command or code in an open E2B sandbox session (started by `use` with action `create_session`, which returns a `session_id`). Pass `session_id` plus either `command` (a shell command) or `code` (+ optional `language`: python/javascript/bash). Returns stdout/stderr/exit_code (or the code result",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'close' directs LLM to call session",
+      "description": "Tool 'close' description references tool(s) 'session' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "close",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Close an E2B sandbox session and stop its billing. Pass the `session_id`. Captures the final metered uptime cost and releases the hold. ALWAYS call this when finished with a session — an open session keeps billing per second of uptime. Safe to call repeatedly (idempotent).",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: Vercel' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: Vercel",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "5 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 22.375,
+  "exchanges": []
+}

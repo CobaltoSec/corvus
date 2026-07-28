@@ -1,0 +1,463 @@
+{
+  "target": "https://krystalview.com/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "krystalview",
+    "server_version": "0.1.6",
+    "protocol_version": "2025-06-18",
+    "tools": [
+      {
+        "name": "get_sessions",
+        "description": "List recent visitor sessions with filters for URL, country, device, duration, friction, and rage clicks.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search entry or exit URLs, for example /pricing."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum results to return.",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Pagination offset.",
+              "default": 0,
+              "minimum": 0
+            },
+            "country": {
+              "type": "string",
+              "description": "Country name filter."
+            },
+            "device_type": {
+              "type": "string",
+              "description": "Device type filter.",
+              "enum": [
+                "desktop",
+                "mobile"
+              ]
+            },
+            "min_friction": {
+              "type": "integer",
+              "description": "Minimum friction score.",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "min_duration": {
+              "type": "integer",
+              "description": "Minimum session duration in seconds.",
+              "minimum": 0
+            },
+            "has_rage_clicks": {
+              "type": "boolean",
+              "description": "Only sessions with rage clicks."
+            }
+          }
+        }
+      },
+      {
+        "name": "get_session_detail",
+        "description": "Get full details for a specific visitor session, including pages, events, device context, errors, and friction signals.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "session_id": {
+              "type": "string",
+              "description": "Session primary key from get_sessions."
+            }
+          },
+          "required": [
+            "session_id"
+          ]
+        }
+      },
+      {
+        "name": "get_site_stats",
+        "description": "Get aggregate site metrics including all sessions, likely human sessions, likely bot/crawler sessions, duration, friction, rage clicks, daily counts, device mix, and top pages.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "description": "Lookback period in days.",
+              "default": 7,
+              "minimum": 1,
+              "maximum": 90
+            }
+          }
+        }
+      },
+      {
+        "name": "get_scroll_depth",
+        "description": "Get cumulative scroll-depth reach buckets for a specific page path.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Page path to analyze, for example /pricing."
+            },
+            "days": {
+              "type": "integer",
+              "description": "Lookback period in days.",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 90
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "get_live_visitors",
+        "description": "Get currently active visitors and sessions seen in the live activity window.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_anomalies",
+        "description": "List detected traffic, friction, bounce, and conversion anomalies for the site.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "Maximum results to return.",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 200
+            },
+            "unacknowledged_only": {
+              "type": "boolean",
+              "description": "Only include unacknowledged anomalies.",
+              "default": false
+            }
+          }
+        }
+      },
+      {
+        "name": "get_funnels",
+        "description": "List conversion funnels defined for this site.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_funnel_analysis",
+        "description": "Analyze a conversion funnel and show step reach, drop-off, and completion evidence.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "funnel_id": {
+              "type": "integer",
+              "description": "Funnel ID from get_funnels."
+            },
+            "days": {
+              "type": "integer",
+              "description": "Lookback period in days.",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 90
+            }
+          },
+          "required": [
+            "funnel_id"
+          ]
+        }
+      },
+      {
+        "name": "get_campaign_summary",
+        "description": "Get campaign attribution breakdown by UTM campaign, source, medium, sessions, duration, and bounce rate.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "description": "Lookback period in days.",
+              "default": 30,
+              "minimum": 7,
+              "maximum": 90
+            }
+          }
+        }
+      },
+      {
+        "name": "get_campaign_sessions",
+        "description": "List sessions attributed to a specific marketing campaign.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "campaign": {
+              "type": "string",
+              "description": "UTM campaign name."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum results to return.",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Pagination offset.",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          "required": [
+            "campaign"
+          ]
+        }
+      },
+      {
+        "name": "get_campaign_roas",
+        "description": "Get paid campaign spend, clicks, sessions, attributed conversions, and ROAS where ad data is connected.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "description": "Lookback period in days.",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 90
+            }
+          }
+        }
+      },
+      {
+        "name": "get_errors",
+        "description": "Get aggregated browser errors grouped by type and message, with affected paths and sample sessions.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "Maximum results to return.",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 200
+            },
+            "error_type": {
+              "type": "string",
+              "description": "Filter by error type."
+            },
+            "unresolved_only": {
+              "type": "boolean",
+              "description": "Only include unresolved errors.",
+              "default": true
+            }
+          }
+        }
+      },
+      {
+        "name": "get_notifications",
+        "description": "Get recent KrystalView notifications such as insights, setup notices, errors, and anomalies.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "unread_only": {
+              "type": "boolean",
+              "description": "Only include unread notifications.",
+              "default": false
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum results to return.",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: nginx' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: nginx",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "11 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 76.31299999996554,
+  "exchanges": []
+}

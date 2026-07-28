@@ -1,0 +1,427 @@
+{
+  "target": "https://archive-35.com/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "archive-35-mcp-server",
+    "server_version": "1.0.0",
+    "protocol_version": "2025-11-25",
+    "tools": [
+      {
+        "name": "archive35_search_products",
+        "description": "Search Archive-35's fine art photography catalog by keyword. Searches across titles, descriptions, tags, locations, and collections.\n\nReturns matching photographs with pricing and print options. Use this when a user is looking for specific types of photography (e.g., \"wildlife\", \"mountains\", \"sunset\").\n\nArgs:\n  - query (string, required): Search term (e.g., \"zebra\", \"Grand Teton\", \"landscape\")\n  - limit (number, optional): Max results to return, 1-50 (default: 10)\n\nReturns: Array of matching products with id, title, description, collection, location, price range, and URL.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search term to match against titles, descriptions, tags, and locations",
+              "minLength": 1
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum results (1-50, default 10)",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "archive35_get_product",
+        "description": "Get detailed information about a specific Archive-35 photograph by its ID.\n\nReturns full product details including all available print materials, sizes, pricing, dimensions, and purchase URL.\n\nArgs:\n  - id (string, required): Product ID (e.g., \"a-001\", \"gt-025\", \"nz-010\")\n\nReturns: Complete product details with all print variants (material + size combinations with pricing).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Product ID (e.g., \"a-001\", \"gt-025\", \"nz-010\")"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      },
+      {
+        "name": "archive35_get_collection",
+        "description": "Get all photographs in a specific Archive-35 collection.\n\nAvailable collections:\n  - \"africa\" (44 photographs) — Wildlife and landscapes from Tanzania/Serengeti\n  - \"grand-teton\" (48 photographs) — Landscapes from Grand Teton National Park, Wyoming\n  - \"new-zealand\" (16 photographs) — Landscapes from across New Zealand\n  - \"south-africa\" (6 photographs) — Wildlife from South African game reserves and the Cape Peninsula\n\nArgs:\n  - collection (string, required): Collection ID (\"africa\", \"grand-teton\", \"new-zealand\", or \"south-africa\")\n\nReturns: All photographs in the collection with titles, descriptions, and price ranges.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "collection": {
+              "type": "string",
+              "description": "Collection ID: \"africa\", \"grand-teton\", \"new-zealand\", or \"south-africa\"",
+              "enum": [
+                "africa",
+                "grand-teton",
+                "new-zealand",
+                "south-africa"
+              ]
+            }
+          },
+          "required": [
+            "collection"
+          ]
+        }
+      },
+      {
+        "name": "archive35_get_catalog_summary",
+        "description": "Get a high-level overview of the entire Archive-35 catalog.\n\nReturns store information, collection counts, available materials with starting prices, total product count, and links. Use this as a starting point to understand what's available before searching for specific products.\n\nNo arguments required.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "archive35://catalog",
+        "name": "Archive-35 Product Catalog",
+        "description": "Complete product catalog with all 114 photographs and their metadata",
+        "mime_type": "application/json"
+      },
+      {
+        "uri": "archive35://policies",
+        "name": "Archive-35 Policies",
+        "description": "Store policies including terms of sale, return policy, shipping, and privacy",
+        "mime_type": "text/plain"
+      },
+      {
+        "uri": "archive35://artist",
+        "name": "About Wolf / Archive-35",
+        "description": "Information about the photographer and the Archive-35 brand",
+        "mime_type": "text/plain"
+      }
+    ],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'archive35_search_products.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "archive35_search_products",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"total_matches\": 0,\n  \"showing\": 0,\n  \"query\": \"' OR '1'='1\",\n  \"results\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'archive35_get_product.id'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "archive35_get_product",
+      "parameter": "id",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"error\": \"Product \\\"<script>alert(1)</script>\\\" not found. Valid IDs: a-001 to a-044, gt-001 to gt-048, nz-001 to nz-016, sa-001 to sa-006.\"\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'archive35_get_collection.collection'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: generic_string).",
+      "tool_name": "archive35_get_collection",
+      "parameter": "collection",
+      "payload": "<script>alert(1)</script>",
+      "evidence": "{\n  \"error\": \"Collection \\\"<script>alert(1)</script>\\\" not found. Valid: africa, grand-teton, new-zealand, south-africa.\"\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: cloudflare' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: cloudflare",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'archive35_search_products' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['query']",
+      "tool_name": "archive35_search_products",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'archive35_search_products.query' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "archive35_search_products",
+      "parameter": "query",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'archive35_get_product' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['id']",
+      "tool_name": "archive35_get_product",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'archive35_get_product.id' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "archive35_get_product",
+      "parameter": "id",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'archive35_get_collection' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['collection']",
+      "tool_name": "archive35_get_collection",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'archive35_get_collection.collection' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "archive35_get_collection",
+      "parameter": "collection",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "MCP10",
+      "severity": "medium",
+      "title": "Response Flooding — 'archive35_get_catalog_summary' returns highly repetitive content",
+      "description": "Tool 'archive35_get_catalog_summary' response contains a phrase repeated ≥15 times. Repetitive content can be used to anchor specific instructions into LLM memory or exhaust context budget with low-information noise.",
+      "tool_name": "archive35_get_catalog_summary",
+      "parameter": null,
+      "payload": null,
+      "evidence": "{\n  \"store\": {\n    \"name\": \"Archive-35\",\n    \"tagline\": \"Light. Place. Time.\",\n    \"description\": \"Fine art landscape and wildlife photography prints by Wolf. 17+ years, 55+ countries.\",\n    \"url\": \"https://archive-35.com\",\n    \"artist\": \"Wolf\",\n    \"copyright\": \"© 2026 Wolf / Archive-35. All rights",
+      "remediation": "Deduplicate response data. Avoid returning the same value or phrase more than a handful of times in a single response.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-015",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-016",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-017",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-018",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-019",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 12.01600000000326,
+  "exchanges": []
+}

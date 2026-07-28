@@ -1,0 +1,312 @@
+{
+  "target": "https://xqb.io/mcp/",
+  "transport": "http",
+  "surface": {
+    "server_name": "xqbusd-vibe-pay",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "wallet_provision",
+        "description": "Provision a Stellar-native XQBUSD wallet for this AI agent. Idempotent — safe to call multiple times (returns existing wallet on repeat calls). On first call: generates a keypair, funds XLM reserve, establishes XQBUSD trustline. The wallet is tied to your agent_id. After provisioning, use wallet_balance to check your on-chain XQBUSD balance and wallet_pay to pay x402 HTTP endpoints directly from on-chain funds. GENIUS Act compliant stablecoin. XQB DAO LLC (EIN 39-4046919), Kamas Utah.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "agent_id": {
+              "type": "string",
+              "description": "Unique identifier for this AI agent (≥ 8 chars). Example: \"agent:my-trading-bot-v2\"."
+            }
+          },
+          "required": [
+            "agent_id"
+          ]
+        }
+      },
+      {
+        "name": "wallet_balance",
+        "description": "Check the on-chain XQBUSD balance of your provisioned agent wallet, along with your MCP credit balance and sweep status. Free — no XQBUSD charged for balance queries. Use wallet_provision first if you have not yet provisioned a wallet.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "agent_id": {
+              "type": "string",
+              "description": "Unique identifier for this AI agent (≥ 8 chars). Must match the agent_id used to provision."
+            }
+          },
+          "required": [
+            "agent_id"
+          ]
+        }
+      },
+      {
+        "name": "wallet_pay",
+        "description": "Pay an x402 HTTP endpoint or any Stellar address directly from your provisioned agent wallet. Submits a real Stellar payment of XQBUSD to the destination Stellar public key. Returns the txHash — attach it as the X-Payment-Receipt header in your retried HTTP request. Free MCP call — the XQBUSD payment itself is the cost. Requires a provisioned wallet with on-chain XQBUSD balance (use wallet_provision + sweep first). Optional memo (≤ 28 bytes) should be the X-Payment-Nonce from the 402 response.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "agent_id": {
+              "type": "string",
+              "description": "Your agent identifier (≥ 8 chars). Must match the agent_id used to provision."
+            },
+            "destination_public_key": {
+              "type": "string",
+              "description": "Stellar Ed25519 public key of the payment destination (G…). Example: \"GB7OG23IKFXRGTRBPID5F5JVLSIZWOCHTP3HVB7ER53OOXNBRVK3N3YF\"."
+            },
+            "amount_xqbusd": {
+              "type": "string",
+              "description": "Amount of XQBUSD to send as a decimal string. Example: \"0.001\" or \"1.5000000\"."
+            },
+            "memo": {
+              "type": "string",
+              "description": "Optional Stellar text memo (≤ 28 bytes). Use the X-Payment-Nonce from the 402 response headers."
+            }
+          },
+          "required": [
+            "agent_id",
+            "destination_public_key",
+            "amount_xqbusd"
+          ]
+        }
+      },
+      {
+        "name": "quantum_attest",
+        "description": "Notarize any agent statement or manifest on-chain. Computes SHA-256, pins a quantum-signed certificate to IPFS via Pinata, and anchors it to the live Stellar ledger. Returns an immutable IPFS CID + Stellar ledger hash proving the content existed at this moment. Compliant with ESIGN Act, Utah Blockchain Act, NIST FIPS 204 (ML-DSA-65). Ideal for: trading agent manifests, audit trails, IP defensive publication, compliance records.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "agent_id": {
+              "type": "string",
+              "description": "Unique identifier for this agent. Example: \"agent:my-trading-bot\" or \"agent:research-v2\"."
+            },
+            "statement": {
+              "type": "string",
+              "description": "The text to notarize. Can be a manifest, audit record, trade log, or any UTF-8 string."
+            },
+            "evidence": {
+              "type": "object",
+              "description": "Optional structured metadata attached to the attestation (e.g. { pair: \"XLM/USDC\", price: 1.042 }).",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "agent_id",
+            "statement"
+          ]
+        }
+      },
+      {
+        "name": "vibe_proof_attest",
+        "description": "Prove creative authorship on the blockchain. Dual-hash (SHA-256 + BLAKE3) any creative work, pin a C2PA-compatible credential to IPFS, submit a real Stellar ManageData transaction, and generate a PDF certificate. Accepts text content (lyrics, poems, scripts) via text_content, or binary files (MP3, WAV, PDF, images) via file_content (base64). Compliant with ESIGN Act (15 U.S.C. §7001), Utah Code §70A-15 (Blockchain Act), Berne Convention Art. 5, FRE 902(11), C2PA Content Credentials 1.3. GENIUS Act platform. XQB DAO LLC (EIN 39-4046919), Kamas Utah. First-time caller receives 0.01 XQBUSD trial credit.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "creator_id": {
+              "type": "string",
+              "description": "Creator or agent identifier (name, email, social handle, or agent ID). Mutually exclusive with agent_id."
+            },
+            "agent_id": {
+              "type": "string",
+              "description": "AI agent identifier — alias for creator_id. Use when calling as an AI agent. Mutually exclusive with creator_id."
+            },
+            "creator_name": {
+              "type": "string",
+              "description": "Human-readable creator name (optional, defaults to creator_id)."
+            },
+            "title": {
+              "type": "string",
+              "description": "Title of the creative work."
+            },
+            "description": {
+              "type": "string",
+              "description": "Optional description of the work."
+            },
+            "work_type": {
+              "type": "string",
+              "enum": [
+                "lyrics",
+                "music",
+                "poetry",
+                "screenplay",
+                "article",
+                "artwork",
+                "code",
+                "other"
+              ],
+              "description": "Category of creative work."
+            },
+            "content_type": {
+              "type": "string",
+              "enum": [
+                "human-authored",
+                "ai-generated",
+                "ai-assisted"
+              ],
+              "description": "Who/what created this work."
+            },
+            "file_name": {
+              "type": "string",
+              "description": "File name with extension (e.g. song.mp3, poem.txt)."
+            },
+            "file_type": {
+              "type": "string",
+              "description": "MIME type (e.g. audio/mpeg, text/plain, application/pdf)."
+            },
+            "file_content": {
+              "type": "string",
+              "description": "Base64-encoded binary file content — max 50 MB. Use for audio/image/PDF files."
+            },
+            "text_content": {
+              "type": "string",
+              "description": "Raw UTF-8 text (lyrics, poem, script, article). Max 200,000 characters. Use instead of file_content for text works."
+            },
+            "creator_email": {
+              "type": "string",
+              "description": "Optional — PDF certificate will be emailed here."
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Optional metadata: { bpm: 120, key: \"C minor\", album: \"My Album\" }",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "creator_id",
+            "title"
+          ]
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP03",
+      "severity": "low",
+      "title": "High entropy description in 'vibe_proof_attest'",
+      "description": "Unusual character distribution may indicate obfuscated content.",
+      "tool_name": "vibe_proof_attest",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review description for base64-encoded or otherwise obfuscated payloads.",
+      "exploitation_confirmed": false,
+      "confidence": 20,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'wallet_provision' directs LLM to call wallet_balance",
+      "description": "Tool 'wallet_provision' description references tool(s) 'wallet_balance', 'wallet_pay' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "wallet_provision",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Provision a Stellar-native XQBUSD wallet for this AI agent. Idempotent — safe to call multiple times (returns existing wallet on repeat calls). On first call: generates a keypair, funds XLM reserve, establishes XQBUSD trustline. The wallet is tied to your agent_id. After provisioning, use wallet_bal",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: Google Frontend' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: Google Frontend",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "5 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 58.73399999999674,
+  "exchanges": []
+}

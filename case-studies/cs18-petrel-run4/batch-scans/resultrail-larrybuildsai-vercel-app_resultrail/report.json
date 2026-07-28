@@ -1,0 +1,366 @@
+{
+  "target": "https://resultrail-larrybuildsai.vercel.app/resultrail/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "resultrail-x402-mcp",
+    "server_version": "0.1.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "quote_data_result",
+        "description": "Free pre-payment quote for one ResultRail public-data result. Returns price, paid endpoint, success contract, and whether the buyer's max price covers the result.",
+        "input_schema": {
+          "additionalProperties": true,
+          "properties": {
+            "input": {
+              "description": "Domain, URL, or target text to stage.",
+              "type": "string"
+            },
+            "max_price_usdc": {
+              "description": "Maximum acceptable price. Defaults to 10.",
+              "type": "string"
+            },
+            "task": {
+              "description": "Optional plain-language task or buying intent.",
+              "type": "string"
+            },
+            "task_type": {
+              "description": "Result type to quote.",
+              "enum": [
+                "domain",
+                "extract"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "task_type"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "enrich_domain_result",
+        "description": "Fetch a public domain/homepage and return one source-attributed result pack: company/title/description, industry guess, technographic signals, useful paths, confidence, sources, and receipt hash.",
+        "input_schema": {
+          "additionalProperties": true,
+          "properties": {
+            "domain": {
+              "description": "Public domain or homepage URL.",
+              "type": "string"
+            },
+            "max_price_usdc": {
+              "default": "0.12",
+              "type": "string"
+            },
+            "pii_mode": {
+              "default": "off",
+              "enum": [
+                "off",
+                "none",
+                "public_only"
+              ],
+              "type": "string"
+            },
+            "required_fields": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "url": {
+              "description": "Alternative public homepage URL.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "domain"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "name": "extract_url_result",
+        "description": "Fetch one public URL and return title, description, headings, text preview, links, confidence, source URL, and receipt hash. Designed for pay-per-success agent extraction.",
+        "input_schema": {
+          "additionalProperties": true,
+          "properties": {
+            "max_price_usdc": {
+              "default": "0.05",
+              "type": "string"
+            },
+            "output": {
+              "default": "summary",
+              "enum": [
+                "summary",
+                "markdown",
+                "json"
+              ],
+              "type": "string"
+            },
+            "url": {
+              "description": "Public URL to extract.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "type": "object"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT02",
+      "severity": "medium",
+      "title": "'quote_data_result' accepts arbitrary additional properties",
+      "description": "additionalProperties: true allows unexpected parameters that may bypass validation logic.",
+      "tool_name": "quote_data_result",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Set additionalProperties: false and enumerate all expected parameters explicitly.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "EXT02",
+      "severity": "medium",
+      "title": "'enrich_domain_result' accepts arbitrary additional properties",
+      "description": "additionalProperties: true allows unexpected parameters that may bypass validation logic.",
+      "tool_name": "enrich_domain_result",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Set additionalProperties: false and enumerate all expected parameters explicitly.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT02",
+      "severity": "medium",
+      "title": "'extract_url_result' accepts arbitrary additional properties",
+      "description": "additionalProperties: true allows unexpected parameters that may bypass validation logic.",
+      "tool_name": "extract_url_result",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Set additionalProperties: false and enumerate all expected parameters explicitly.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: Vercel' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: Vercel",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'quote_data_result' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['task_type']",
+      "tool_name": "quote_data_result",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'quote_data_result.task_type' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "quote_data_result",
+      "parameter": "task_type",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 32.53200000000652,
+  "exchanges": []
+}

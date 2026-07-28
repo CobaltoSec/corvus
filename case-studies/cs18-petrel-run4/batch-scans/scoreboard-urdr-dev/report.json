@@ -1,0 +1,487 @@
+{
+  "target": "https://scoreboard.urdr.dev/api/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "ssi-scoreboard",
+    "server_version": "0.1.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "search_events",
+        "description": "Search for IPSC competitions by name, country, date range, or level. Use this to find a specific match the user has named, or to browse upcoming/recent events. Each result contains `id` and `content_type` fields — pass both to get_match to load full details. When searching by name (query param), past events are included automatically — no date filter needed. When browsing without a query, only events within ~3 months of today are returned by default; pass explicit starts_after/starts_before to widen the window. `min_level` defaults to l2plus which hides small club matches; pass 'all' only if the user explicitly wants club-level events.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text search by event name or venue"
+            },
+            "min_level": {
+              "type": "string",
+              "enum": [
+                "all",
+                "l2plus",
+                "l3plus",
+                "l4plus"
+              ],
+              "description": "Minimum competition level. Defaults to l2plus (Regional and above). Use 'all' to include Level I club matches."
+            },
+            "country": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "description": "ISO 3166-1 alpha-3 country code, e.g. SWE, NOR, FIN"
+            },
+            "starts_after": {
+              "type": "string",
+              "description": "Only return events starting on or after this date. ISO format: YYYY-MM-DD"
+            },
+            "starts_before": {
+              "type": "string",
+              "description": "Only return events starting on or before this date. ISO format: YYYY-MM-DD"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_match",
+        "description": "Fetch full details for a specific IPSC match. Returns the complete competitor list — each entry has a numeric `id`, `name`, `club`, and `division`. Also returns a `squads` list where each squad has a `name` (e.g. 'Squad 3') and a `competitorIds` array of every competitor in that squad. Use this to resolve any user reference to a competitor ID before calling compare_competitors: match by `name` for named individuals, filter by `club` for club members, or use `squads[n].competitorIds` for an entire squad. Always call this before compare_competitors. `ct` and `id` come from a search_events result (the `content_type` and `id` fields of the event). Each stage in `stages[]` includes `procedure` (free-text stage instructions), `firearm_condition` (loading requirements such as 'Unloaded'), `course_display` ('Short'/'Medium'/'Long'), `min_rounds`, `paper_targets`, and `steel_targets`. When `scoring_completed` is 0 (pre-match), use these fields for preparation analysis: compute the round-robin stage rotation for a squad, parse constraint signals from text, and summarise the course breakdown.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "ct": {
+              "type": "string",
+              "description": "content_type value from a search_events result (typically '22' for IPSC matches)"
+            },
+            "id": {
+              "type": "string",
+              "description": "id value from a search_events result"
+            }
+          },
+          "required": [
+            "ct",
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "compare_competitors",
+        "description": "Run a deep stage-by-stage comparison for 1–12 competitors in a match. Returns scores, hit factors, penalties, efficiency %, consistency, time-vs-accuracy breakdown, what-if rank simulations, and performance fingerprints. Pass a single competitor ID to analyse one shooter in isolation. Pass multiple IDs to compare them head-to-head across every stage. `competitor_ids` are numeric IDs from get_match's competitor list — always resolve names to IDs via get_match first. IMPORTANT — ranking across competitors: NEVER rank by raw points. Points are not comparable across divisions (Production vs Classic Minor vs Standard Minor etc.) or across stages (each stage has different max_points). Use `overall_rank` (rank across all competitors regardless of division) and the average of per-stage `overall_percent` to rank cross-division. Use `div_rank` for within-division ranking. Use `penaltyStats[id].matchPctActual` for group-relative average match %. Results are suitable for natural-language coaching feedback, identifying where points were lost, and ranking analysis.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "ct": {
+              "type": "string",
+              "description": "content_type value from the search_events result for this match"
+            },
+            "id": {
+              "type": "string",
+              "description": "id value from the search_events result for this match"
+            },
+            "competitor_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "maxItems": 12,
+              "description": "Numeric competitor IDs from get_match. Up to 12. Resolve names to IDs with get_match before calling this."
+            }
+          },
+          "required": [
+            "ct",
+            "id",
+            "competitor_ids"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_stage_times",
+        "description": "Export raw stage times for a list of competitors at a match — built for video editors who want to auto-cut a long match recording into per-stage clips. Returns one object per competitor with a stages[] array; each entry has stage_number, stage_name, time_seconds (raw stage time), and scorecard_updated_at (ISO timestamp of when the run was recorded). Stages within each competitor are sorted by stage_number. Competitors are returned in the order of `competitor_ids`. competitor_ids are numeric IDs from get_match — resolve names with get_match first.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "ct": {
+              "type": "string",
+              "description": "content_type value from search_events / get_match"
+            },
+            "id": {
+              "type": "string",
+              "description": "match id value from search_events / get_match"
+            },
+            "competitor_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "maxItems": 12,
+              "description": "Numeric competitor IDs from get_match. Up to 12."
+            }
+          },
+          "required": [
+            "ct",
+            "id",
+            "competitor_ids"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "get_popular_matches",
+        "description": "List recently-viewed IPSC matches from the cache. Call this first whenever the user hasn't specified a match — it surfaces currently-active or recently-popular events so you can ask which one they mean, or proceed with the most relevant one. If the user asks a vague question like 'how did I do?' or 'what matches are on?', start here. Returns [] when the cache is cold (no recent visitors); fall back to search_events in that case.",
+        "input_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_shooter_dashboard",
+        "description": "Fetch a shooter's cross-competition profile and career statistics. Returns: profile (name, club, division), match history (up to 50 recent matches with per-match stats), aggregate stats (overall match %, average hit factor, A-zone %, consistency CV, HF trend slope), and achievement progress (tiered milestones). Use this to answer questions about a shooter's performance across multiple matches, their consistency over time, or how their accuracy has been trending. The `shooter_id` is the globally stable SSI ShooterNode ID — obtain it from `get_match`'s `competitors[n].shooterId` field (an integer, distinct from the per-match `competitors[n].id`). Returns 404 if the shooter has not been seen in any cached match on this server. Each match in `matches[]` includes `ct` and `matchId` so you can call `get_match` or `compare_competitors` to drill into a specific competition.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "shooter_id": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Globally stable SSI shooter ID — from get_match competitors[n].shooterId (not the per-match competitor id)"
+            }
+          },
+          "required": [
+            "shooter_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      {
+        "name": "find_shooter",
+        "description": "Search for shooter profiles by name. Returns a list of matching shooters with their shooter_id — pass that ID to get_shooter_dashboard to load their full career history. Only shooters who have appeared in at least one cached match on this server are searchable. Pass an empty query to browse the most recently active shooters. Use this when you know a shooter's name but not their shooter_id, as an alternative to browsing get_match competitor lists.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "default": "",
+              "description": "Name to search for (case-insensitive substring match). Empty string returns recently seen shooters."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Maximum number of results to return. Defaults to 20."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "ssi://guide",
+        "name": "guide",
+        "description": "How to use the SSI Scoreboard MCP tools, including workflows and data quality notes",
+        "mime_type": "text/plain"
+      },
+      {
+        "uri": "ssi://ipsc-reference",
+        "name": "ipsc-reference",
+        "description": "IPSC reference: divisions, match levels, status codes, scoring zones, hit factor formula, and shooter archetypes",
+        "mime_type": "text/plain"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "analyze_performance",
+        "description": "Analyse a competitor's stage-by-stage performance at an IPSC match and produce coaching feedback",
+        "arguments": [
+          {
+            "name": "match_name",
+            "description": "Name of the IPSC match (partial name is fine)",
+            "required": true
+          },
+          {
+            "name": "competitor_name",
+            "description": "Full or partial name of the competitor to analyse",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compare_squad",
+        "description": "Compare all members of a squad (or a named group) head-to-head at an IPSC match",
+        "arguments": [
+          {
+            "name": "match_name",
+            "description": "Name of the IPSC match",
+            "required": true
+          },
+          {
+            "name": "squad",
+            "description": "Squad name or number (e.g. 'Squad 3'). If omitted, list available squads and ask the user to choose.",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "pre_match_prep",
+        "description": "Generate a pre-match preparation brief for a shooter at an upcoming IPSC match",
+        "arguments": [
+          {
+            "name": "match_name",
+            "description": "Name of the upcoming IPSC match (partial name is fine)",
+            "required": true
+          },
+          {
+            "name": "competitor_name",
+            "description": "Full or partial name of the competitor to prepare",
+            "required": true
+          },
+          {
+            "name": "squad",
+            "description": "Squad name or number (e.g. 'Squad 3'). If provided, shows the stage rotation order.",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "find_matches",
+        "description": "Find upcoming or recent IPSC matches, optionally filtered by country, name, or competition level",
+        "arguments": [
+          {
+            "name": "query",
+            "description": "Match name or venue to search for",
+            "required": false
+          },
+          {
+            "name": "country",
+            "description": "ISO 3166-1 alpha-3 country code, e.g. SWE, NOR, FIN, GBR",
+            "required": false
+          },
+          {
+            "name": "level",
+            "description": "Minimum match level filter. Defaults to l2plus (Regional and above).",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP02",
+      "severity": "high",
+      "title": "Scope Creep — 'get_match' claims unrestricted access scope",
+      "description": "Tool 'get_match' description contains a broad-scope claim: 'any user'. Unrestricted scope tools risk being exploited for lateral movement or privilege escalation in an MCP session.",
+      "tool_name": "get_match",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Fetch full details for a specific IPSC match. Returns the complete competitor list — each entry has a numeric `id`, `name`, `club`, and `division`. Also returns a `squads` list where each squad has a `name` (e.g. 'Squad 3') and a `competitorIds` array of every competitor in that squad. Use this to r",
+      "remediation": "Scope tools to the minimum necessary access. Replace 'any path' / 'all files' with explicit allowlists. Validate and restrict inputs server-side.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'get_match'",
+      "description": "Description is 1098 chars (limit 1000). May contain hidden content.",
+      "tool_name": "get_match",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP03",
+      "severity": "medium",
+      "title": "Excessive description length in 'compare_competitors'",
+      "description": "Description is 1067 chars (limit 1000). May contain hidden content.",
+      "tool_name": "compare_competitors",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Keep descriptions concise; review for hidden instructions.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT02",
+      "severity": "info",
+      "title": "'find_shooter' defines no required fields",
+      "description": "All parameters are implicitly optional. Verify this is intentional.",
+      "tool_name": "find_shooter",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Declare required parameters explicitly to enforce correct usage.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'get_match' directs LLM to call search_events",
+      "description": "Tool 'get_match' description references tool(s) 'search_events' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "get_match",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Fetch full details for a specific IPSC match. Returns the complete competitor list — each entry has a numeric `id`, `name`, `club`, and `division`. Also returns a `squads` list where each squad has a `name` (e.g. 'Squad 3') and a `competitorIds` array of every competitor in that squad. Use this to r",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'compare_competitors' directs LLM to call get_match",
+      "description": "Tool 'compare_competitors' description references tool(s) 'get_match' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "compare_competitors",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Run a deep stage-by-stage comparison for 1–12 competitors in a match. Returns scores, hit factors, penalties, efficiency %, consistency, time-vs-accuracy breakdown, what-if rank simulations, and performance fingerprints. Pass a single competitor ID to analyse one shooter in isolation. Pass multiple ",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: cloudflare' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: cloudflare",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "6 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 13.64100000000326,
+  "exchanges": []
+}

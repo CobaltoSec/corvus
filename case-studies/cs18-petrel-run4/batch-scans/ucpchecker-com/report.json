@@ -1,0 +1,401 @@
+{
+  "target": "https://ucpchecker.com/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "UCP Checker",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "list-stores",
+        "description": "    List verified UCP stores, optionally filtered by category and minimum score.\n\n    Use when the user wants to shop by category — e.g., \"find me a pet store\"\n    or \"what shoe stores are available?\"\n\n    Returns stores sorted by score (highest first) with domain, category, score, and grade.",
+        "input_schema": {
+          "properties": {
+            "category": {
+              "description": "Filter by store category (e.g., \"footwear\", \"pet supplies\"). Use list-categories to see available categories.",
+              "type": "string"
+            },
+            "min_score": {
+              "description": "Minimum total score to include (default: 50). Lower values return more stores but may include lower-quality ones.",
+              "type": "integer"
+            },
+            "limit": {
+              "description": "Maximum number of stores to return (default: 10, max: 50)",
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      },
+      {
+        "name": "list-categories",
+        "description": "    List all available store categories with store counts.\n\n    Use to discover what kinds of stores are available before narrowing down.\n    Returns categories sorted by number of stores (most stores first).",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "check-domain",
+        "description": "    Check if a domain supports Universal Commerce Protocol (UCP).\n\n    Returns the UCP status, manifest version, capabilities, response latency,\n    and AI bot access policies (GPTBot, ClaudeBot, Google-Extended, etc.).\n\n    The domain is automatically normalized (removes protocol, www, paths).\n    Examples: \"shopify.com\", \"https://www.example.com/path\" → \"example.com\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The domain to check for UCP support (e.g., \"shopify.com\", \"example.com\"). Protocol, www prefix, and paths are automatically removed.",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain"
+          ]
+        }
+      },
+      {
+        "name": "discover-store",
+        "description": "    Discover available shopping tools on a UCP-enabled store.\n\n    Connects to the store's MCP endpoint and lists all available\n    tools (search, cart, shipping, etc.). Use this to understand\n    what a store supports before shopping.\n\n    Example: domain: \"allbirds.com\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The store domain to discover (e.g., \"allbirds.com\")",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain"
+          ]
+        }
+      },
+      {
+        "name": "search-catalog",
+        "description": "    Search for products on any UCP-enabled Shopify store.\n\n    Searches the store's live product catalog via UCP/MCP and returns\n    matching products with titles, prices, variants, and images.\n\n    Examples:\n    - domain: \"allbirds.com\", query: \"tree topper\"\n    - domain: \"gymshark.com\", query: \"hoodie\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The store domain (e.g., \"allbirds.com\", \"gymshark.com\"). Must be a UCP-enabled Shopify store.",
+              "type": "string"
+            },
+            "query": {
+              "description": "Product search term (e.g., \"tree topper\", \"wool runners\", \"hoodie\")",
+              "type": "string"
+            },
+            "country": {
+              "description": "ISO country code for localized pricing/inventory (e.g., \"US\", \"GB\", \"CA\"). Optional — defaults to store default.",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain",
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "search-all",
+        "description": "    Search for products across all verified UCP stores at once.\n\n    Fans out the query to multiple stores concurrently and returns\n    aggregated results grouped by store. Fast stores respond first;\n    slow/failing stores are skipped gracefully.\n\n    Example: query: \"running shoes\", maxStores: 5",
+        "input_schema": {
+          "properties": {
+            "query": {
+              "description": "Product search term (e.g., \"running shoes\", \"hoodie\")",
+              "type": "string"
+            },
+            "country": {
+              "description": "ISO country code for localized pricing (e.g., \"US\", \"GB\"). Optional.",
+              "type": "string"
+            },
+            "maxStores": {
+              "description": "Maximum number of stores to search (default: 5, max: 10)",
+              "type": "integer"
+            }
+          },
+          "type": "object",
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "search-policies",
+        "description": "    Search store policies on any UCP-enabled Shopify store.\n\n    Query return policies, shipping policies, refund policies, privacy policies,\n    terms of service, or any other store policy. Returns the matching policy text.\n\n    Use this when a user asks about a store's policies before or after purchase —\n    e.g., \"what is the return policy?\", \"do they offer free shipping?\", \"refund window?\"\n\n    Example: domain: \"allbirds.com\", query: \"return policy\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The store domain (e.g., \"allbirds.com\")",
+              "type": "string"
+            },
+            "query": {
+              "description": "Policy search term (e.g., \"return policy\", \"shipping\", \"refund window\", \"privacy policy\")",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain",
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "get-product-details",
+        "description": "    Get full product details including variant IDs from a UCP-enabled store.\n\n    Use this after search-catalog to resolve variant IDs needed for add-to-cart.\n    Pass the Product ID from search results to get all variants with their IDs.\n\n    Example: domain: \"allbirds.com\", productId: \"gid://shopify/Product/123456\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The store domain (e.g., \"allbirds.com\")",
+              "type": "string"
+            },
+            "productId": {
+              "description": "The product ID from search-catalog results (e.g., \"gid://shopify/Product/123456\")",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain",
+            "productId"
+          ]
+        }
+      },
+      {
+        "name": "add-to-cart",
+        "description": "    Add a product to cart on any UCP-enabled Shopify store and get a checkout URL.\n\n    Requires a variant ID from the search-catalog or get-product-details results.\n    Returns the cart contents, checkout URL, and a cart_id token.\n\n    To build multi-item carts: pass the returned cart_id back on subsequent calls.\n    The agent holds the cart_id — no server-side session needed.\n\n    Example: domain: \"allbirds.com\", variantId: \"gid://shopify/ProductVariant/12345\"\n    Multi-item: domain: \"allbirds.com\", variantId: \"...\", cartId: \"gid://shopify/Cart/abc123\"",
+        "input_schema": {
+          "properties": {
+            "domain": {
+              "description": "The store domain (e.g., \"allbirds.com\")",
+              "type": "string"
+            },
+            "variantId": {
+              "description": "The product variant ID from search-catalog results (e.g., \"gid://shopify/ProductVariant/12345\")",
+              "type": "string"
+            },
+            "quantity": {
+              "description": "Quantity to add (default: 1)",
+              "type": "integer"
+            },
+            "country": {
+              "description": "ISO country code for localized pricing/checkout (e.g., \"US\", \"GB\", \"CA\"). Optional.",
+              "type": "string"
+            },
+            "cartId": {
+              "description": "Cart token from a previous add-to-cart call. Pass this to add more items to an existing cart instead of creating a new one.",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "domain",
+            "variantId"
+          ]
+        }
+      },
+      {
+        "name": "build-bundle",
+        "description": "    Build a multi-store shopping cart in one call.\n\n    Pass an array of items (each with domain + variantId) and get back\n    per-store checkout URLs. Items on the same store share one cart.\n\n    Requires variant IDs — use get-product-details first to resolve sizes/colors.\n\n    Example: items: [\n      { \"domain\": \"allbirds.com\", \"variantId\": \"gid://shopify/ProductVariant/123\" },\n      { \"domain\": \"gymshark.com\", \"variantId\": \"gid://shopify/ProductVariant/456\", \"quantity\": 2 }\n    ]",
+        "input_schema": {
+          "properties": {
+            "items": {
+              "description": "Array of items to add to carts. Items on the same domain share one cart.",
+              "minItems": 1,
+              "maxItems": 20,
+              "items": {
+                "properties": {
+                  "domain": {
+                    "description": "The store domain (e.g., \"allbirds.com\")",
+                    "type": "string"
+                  },
+                  "variantId": {
+                    "description": "Product variant ID (e.g., \"gid://shopify/ProductVariant/12345\")",
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "description": "Quantity to add (default: 1)",
+                    "type": "integer"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "domain",
+                  "variantId"
+                ]
+              },
+              "type": "array"
+            },
+            "country": {
+              "description": "ISO country code for localized pricing/checkout (e.g., \"US\", \"GB\"). Applied to all items.",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "items"
+          ]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri": "ucp://stores/verified",
+        "name": "verified-stores",
+        "description": "    List of all verified UCP-enabled stores available for shopping.\n    Each store has been confirmed to have a valid UCP manifest and\n    working MCP endpoint. Use these domains with search-catalog\n    and add-to-cart tools.",
+        "mime_type": "application/json"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "shop-for-product",
+        "description": "    Guide the user through finding and purchasing a product on any UCP-enabled store.\n    Walks through the full agentic commerce flow: search, select, add to cart, checkout.",
+        "arguments": [
+          {
+            "name": "product",
+            "description": "What product to search for (e.g., \"black running shorts\", \"wool runners\")",
+            "required": true
+          },
+          {
+            "name": "store",
+            "description": "Store domain to search (e.g., \"allbirds.com\", \"gymshark.com\"). Optional — agent can suggest stores.",
+            "required": false
+          },
+          {
+            "name": "country",
+            "description": "ISO country code for localized pricing (e.g., \"US\", \"GB\"). Optional.",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "compare-stores",
+        "description": "    Check multiple store domains for UCP/agentic commerce support.\n    Useful for comparing which brands in a category are AI-ready.",
+        "arguments": [
+          {
+            "name": "domains",
+            "description": "Comma-separated list of domains to check (e.g., \"allbirds.com, gymshark.com, lululemon.com\")",
+            "required": true
+          },
+          {
+            "name": "category",
+            "description": "Category label for the comparison (e.g., \"activewear\", \"footwear\", \"DTC brands\")",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "high",
+      "title": "Injection reflected — 'list-stores.category'",
+      "description": "Payload was reflected verbatim in the response without sanitization (field classification: sql).",
+      "tool_name": "list-stores",
+      "parameter": "category",
+      "payload": "' OR '1'='1",
+      "evidence": "# UCP Stores: \"' OR '1'='1\"\n\nNo stores found matching your criteria.\n\n**Next steps**: Use **list-categories** to see available categories.",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: cloudflare' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: cloudflare",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "9 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT12",
+      "severity": "high",
+      "title": "Prompt template injection confirmed in 'shop-for-product'",
+      "description": "prompts/get for 'shop-for-product' reflected the injection payload verbatim in the returned messages, confirming unsanitized argument reflection.",
+      "tool_name": "shop-for-product",
+      "parameter": null,
+      "payload": "CORVUS_INJECTION_TEST_{{7*7}}",
+      "evidence": "Payload reflected in messages: {\"description\": \"    Guide the user through finding and purchasing a product on any UCP-enabled store.\\n    Walks through the full agentic commerce flow: search, select, add to cart, checkout.\", \"messages\": [{\"role\": \"user\", \"content\": {\"type\": \"text\", \"text\": \"Help me shop for CORVUS_INJECTION_TEST",
+      "remediation": "Sanitize prompt arguments before embedding them in message templates.",
+      "exploitation_confirmed": true,
+      "confidence": 88,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 41.96900000004098,
+  "exchanges": []
+}

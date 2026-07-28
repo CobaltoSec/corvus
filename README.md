@@ -369,13 +369,13 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across 17 case studies — 397 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across 18 case studies — 414 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
 
-| Metric | Total (17 case studies) |
+| Metric | Total (18 case studies) |
 |--------|-------------------------------|
-| Servers audited | **397** |
-| Raw findings | **~5566** |
-| True positives | **~1325** |
+| Servers audited | **414** |
+| Raw findings | **~5856** |
+| True positives | **~1350** |
 
 Key findings from the wild:
 
@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-56 security advisories filed across 17 case studies — 7 published, 49 in active coordinated disclosure (90-day window).
+63 security advisories filed across 18 case studies — 9 published, 54 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -412,8 +412,10 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-prc4-649r-564g](https://github.com/advisories/GHSA-prc4-649r-564g) | localparse-mcp | HIGH | SSRF confirmed in parse_url — timing and timeout signals confirmed (CWE-918) |
 | [GHSA-32vx-mq6h-p8f3](https://github.com/advisories/GHSA-32vx-mq6h-p8f3) | emilia-protocol | HIGH | Prompt template injection via trust_decision/receipt_quality_check + forced compliance gate (EXT03/EXT12) |
 | [GHSA-wx78-8jx3-wcv9](https://github.com/advisories/GHSA-wx78-8jx3-wcv9) | @tensorfeed/mcp-server | HIGH | XSS reflection cluster across 6 tools — unsanitized payloads echoed verbatim (MCP05) |
+| [GHSA-qwwj-38wj-ffvw](https://github.com/advisories/GHSA-qwwj-38wj-ffvw) | myclaw-toolkit | HIGH | SSRF + credential exposure via court filing tools — unauthenticated internal endpoint access |
+| [GHSA-7763-c5gf-v5fj](https://github.com/advisories/GHSA-7763-c5gf-v5fj) | mcp-shell-server | HIGH | Arbitrary shell command execution via unauthenticated MCP tool call — no access control |
 
-**Active coordinated disclosure (49 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (54 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->

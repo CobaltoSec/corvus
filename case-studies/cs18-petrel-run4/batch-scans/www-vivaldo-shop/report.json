@@ -1,0 +1,335 @@
+{
+  "target": "https://www.vivaldo.shop/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "vivaldo-shop-mcp",
+    "server_version": "1.1.1",
+    "protocol_version": "2025-03-26",
+    "tools": [
+      {
+        "name": "get_store_info",
+        "description": "Get public information about the Vivaldo online store, its product categories and shipping.",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "search_products",
+        "description": "Search public Vivaldo products by query, for example: MacBook case, iPad case, keyboard cover, laptop sleeve.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query, for example: MacBook case, iPad case, laptop sleeve."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of products to return, from 1 to 10.",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_product_by_handle",
+        "description": "Get public product details from Vivaldo by Shopify product handle.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "handle": {
+              "type": "string",
+              "description": "Product handle from the product URL."
+            }
+          },
+          "required": [
+            "handle"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "get_collection_products",
+        "description": "Get public products from a Vivaldo Shopify collection by collection handle.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "collection_handle": {
+              "type": "string",
+              "description": "Collection handle, for example ipad-cases or macbook-cases."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of products to return, from 1 to 50.",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "collection_handle"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'search_products.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "search_products",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"query\": \"' OR '1'='1\",\n  \"count\": 0,\n  \"products\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: cloudflare' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: cloudflare",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'search_products.query' silently accepts wrong type",
+      "description": "Expected type 'string', sent int value '12345' — no error returned.",
+      "tool_name": "search_products",
+      "parameter": "query",
+      "payload": "12345",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'get_collection_products.collection_handle' silently accepts wrong type",
+      "description": "Expected type 'string', sent int value '12345' — no error returned.",
+      "tool_name": "get_collection_products",
+      "parameter": "collection_handle",
+      "payload": "12345",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"', '0.1']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize crash — missing protocolVersion causes unhandled error",
+      "description": "Sending initialize without the required protocolVersion field caused the server to crash or return an unexpected result. Servers must validate required fields and return -32602 (Invalid params).",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "initialize({capabilities:{}, clientInfo:{...}}) — no protocolVersion",
+      "remediation": "Add required-field validation to the initialize handler.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP07",
+      "severity": "low",
+      "title": "initialize accepts type-confused protocolVersion (integer instead of string)",
+      "description": "The server accepted an initialize request where protocolVersion was an integer (42) instead of a string. Strict type checking prevents parser confusion and unexpected coercion behavior.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "protocolVersion: 42 (integer) → server returned serverInfo",
+      "remediation": "Validate that protocolVersion is a string before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Null request ID accepted — JSON-RPC spec violation",
+      "description": "The server accepted a request with id=null and returned a result. Per JSON-RPC 2.0, null IDs are reserved for notifications (no response expected). Accepting them may cause response routing bugs in complex orchestration scenarios.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Reject requests with null id values; treat them as notifications.",
+      "exploitation_confirmed": false,
+      "confidence": 60,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "Server accepts requests without jsonrpc field",
+      "description": "The server returned a successful result to a request missing the required 'jsonrpc' field. Per JSON-RPC 2.0, this field is mandatory and must equal '2.0'.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"id\": 9600, \"method\": \"tools/list\", \"params\": {}}",
+      "evidence": null,
+      "remediation": "Validate that the 'jsonrpc' field is present and equals '2.0' before processing. Return -32600 (Invalid Request) for non-conformant messages.",
+      "exploitation_confirmed": false,
+      "confidence": 70,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-010",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "Server accepts array request ID — JSON-RPC spec violation",
+      "description": "The server returned a successful result to a request with an array as the request ID. JSON-RPC 2.0 requires the id to be a string, number, or null.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "{\"jsonrpc\": \"2.0\", \"id\": [1, 2, 3], \"method\": \"tools/list\"}",
+      "evidence": null,
+      "remediation": "Validate that the request 'id' is a string, number, or null. Return -32600 (Invalid Request) for array or object IDs.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-011",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-012",
+      "owasp_category": "EXT11",
+      "severity": "high",
+      "title": "Server allows external log level escalation to DEBUG",
+      "description": "The MCP server accepted an unauthenticated logging/setLevel request with level='debug'. This may expose tokens, internal paths, and sensitive state in log streams accessible to the operator.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='debug' and level='emergency' both returned success",
+      "remediation": "Restrict logging/setLevel to admin contexts or disable it entirely.",
+      "exploitation_confirmed": false,
+      "confidence": 85,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-013",
+      "owasp_category": "EXT11",
+      "severity": "medium",
+      "title": "Server accepts arbitrary logging levels without validation",
+      "description": "logging/setLevel accepted the value 'INVALID_LEVEL_CORVUS', indicating the server does not validate log level values.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "logging/setLevel with level='INVALID_LEVEL_CORVUS' returned success",
+      "remediation": "Validate logging level against the MCP-defined set (debug/info/warning/error/critical).",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+    },
+    {
+      "id": "CORVUS-014",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 8.547000000020489,
+  "exchanges": []
+}

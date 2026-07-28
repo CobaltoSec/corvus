@@ -200,11 +200,21 @@ case_studies:
     false_positives: 1365  # estimated ~99% — dominated by FP-1 (auth-audit on "No auth required" docs) + FP-2 (resource_uri on educational content/API docs/minified JS)
     fp_rate: 99.2
     note: "Petrel Run 3 targets (450 HTTP internet-facing, targets-v07.yaml). 18% OK rate — higher than CS16 (11%) due to larger/more curated target pool. Two systematic FP patterns identified: FP-1 auth-audit flags 'No auth required' in tool descriptions as CRITICAL auth bypass (FP — validate actual response, not description text); FP-2 resource_uri flags educational markdown/API docs/minified JS as credential exposure (FP — match only in value positions, not prose). GHSAs: (1) GHSA-m8qh-p8m5-8c48 CRITICAL — lectorium-corpus-mcp PostgreSQL SQLi via null byte in lang params (exploitation_confirmed, SQLSTATE 22021 leak + CDN URL reflection). (2) GHSA-r9fx-qwmc-rvx3 HIGH — epwforge.com SSRF timing-confirmed Alibaba Cloud IMDS 100.100.100.200 (11s/10s delta) + prompt template injection × 3 confirmed. (3) GHSA-5h8f-r9g8-5w5p HIGH — frootai.dev prompt template injection × 2 confirmed + arbitrary input echo in recommend_mcp_stack.goal. Pattern: high-CRITICAL count in summary.md can be stale — report.json is authoritative (sports-bzzoiro-com and iwantmymtg-net showed 35C/33C in summary but 0C in report.json)."
+  cs18:
+    servers: 17  # 39 targeted (CRITICAL+HIGH from Petrel Run 4 targets-v08.yaml), 17 OK, 22 ERROR (56% error rate)
+    targets_total: 39
+    skipped: 0
+    error_startup: 22  # servers offline, auth-required, or endpoint changed since Petrel Run 4
+    raw_findings: 290  # from 17 OK servers
+    true_positives: 25  # estimated — 4 GHSAs (token exposure, prompt injection×3, injection+flooding, dual injection) + minor TPs (gitdealflow/archive-35/scoreboard)
+    false_positives: 265  # estimated ~91% — 8/12 CRITICAL are resource_exposure FP on educational/API documentation content
+    fp_rate: 91.4
+    note: "Petrel Run 4 targets (39 CRITICAL+HIGH, targets-v08.yaml). 44% OK rate — high because targets were pre-filtered as CRITICAL/HIGH by Petrel. Used --verify-critical flag (12/12 CRITICAL re-confirmed at scan time, but 8 were FP). Key FP pattern: resource_exposure module detects MCP resources containing educational content or API documentation as CRITICAL credential leaks (frootai 7×FP, dayze 1×FP). GHSAs: (1) GHSA-54hx-rhpf-r7r7 HIGH — glimind-oracle bearer token exposed in watch_tool response (new distinct finding from SSRF in GHSA-7rqv). (2) GHSA-w5ph-rcqg-79hm HIGH — dayze-mcp prompt template injection × 3 in notable_pack/compare_lives/birthday_peers. (3) GHSA-h4xr-39qc-6j9x HIGH — nexus-agent-mcp injection × 2 + response flooding + suspected SSRF (timeout, unconfirmed). (4) GHSA-p3xc-rmwr-74rv HIGH — ucpchecker-mcp dual injection (tool param + prompt template). Minor TPs queued: gitdealflow.com, archive-35.com, scoreboard.urdr.dev, vaaya.ai Shadow Tool. Recommended module fix: resource_exposure needs _is_documentation_content() guard (markdown module headings + API endpoint-only content should not trigger)."
 
   totals:
-    servers: 397  # 300 (CS01-CS15) + 15 (CS16) + 82 (CS17)
-    raw_findings: 5566  # 4002 (CS01-CS15) + 188 (CS16) + 1376 (CS17)
-    true_positives: 1325  # 1298 (CS01-CS15) + 16 (CS16) + 11 (CS17)
+    servers: 414  # 300 (CS01-CS15) + 15 (CS16) + 82 (CS17) + 17 (CS18)
+    raw_findings: 5856  # 4002 (CS01-CS15) + 188 (CS16) + 1376 (CS17) + 290 (CS18)
+    true_positives: 1350  # 1298 (CS01-CS15) + 16 (CS16) + 11 (CS17) + 25 (CS18, estimated)
 
 # Key ecosystem findings (update manually as new data accumulates)
 key_findings:
@@ -225,9 +235,9 @@ key_findings:
 # GHSAs — queried live from GitHub API by update-public.py
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
-  total: 56
-  published: 7
-  draft: 49
+  total: 63
+  published: 9
+  draft: 54
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}
@@ -236,3 +246,5 @@ ghsas:
     - {ghsa: "GHSA-prc4-649r-564g", pkg: "localparse-mcp",                       sev: "HIGH",   finding: "SSRF confirmed in parse_url — timing and timeout signals confirmed (CWE-918)"}
     - {ghsa: "GHSA-32vx-mq6h-p8f3", pkg: "emilia-protocol",                      sev: "HIGH",   finding: "Prompt template injection via trust_decision/receipt_quality_check + forced compliance gate (EXT03/EXT12)"}
     - {ghsa: "GHSA-wx78-8jx3-wcv9", pkg: "@tensorfeed/mcp-server",               sev: "HIGH",   finding: "XSS reflection cluster across 6 tools — unsanitized payloads echoed verbatim (MCP05)"}
+    - {ghsa: "GHSA-qwwj-38wj-ffvw", pkg: "myclaw-toolkit",                       sev: "HIGH",   finding: "SSRF + credential exposure via court filing tools — unauthenticated internal endpoint access"}
+    - {ghsa: "GHSA-7763-c5gf-v5fj", pkg: "mcp-shell-server",                     sev: "HIGH",   finding: "Arbitrary shell command execution via unauthenticated MCP tool call — no access control"}

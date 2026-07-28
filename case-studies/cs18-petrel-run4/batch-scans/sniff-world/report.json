@@ -1,0 +1,248 @@
+{
+  "target": "https://sniff.world/api/mcp",
+  "transport": "http",
+  "surface": {
+    "server_name": "sniff",
+    "server_version": "1.0.0",
+    "protocol_version": "2024-11-05",
+    "tools": [
+      {
+        "name": "lookup_disease",
+        "description": "Look up a specific canine inherited disease by name or OMIA id and return its governed record: canonical name, mode of inheritance, causal gene(s), OMIA curated description (summary / clinical features / molecular genetics / pathology), documented clinical signs (phenotype terms), the human OMIM analog, the count of peer-reviewed references + the landmark study, and the Mondo disease id. All sourced to OMIA (CC-BY). Returns a canonical sniff.world URL to cite. Dog-only.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "A disease name (e.g. \"degenerative myelopathy\", \"collie eye anomaly\") or an OMIA id (e.g. \"OMIA:001000-9615\" or \"263\")."
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "search_diseases",
+        "description": "Search the canine disease catalogue by free text and return ranked candidate diseases (name + OMIA id + canonical sniff.world URL). Use this to find the exact disease before calling lookup_disease, or to enumerate diseases matching a term. Dog-only.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "A disease name or fragment (e.g. \"cataract\", \"von willebrand\")."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max results (default 10, max 25)."
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "lookup_canine_model",
+        "description": "Ask whether a human disease gene has a documented canine model foundation under Sniff's CoverageFrame (ortholog + ClinVar 3-star stack). Returns status answered | dark | not_in_universe. Dark answers include cause (unstudied | below_bar | unreachable | …), cause_definition, frame context counts, sources_checked, and as_of — never null/404. Gene symbol e.g. SOD1, TP53, BRCA2.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "gene": {
+              "type": "string",
+              "description": "Human gene symbol (e.g. \"SOD1\", \"TP53\") or HGNC:SYMBOL."
+            }
+          },
+          "required": [
+            "gene"
+          ]
+        }
+      },
+      {
+        "name": "agent_discover",
+        "description": "Cold-start orientation for agents: schema URL, release id, CoverageFrame list with fill rates, access modes (html/rest/mcp), tool names, license. Call once before deep work.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "findings": [
+    {
+      "id": "CORVUS-001",
+      "owasp_category": "EXT06",
+      "severity": "medium",
+      "title": "Tool Chaining — 'search_diseases' directs LLM to call lookup_disease",
+      "description": "Tool 'search_diseases' description references tool(s) 'lookup_disease' from the same server using imperative language. This pattern can force an LLM into an unintended call chain or manufacture urgency to invoke a privileged tool.",
+      "tool_name": "search_diseases",
+      "parameter": null,
+      "payload": null,
+      "evidence": "Search the canine disease catalogue by free text and return ranked candidate diseases (name + OMIA id + canonical sniff.world URL). Use this to find the exact disease before calling lookup_disease, or to enumerate diseases matching a term. Dog-only.",
+      "remediation": "Tool descriptions should describe what the tool does — not instruct the LLM on what other tools to call. Remove cross-tool directives and let the caller decide the execution order.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-002",
+      "owasp_category": "MCP05",
+      "severity": "low",
+      "title": "Injection reflected — 'lookup_disease.query'",
+      "description": "Payload was echoed back as a named JSON field — likely input logging, not a vulnerability (field: sql).",
+      "tool_name": "lookup_disease",
+      "parameter": "query",
+      "payload": "' OR '1'='1",
+      "evidence": "{\n  \"found\": false,\n  \"message\": \"No confident single match for \\\"' OR '1'='1\\\". Try search_diseases, or a different term. Coverage is dog-only.\",\n  \"candidates\": []\n}",
+      "remediation": "Sanitize and validate all input parameters. Never pass raw user input to shell commands, file paths, or SQL queries.",
+      "exploitation_confirmed": false,
+      "confidence": 30,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    },
+    {
+      "id": "CORVUS-003",
+      "owasp_category": "MCP01",
+      "severity": "info",
+      "title": "Token Exposure — server version disclosure in HTTP response headers",
+      "description": "HTTP response header 'server: cloudflare' discloses internal information.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "server: cloudflare",
+      "remediation": "Remove the 'server' response header in production.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-004",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'lookup_disease' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['query']",
+      "tool_name": "lookup_disease",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-005",
+      "owasp_category": "EXT01",
+      "severity": "low",
+      "title": "'lookup_disease.query' silently accepts wrong type",
+      "description": "Expected type 'string', sent NoneType value 'None' — no error returned.",
+      "tool_name": "lookup_disease",
+      "parameter": "query",
+      "payload": "None",
+      "evidence": null,
+      "remediation": "Validate parameter types strictly and return clear JSON-RPC errors on mismatch.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-006",
+      "owasp_category": "EXT01",
+      "severity": "medium",
+      "title": "'search_diseases' accepts missing required fields",
+      "description": "Tool succeeded with empty arguments despite required: ['query']",
+      "tool_name": "search_diseases",
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Validate that all required parameters are present before processing.",
+      "exploitation_confirmed": false,
+      "confidence": 80,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-007",
+      "owasp_category": "MCP07",
+      "severity": "medium",
+      "title": "initialize accepts protocol version downgrade",
+      "description": "The server accepted initialize with arbitrary protocol versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']. The server also accepted far-future versions, indicating no version validation at all. Servers should reject versions outside their supported range to prevent feature-downgrade attacks.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": "Accepted versions: ['9999-99-99', '2030-01-01', '1.0', '2024-01-01', '\"\"']",
+      "remediation": "Validate protocolVersion against a supported range. Return a JSON-RPC error for versions outside that range.",
+      "exploitation_confirmed": false,
+      "confidence": 75,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+    },
+    {
+      "id": "CORVUS-008",
+      "owasp_category": "EXT10",
+      "severity": "info",
+      "title": "MCP server exposes tools with completable arguments",
+      "description": "3 tool(s) have schema properties that may support completion/complete enumeration.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": null,
+      "evidence": null,
+      "remediation": "Review which argument values are exposed via completion/complete.",
+      "exploitation_confirmed": false,
+      "confidence": 90,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    },
+    {
+      "id": "CORVUS-009",
+      "owasp_category": "EXT13",
+      "severity": "medium",
+      "title": "Server accepts path traversal cursor without validation",
+      "description": "tools/list accepted cursor='../../../../etc/passwd' and returned a result instead of rejecting it. This may indicate missing cursor validation.",
+      "tool_name": null,
+      "parameter": null,
+      "payload": "../../../../etc/passwd",
+      "evidence": null,
+      "remediation": "Validate cursor values; reject non-opaque or path-like cursor strings.",
+      "exploitation_confirmed": false,
+      "confidence": 65,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+    }
+  ],
+  "modules_run": [
+    "scope-audit",
+    "supply-chain",
+    "supply-chain-python",
+    "osv-supply-chain",
+    "github-advisory",
+    "npm-behavior",
+    "tool-poisoning",
+    "schema-audit",
+    "shadow-tool",
+    "auth-audit",
+    "log-audit",
+    "resource-uri",
+    "tool-chaining",
+    "batch-dos",
+    "cmd-injection",
+    "token-exposure",
+    "schema-bypass",
+    "response-flood",
+    "rug-pull",
+    "ssrf",
+    "endpoint-probe",
+    "param-smuggling",
+    "init-audit",
+    "proto-fuzz",
+    "output-encoding",
+    "response-injection",
+    "oauth-bypass",
+    "sampling-probe",
+    "elicitation-probe",
+    "completion-probe",
+    "logging-probe",
+    "prompts-injection",
+    "cursor-probe",
+    "cancellation-probe"
+  ],
+  "duration_seconds": 25.25,
+  "exchanges": []
+}
