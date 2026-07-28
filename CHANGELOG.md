@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### Added
+- `corvus sync-ibis` subcommand: annotates report.json findings with Ibis GHSA publish status (published/draft/rejected) from `C:/Proyectos/Ibis/state/` (PETREL-CF-WAF)
+- SSRF IMDS content-matching in `ssrf.py`: checks response body for AWS (`ami-id`, `security-credentials`), GCP (`computeMetadata`, `serviceAccounts`), Azure (`azEnvironment`) indicators — auto-sets `exploitation_confirmed=True` and upgrades HIGH→CRITICAL (RT-CORVUS-SSRF-IMDS)
 - `corvus disclose <ghsa-id>` command: publishes GHSA advisory via `ibis publish` (RT-CORVUS-DISCLOSE-CLI)
 - `--verify-critical` / `-V` flag for `scan`/`batch`: re-probes CRITICAL findings to reduce false positives (RT-CORVUS-VERIFY-CRITICAL)
 

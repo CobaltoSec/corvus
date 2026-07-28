@@ -1184,6 +1184,48 @@ def disclose(
         raise typer.Exit(code=1)
 
 
+@app.command("sync-ibis")
+def sync_ibis(
+    ibis_dir: Annotated[Path, typer.Option("--ibis-dir", help="Ibis state directory with advisory JSON files")] = Path("C:/Proyectos/Ibis/state"),
+    reports_dir: Annotated[Path, typer.Option("--reports-dir", help="Dir with report.json files to annotate")] = Path("."),
+) -> None:
+    """Annotate Corvus report.json files with Ibis GHSA publish status."""
+    import json, glob as _glob
+
+    # Build ghsa_id -> status map from Ibis state JSON files
+    ghsa_map: dict[str, str] = {}
+    for f in Path(ibis_dir).glob("*.json"):
+        try:
+            data = json.loads(f.read_text())
+            ghsa_id = data.get("ghsa_id") or data.get("id")
+            status = data.get("status", "unknown")
+            if ghsa_id:
+                ghsa_map[ghsa_id] = status
+        except Exception:
+            continue
+
+    annotated = 0
+    for report_file in Path(reports_dir).rglob("report.json"):
+        try:
+            report = json.loads(report_file.read_text())
+            findings = report.get("findings", [])
+            for f in findings:
+                ghsa = f.get("ghsa_id")
+                if ghsa and ghsa in ghsa_map:
+                    f["ghsa_status"] = ghsa_map[ghsa]
+                    annotated += 1
+            report_file.write_text(json.dumps(report, indent=2))
+        except Exception:
+            continue
+
+    console.print(f"sync-ibis: {annotated} findings annotated from {len(ghsa_map)} Ibis advisories")
+    status_counts: dict[str, int] = {}
+    for s in ghsa_map.values():
+        status_counts[s] = status_counts.get(s, 0) + 1
+    for s, n in sorted(status_counts.items()):
+        console.print(f"  {s}: {n}")
+
+
 @app.command()
 def version():
     """Print version."""

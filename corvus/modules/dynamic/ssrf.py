@@ -48,6 +48,13 @@ _METADATA_SIGNATURES = [
     "network-interfaces",
 ]
 
+# IMDS content indicators — lightweight set for fast confirmation of metadata access
+IMDS_INDICATORS = [
+    "ami-id", "security-credentials", "instance-identity",  # AWS
+    "computeMetadata", "serviceAccounts",                    # GCP
+    "azEnvironment",                                         # Azure
+]
+
 # Threshold: elapsed > baseline * this factor → likely hanging on a network request
 _TIMEOUT_FACTOR = 3.0
 # Minimum absolute elapsed (seconds) to consider a timeout signal
@@ -135,6 +142,31 @@ class SSRFModule(ScanModule):
                         if elapsed >= _MIN_TIMEOUT_SIGNAL and (
                             baseline_elapsed is None or elapsed > baseline_elapsed * _TIMEOUT_FACTOR
                         ):
+                            # IMDS content check — response body already confirms SSRF
+                            imds_hit = next((ind for ind in IMDS_INDICATORS if ind in text), None)
+                            if imds_hit:
+                                findings.append(Finding(
+                                    owasp_category=OWASPCategory.EXT04_SSRF,
+                                    severity=Severity.CRITICAL,
+                                    title=f"SSRF — '{tool.name}.{param}' confirmed IMDS access",
+                                    description=(
+                                        f"Call with payload '{payload}' took {elapsed:.1f}s "
+                                        + (f"vs baseline {baseline_elapsed:.1f}s" if baseline_elapsed else "(no baseline)")
+                                        + "; response body contains IMDS content. "
+                                        + f"IMDS response confirmed: {imds_hit}"
+                                    ),
+                                    tool_name=tool.name,
+                                    parameter=param,
+                                    payload=payload,
+                                    evidence=text[:400],
+                                    exploitation_confirmed=True,
+                                    confidence=90,
+                                    remediation=(
+                                        "Block outbound requests to RFC-1918 and link-local ranges. "
+                                        "Use an allowlist for permitted URL schemes and hosts."
+                                    ),
+                                ))
+                                break
                             # Attempt IMDS IAM chain to escalate to CRITICAL
                             chain = await _probe_imds_chain(
                                 transport, tool.name, param, self.engine, properties, required
