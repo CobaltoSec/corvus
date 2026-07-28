@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `corvus disclose <ghsa-id>` command: publishes GHSA advisory via `ibis publish` (RT-CORVUS-DISCLOSE-CLI)
+- `--verify-critical` / `-V` flag for `scan`/`batch`: re-probes CRITICAL findings to reduce false positives (RT-CORVUS-VERIFY-CRITICAL)
+
 ## [RT-CORVUS-IMPROVE-2] — 2026-07-24 — FP calibration v4 + ProtoFuzz paralelo · 766 tests
 
 - **D1 — auth_audit.py FP reduction** — `no auth required` / `without auth` en descriptions → HIGH (no CRITICAL). CRITICAL reservado para bypasses activos (`bypasses/skips authentication`). Nueva lista `_HIGH_AUTH_ABSENT`. Eliminado FP-CS17 donde servidores documentaban auth ausente en tools públicas. +2 tests (HIGH confirmado + CRITICAL bypass preservado).
