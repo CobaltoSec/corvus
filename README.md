@@ -6,9 +6,9 @@
 
 > ⭐ **If Corvus found a vulnerability in your MCP server, [star the repo](https://github.com/CobaltoSec/corvus)** — it helps other security teams discover the tool.
 
-> **Vulnerabilities found:** [GHSA-hv3x](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-hv3x-m9fv-4vhf) (mcp-server-git, DoS HIGH) · [GHSA-43j9](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-43j9-hmpq-cgv7) (remnux-mcp-server, RCE MEDIUM) · [GHSA-jgxf](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-jgxf-j67w-w284) (campertunity-ai-tools, SSRF HIGH) · [GHSA-3f55](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-3f55-qgq4-f88c) (server-sequential-thinking, DoS MEDIUM) — [+46 in coordinated disclosure](case-studies/DISCLOSURE-PROCESS.md)
+> **Vulnerabilities found:** [GHSA-hv3x](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-hv3x-m9fv-4vhf) (mcp-server-git, DoS HIGH) · [GHSA-43j9](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-43j9-hmpq-cgv7) (remnux-mcp-server, RCE MEDIUM) · [GHSA-jgxf](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-jgxf-j67w-w284) (campertunity-ai-tools, SSRF HIGH) · [GHSA-3f55](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-3f55-qgq4-f88c) (server-sequential-thinking, DoS MEDIUM) — [+54 in coordinated disclosure](case-studies/DISCLOSURE-PROCESS.md)
 
-MCP server security testing framework. Tests MCP servers against the [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — both static analysis and live dynamic probing.
+MCP server security testing framework. Tests MCP servers against the **MCP Security Top 10 (MST-10)** — an independent taxonomy of MCP-specific security risks, covering both static analysis and live dynamic probing.
 
 ```
 Corvus v1.3.1  MCP Security Scanner
@@ -134,11 +134,11 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 ## Modules
 
 <!-- CORVUS_MODULES_START -->
-34 built-in modules covering the full OWASP MCP Top 10 plus protocol, elicitation, sampling, OAuth and supply chain extensions:
+34 built-in modules covering the full MCP Security Top 10 (MST-10) plus protocol, elicitation, sampling, OAuth and supply chain extensions:
 
 ### Static modules (no live tool calls)
 
-| Name | OWASP | What it tests |
+| Name | MST-10 | What it tests |
 |------|-------|---------------|
 | `tool-poisoning` | MCP03 | Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions |
 | `shadow-tool` | EXT03 | Tool names signaling dangerous operations — namespace squatting, covert chaining, trust hijacking |
@@ -156,7 +156,7 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 
 ### Dynamic modules (live tool calls)
 
-| Name | OWASP | What it tests |
+| Name | MST-10 | What it tests |
 |------|-------|---------------|
 | `cmd-injection` | MCP05 | Command, path, SQL, and prompt injection payloads per parameter — schema-aware, confirmation-required |
 | `token-exposure` | MCP01 | Credentials, filesystem paths, stack traces, and tokens leaked in tool responses |
@@ -369,11 +369,11 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across 18 case studies — 414 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across 18 case studies — 397 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
 
 | Metric | Total (18 case studies) |
 |--------|-------------------------------|
-| Servers audited | **414** |
+| Servers audited | **397** |
 | Raw findings | **~5856** |
 | True positives | **~1350** |
 
@@ -430,13 +430,13 @@ The tools approach MCP security from different angles:
 
 | | mcp-scan / Snyk Agent Scan | Corvus |
 |---|---|---|
-| **Scope** | Prompt injection, tool poisoning, toxic flows, cross-origin escalation | Full [OWASP MCP Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — 34 modules |
+| **Scope** | Prompt injection, tool poisoning, toxic flows, cross-origin escalation | Full MCP Security Top 10 (MST-10) — 34 modules |
 | **Perspective** | Client-side: reads your MCP config file | Server-side: connects directly via stdio or HTTP |
 | **Probing** | Static analysis + optional proxy monitoring | Static analysis + live dynamic probing (actual tool calls with payloads) |
 | **CI/CD** | Basic | SARIF output, `--fail-on high`, batch scanning |
 | **Coverage** | Prompt injection / poisoning focused | Adds cmd injection, SSRF, auth bypass, supply chain, schema bypass, parameter smuggling, DoS, OAuth, sampling/elicitation misuse |
 | **Real-time** | ✅ Proxy mode for live monitoring | ❌ Point-in-time scan only |
-| **Disclosures** | No public advisory program | 50 coordinated GHSAs filed |
+| **Disclosures** | No public advisory program | 63 GHSAs filed (9 published, 54 in active disclosure) |
 | **Backing** | Snyk (enterprise) | Independent, security research focused |
 
 **When to use mcp-scan:** you want real-time proxy monitoring of agent traffic, or you need the Snyk enterprise integration.
