@@ -811,6 +811,28 @@ async def _batch(
     console.print(result.summary_md())
     console.print(f"\nSummary: {summary_path}")
 
+    # ── Post-run funnel summary ────────────────────────────────────────────────
+    from .run_summary import generate_batch_summary
+    _ok_targets = [t for t in result.targets if "error" not in t["finding_count"] and "skipped" not in t["finding_count"]]
+    _err_targets = [t for t in result.targets if "error" in t["finding_count"]]
+    _sev_counts: dict[str, int] = {}
+    for _t in _ok_targets:
+        for _s in ("critical", "high", "medium", "low"):
+            _n = _t["finding_count"].get(_s, 0)
+            if _n:
+                _sev_counts[_s] = _sev_counts.get(_s, 0) + _n
+    _raw_findings = sum(sum(t["finding_count"].values()) for t in _ok_targets)
+    _run_name = config_path.stem if config_path else datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    _funnel_path = generate_batch_summary(
+        run_name=_run_name,
+        targets_total=len(result.targets),
+        targets_ok=len(_ok_targets),
+        targets_error=len(_err_targets),
+        raw_findings=_raw_findings,
+        severity_counts=_sev_counts,
+    )
+    console.print(f"[dim]Funnel: {_funnel_path}[/dim]")
+
     if verify_critical:
         _vc_total = sum(t.get("finding_count", {}).get("critical", 0) for t in result.targets)
         if _vc_total:
