@@ -134,11 +134,11 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 ## Modules
 
 <!-- CORVUS_MODULES_START -->
-34 built-in modules covering the full MCP Security Top 10 (MST-10) plus protocol, elicitation, sampling, OAuth and supply chain extensions:
+34 built-in modules covering the full OWASP MCP Top 10 plus protocol, elicitation, sampling, OAuth and supply chain extensions:
 
 ### Static modules (no live tool calls)
 
-| Name | MST-10 | What it tests |
+| Name | OWASP | What it tests |
 |------|-------|---------------|
 | `tool-poisoning` | MCP03 | Hidden instructions, obfuscation, and prompt injection patterns in tool descriptions |
 | `shadow-tool` | EXT03 | Tool names signaling dangerous operations — namespace squatting, covert chaining, trust hijacking |
@@ -156,7 +156,7 @@ Produces a per-target `report.json` and a top-level `summary.md` table.
 
 ### Dynamic modules (live tool calls)
 
-| Name | MST-10 | What it tests |
+| Name | OWASP | What it tests |
 |------|-------|---------------|
 | `cmd-injection` | MCP05 | Command, path, SQL, and prompt injection payloads per parameter — schema-aware, confirmation-required |
 | `token-exposure` | MCP01 | Credentials, filesystem paths, stack traces, and tokens leaked in tool responses |
@@ -369,11 +369,11 @@ After `pip install my-package`, Corvus auto-discovers the module.
 ## Research: MCP Ecosystem Security Audit
 
 <!-- CORVUS_RESEARCH_START -->
-Corvus has been battle-tested against the real-world MCP ecosystem across 18 case studies — 397 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
+Corvus has been battle-tested against the real-world MCP ecosystem across 18 case studies — 414 servers audited, spanning official `@modelcontextprotocol` packages, community servers, and the broader npm and PyPI ecosystem.
 
 | Metric | Total (18 case studies) |
 |--------|-------------------------------|
-| Servers audited | **397** |
+| Servers audited | **414** |
 | Raw findings | **~5856** |
 | True positives | **~1350** |
 
