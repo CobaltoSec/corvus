@@ -266,21 +266,24 @@ Actualizar la tabla "GHSAs activos" con el nuevo estado del contacto.
 | GHSA-qwwj-38wj-ffvw   | myclaw-toolkit                       | **CRITICAL**| Dusheh ✅                            | —                    | draft (LFI+SSRF)   | 2026-07-29  |
 | GHSA-hv3x-m9fv-4vhf   | mcp-server-git                       | HIGH        | N/A                                 | —                    | **published** ✅    | —           |
 | GHSA-3f55-qgq4-f88c   | server-sequential-thinking           | MEDIUM      | N/A                                 | —                    | **published** ✅    | —           |
-| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅                    | —                    | draft              | 2026-08-01  |
-| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅                         | —                    | draft              | 2026-08-01  |
-| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅                           | —                    | draft              | 2026-08-01  |
+| GHSA-rqqc-2cx5-vp44   | mcp-server-nationalparks             | HIGH        | KyrieTangSheng ✅                    | silencio             | **published** 2026-07-30 | 2026-08-01  |
+| GHSA-m2x9-5c27-vvc3   | @cyanheads/pubmed-mcp-server         | HIGH        | cyanheads ✅                         | silencio             | **published** 2026-07-30 | 2026-08-01  |
+| GHSA-m6h2-xr6q-9m7p   | @idachev/mcp-javadc                  | HIGH        | idachev ✅                           | silencio             | **published** 2026-07-30 | 2026-08-01  |
 | GHSA-m9p4-rqc7-2fqx   | nx-mcp                               | HIGH        | vsavkin ✅                           | —                    | draft              | 2026-08-01  |
-| GHSA-q974-p8xv-f7c7   | @jpisnice/shadcn-ui-mcp-server       | HIGH        | Jpisnice ✅                          | —                    | draft              | 2026-08-01  |
+| GHSA-q974-p8xv-f7c7   | @jpisnice/shadcn-ui-mcp-server       | HIGH        | Jpisnice ✅                          | silencio             | **published** 2026-07-30 | 2026-08-02  |
 | GHSA-qc46-wfh2-238g   | european-parliament-mcp-server       | HIGH        | pethers ✅                           | —                    | draft              | 2026-08-01  |
 | GHSA-rqqv-9rxr-gj2h   | @get-technology-inc/jamf-docs-mcp-server | HIGH    | h1431532403240 ✅                    | —                    | draft              | 2026-08-01  |
 | GHSA-gpm5-mj27-94gp   | @notionhq/notion-mcp-server          | HIGH        | mquan ✅                             | —                    | draft              | 2026-08-01  |
-| GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅                          | —                    | draft              | 2026-08-01  |
+| GHSA-6j6r-pf9m-gqxf   | @benborla29/mcp-server-mysql         | MEDIUM      | benborla ✅                          | silencio             | **published** 2026-07-30 | 2026-08-02  |
 | GHSA-vrmg-6pw3-qwfg   | @sap-ux/fiori-mcp-server             | HIGH        | IainSAP + mikicvi-SAP ✅             | —                    | draft CS03         | 2026-10-03  |
 | GHSA-frqj-945w-4qp2   | markitdown-mcp                       | HIGH        | afourney ✅                          | —                    | draft CS03         | 2026-10-03  |
 | GHSA-8ggf-fm7g-7pxf   | @upstash/context7-mcp                | MEDIUM      | enesgules + fahreddinozcan ✅         | —                    | draft CS03         | 2026-10-03  |
 | GHSA-4r48-4m95-6rm8   | @heroku/mcp-server                   | HIGH        | justinwilaby + sbosio ✅             | —                    | draft CS03         | 2026-10-03  |
-| GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                          | —                    | draft CS04         | 2026-08-03  |
-| GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                           | —                    | draft CS04         | 2026-08-03  |
+| GHSA-2g9w-p2x3-97pp   | mcp-devutils                         | **CRITICAL**| hlteoh37 ✅                          | silencio             | **published** 2026-07-30 | 2026-08-02  |
+| GHSA-526j-x7rf-h576   | cheshire-cat-ai                      | **CRITICAL**| pieroit ✅                           | silencio             | **published** 2026-07-30 | 2026-08-02  |
+| GHSA-2vg9-w9p2-56m2   | superagi                             | **CRITICAL**| mukundans89 ✅                       | silencio             | **published** 2026-07-30 | 2026-08-02  |
+| GHSA-3734-qff5-qvrr   | llama_index                          | HIGH        | logan-markewich ✅                   | silencio             | **published** 2026-07-30 | 2026-08-02  |
+| GHSA-w5c8-hjv7-p95r   | @aryanbv/pdf-toolkit-mcp             | MEDIUM      | AryanBV ✅                           | silencio             | **published** 2026-07-30 | 2026-08-02  |
 | GHSA-78qj-r76x-2jvh   | @pulsemcp/pulse-fetch                | HIGH        | macoughl + tadasant ✅               | —                    | draft CS04         | 2026-08-03  |
 | GHSA-9jp6-hph9-jm5f   | mcp-msaccess-database                | HIGH        | unmateria ✅                         | —                    | draft CS08         | 2026-08-04  |
 | GHSA-h6xq-7fpp-q2hf   | arxiv-latex-mcp                      | HIGH        | takashiishida ✅                     | —                    | draft CS08         | 2026-08-04  |

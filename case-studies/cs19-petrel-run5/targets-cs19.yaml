@@ -1,0 +1,1237 @@
+targets:
+- name: ucpg-ai
+  transport: http
+  url: https://ucpg.ai/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: emblemvault-ai
+  transport: http
+  url: https://emblemvault.ai/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: resultrail-larrybuildsai-vercel-app/resultrail
+  transport: http
+  url: https://resultrail-larrybuildsai.vercel.app/resultrail/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: iwant-fyi
+  transport: http
+  url: https://iwant.fyi/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: vaaya-ai
+  transport: http
+  url: https://vaaya.ai/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: lodikidsactivities-com
+  transport: http
+  url: https://lodikidsactivities.com/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: gitdealflow-com
+  transport: http
+  url: https://gitdealflow.com/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: www-graphifymd-com/api/mcp
+  transport: http
+  url: https://www.graphifymd.com/api/mcp/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: epwforge-com
+  transport: http
+  url: https://epwforge.com/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: uk-legal-mcp-fly-dev/mcp
+  transport: http
+  url: https://uk-legal-mcp.fly.dev/mcp/
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 98
+- name: www-aistoragedepot-com
+  transport: http
+  url: https://www.aistoragedepot.com/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: mcp-listentosadhu-app
+  transport: http
+  url: https://mcp.listentosadhu.app/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: coinrailz-com
+  transport: http
+  url: https://coinrailz.com/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: xqb-io/mcp
+  transport: http
+  url: https://xqb.io/mcp/
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: inboxguard-io
+  transport: http
+  url: https://inboxguard.io/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: game-spacemolt-com/mcp
+  transport: http
+  url: https://game.spacemolt.com/mcp/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: dayze-com
+  transport: http
+  url: https://dayze.com/api/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: mcpstandard-dev
+  transport: http
+  url: https://mcpstandard.dev/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: krystalview-com
+  transport: http
+  url: https://krystalview.com/mcp
+  tags:
+  - petrel-critical
+  - no-auth
+  risk_tier: CRITICAL
+  priority_score: 95
+- name: evalstate-hf-mcp-server-hf-space
+  transport: http
+  url: https://evalstate-hf-mcp-server.hf.space/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: mcp-1st-birthday-sancelot-legifrance-mcpserver-h
+  transport: http
+  url: https://mcp-1st-birthday-sancelot-legifrance-mcpserver.hf.space/mcp/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: mcp-toolkit-nuxt-dev
+  transport: http
+  url: https://mcp-toolkit.nuxt.dev/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: www-surprise-buddy-com/api/mcp
+  transport: http
+  url: https://www.surprise-buddy.com/api/mcp/api/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: www-prereason-com
+  transport: http
+  url: https://www.prereason.com/api/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: app-flopsindex-com
+  transport: http
+  url: https://app.flopsindex.com/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: yutori-com
+  transport: http
+  url: https://yutori.com/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 23
+- name: iwantmymtg-net
+  transport: http
+  url: https://iwantmymtg.net/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: bcrypt-python-jose-d0e0d0-getvda-ai
+  transport: http
+  url: https://bcrypt-python-jose-d0e0d0.getvda.ai/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: parasure-xyz
+  transport: http
+  url: https://parasure.xyz/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: captcha-mcp-powforge-dev
+  transport: http
+  url: https://captcha-mcp.powforge.dev/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: morpheus-node-807471100455-us-east4-run-app
+  transport: http
+  url: https://morpheus-node-807471100455.us-east4.run.app/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: aidesignblueprint-com
+  transport: http
+  url: https://aidesignblueprint.com/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: aidesignblueprint-com/mcp
+  transport: http
+  url: https://aidesignblueprint.com/mcp/
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: anp2-com
+  transport: http
+  url: https://anp2.com/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: prompttools-co/api/v1
+  transport: http
+  url: https://prompttools.co/api/v1/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: fittin-dev
+  transport: http
+  url: https://fittin.dev/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: bcrypt-langchain-core-mcp-25b8f1-getvda-ai
+  transport: http
+  url: https://bcrypt-langchain-core-mcp-25b8f1.getvda.ai/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: mailpal-com
+  transport: http
+  url: https://mailpal.com/api
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: microquery-dev
+  transport: http
+  url: https://microquery.dev/mcp
+  tags:
+  - petrel-low
+  - no-auth
+  risk_tier: LOW
+  priority_score: 20
+- name: mcp-1st-birthday-tracemind-mcp-server-hf-space
+  transport: http
+  url: https://mcp-1st-birthday-tracemind-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-finder-monitor-h
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-finder-monitor.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-fixmyneighborhood-mcp-server-hf
+  transport: http
+  url: https://mcp-1st-birthday-fixmyneighborhood-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-soccer-mcp-server-hf-space
+  transport: http
+  url: https://agents-mcp-hackathon-soccer-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-video-editing-genie-mcp-ser
+  transport: http
+  url: https://agents-mcp-hackathon-video-editing-genie-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-linkedin-image-g
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-linkedin-image-generator.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-odoo-erp-hf-spac
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-odoo-erp.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-ragmint-mcp-server-hf-space
+  transport: http
+  url: https://mcp-1st-birthday-ragmint-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-test-mcp-server-hf-space
+  transport: http
+  url: https://agents-mcp-hackathon-test-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-stack-overflow-mcp-server-h
+  transport: http
+  url: https://agents-mcp-hackathon-stack-overflow-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-global-compliance-mcp-server-hf
+  transport: http
+  url: https://mcp-1st-birthday-global-compliance-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-minesweeper-mcp-server-hf-space
+  transport: http
+  url: https://mcp-1st-birthday-minesweeper-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: unesco-data-ai-mcp-skills-server-hf-space
+  transport: http
+  url: https://unesco-data-ai-mcp-skills-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-viton-mcp-server-hf-space
+  transport: http
+  url: https://agents-mcp-hackathon-viton-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-ai-image-video-mcp-server-h
+  transport: http
+  url: https://agents-mcp-hackathon-ai-image-video-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: gnumanth-xkcd-mcp-server-hf-space
+  transport: http
+  url: https://gnumanth-xkcd-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-task-manager-mcp-server-hf-spac
+  transport: http
+  url: https://mcp-1st-birthday-task-manager-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mcp-1st-birthday-apache-airflow-mcp-server-hf-sp
+  transport: http
+  url: https://mcp-1st-birthday-apache-airflow-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: unesco-data-ai-mcp-unesco-server-hf-space
+  transport: http
+  url: https://unesco-data-ai-mcp-unesco-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-track-hf-space
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-track.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: pgurazada1-yahoo-finance-mcp-server-hf-space
+  transport: http
+  url: https://pgurazada1-yahoo-finance-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-respurce-german-
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-respurce-german-errors.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-pii-image-masking-mpc-serve
+  transport: http
+  url: https://agents-mcp-hackathon-pii-image-masking-mpc-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-hackathon-census-mcp-server
+  transport: http
+  url: https://agents-mcp-hackathon-hackathon-census-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-ncbi-blast-mcp-server-hf-sp
+  transport: http
+  url: https://agents-mcp-hackathon-ncbi-blast-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-self-improving-ai-mcp-serve
+  transport: http
+  url: https://agents-mcp-hackathon-self-improving-ai-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-mcp-server-emotion-detectio
+  transport: http
+  url: https://agents-mcp-hackathon-mcp-server-emotion-detection.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-long-term-memory-mcp-server
+  transport: http
+  url: https://agents-mcp-hackathon-long-term-memory-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: agents-mcp-hackathon-gradio-motioncanvas-docs-mc
+  transport: http
+  url: https://agents-mcp-hackathon-gradio-motioncanvas-docs-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: wuran-mcp-proxy-server-hf-space
+  transport: http
+  url: https://wuran-mcp-proxy-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: niware-wandb-mcp-server-hf-space
+  transport: http
+  url: https://niware-wandb-mcp-server.hf.space/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: ctxprotocol-com
+  transport: http
+  url: https://ctxprotocol.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: zuckerbot-ai
+  transport: http
+  url: https://zuckerbot.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: furlpay-com
+  transport: http
+  url: https://furlpay.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: www-agentpmt-com
+  transport: http
+  url: https://www.agentpmt.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: signomy-xyz
+  transport: http
+  url: https://signomy.xyz/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: delimit-ai
+  transport: http
+  url: https://delimit.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: app-flopsindex-com/llms-txt
+  transport: http
+  url: https://app.flopsindex.com/llms.txt/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: itsgloria-ai
+  transport: http
+  url: https://itsgloria.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: groundtruther-io/docs
+  transport: http
+  url: https://groundtruther.io/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: groundtruther-io
+  transport: http
+  url: https://groundtruther.io/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: humanchain-hub-demo-fly-dev/machine
+  transport: http
+  url: https://humanchain-hub-demo.fly.dev/machine/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: humanchain-hub-demo-fly-dev
+  transport: http
+  url: https://humanchain-hub-demo.fly.dev/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: hoox-video
+  transport: http
+  url: https://hoox.video/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: www-klavis-ai/docs
+  transport: http
+  url: https://www.klavis.ai/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: mipiti-io/docs
+  transport: http
+  url: https://mipiti.io/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: api-mireye-com
+  transport: http
+  url: https://api.mireye.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: api-thesma-dev/docs
+  transport: http
+  url: https://api.thesma.dev/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: walletgrower-com/wp-json/wg/v1
+  transport: http
+  url: https://walletgrower.com/wp-json/wg/v1/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: whenful-com
+  transport: http
+  url: https://whenful.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 3
+- name: nubiia-es
+  transport: http
+  url: https://nubiia.es/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: getvet-ai
+  transport: http
+  url: https://getvet.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: mcp-modelstat-ai
+  transport: http
+  url: https://mcp.modelstat.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: saihm-coti-global
+  transport: http
+  url: https://saihm.coti.global/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: brave-com/search/api
+  transport: http
+  url: https://brave.com/search/api/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: thenextgennexus-com
+  transport: http
+  url: https://thenextgennexus.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: claribi-com
+  transport: http
+  url: https://claribi.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: stexa-ru/en/voice-mcp
+  transport: http
+  url: https://stexa.ru/en/voice-mcp/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: moltpe-com
+  transport: http
+  url: https://moltpe.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: abbeapi-com
+  transport: http
+  url: https://abbeapi.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: abbeapi-com/docs
+  transport: http
+  url: https://abbeapi.com/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: advisorfinder-com
+  transport: http
+  url: https://advisorfinder.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: agent-deploy-org
+  transport: http
+  url: https://agent-deploy.org/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: aka-ms/agent-framework
+  transport: http
+  url: https://aka.ms/agent-framework/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: agentveil-dev
+  transport: http
+  url: https://agentveil.dev/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: intellegens-com
+  transport: http
+  url: https://intellegens.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: raw-githubusercontent-com/aos-standard/mcp-agent
+  transport: http
+  url: https://raw.githubusercontent.com/aos-standard/mcp-agent-health/main/packaging/agent_card.json/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: raw-githubusercontent-com/aos-standard/catalog/m
+  transport: http
+  url: https://raw.githubusercontent.com/aos-standard/catalog/main/catalog.json/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: api-backtest360-com/docs
+  transport: http
+  url: https://api.backtest360.com/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: genomoncology-com/biomcp
+  transport: http
+  url: https://genomoncology.com/biomcp/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: raw-githubusercontent-com/MohamedElashri/cerngit
+  transport: http
+  url: https://raw.githubusercontent.com/MohamedElashri/cerngitlab-mcp/main/icons/icon.svg/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: claribi-com/docs/mcp/sdks
+  transport: http
+  url: https://claribi.com/docs/mcp/sdks/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: claribi-com/docs/mcp/overview
+  transport: http
+  url: https://claribi.com/docs/mcp/overview/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: clearskies-info/modules/clear-skies-mcp-server
+  transport: http
+  url: https://clearskies.info/modules/clear-skies-mcp-server/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: albaker-info
+  transport: http
+  url: https://albaker.info/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: free-agenticdecks-com
+  transport: http
+  url: https://free.agenticdecks.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: free-agenticdecks-com/tools/bg-designer-html
+  transport: http
+  url: https://free.agenticdecks.com/tools/bg-designer.html/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: deinai-ai
+  transport: http
+  url: https://deinai.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: data-devnors-com
+  transport: http
+  url: https://data.devnors.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: gomarble-ai/mcp
+  transport: http
+  url: https://gomarble.ai/mcp/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: join-slack-com/t/ai-in-ads/shared_invite/zt-36hn
+  transport: http
+  url: https://join.slack.com/t/ai-in-ads/shared_invite/zt-36hntbyf8-FSFixmwLb9mtEzVZhsToJQ/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: gitee-com/huhu234/fastmcp-glowroot-mcp/issues
+  transport: http
+  url: https://gitee.com/huhu234/fastmcp-glowroot-mcp/issues/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: fiber-ac
+  transport: http
+  url: https://fiber.ac/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: frisian-mcp-com
+  transport: http
+  url: https://frisian-mcp.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: gitee-com/fanzhiyu/free-mcp-excel/issues
+  transport: http
+  url: https://gitee.com/fanzhiyu/free-mcp-excel/issues/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-geniete-com
+  transport: http
+  url: https://www.geniete.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-mattartz-me
+  transport: http
+  url: https://www.mattartz.me/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: api-uis-unesco-org/api/public/documentation
+  transport: http
+  url: https://api.uis.unesco.org/api/public/documentation/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: video-golpoai-com
+  transport: http
+  url: https://video.golpoai.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: hpt-su
+  transport: http
+  url: https://hpt.su/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: hpt-su/api/v1/docs
+  transport: http
+  url: https://hpt.su/api/v1/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: developer-kroger-com/documentation/public
+  transport: http
+  url: https://developer.kroger.com/documentation/public/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: kumorfm-ai
+  transport: http
+  url: https://kumorfm.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: twelvetake-com
+  transport: http
+  url: https://twelvetake.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: influenceflow-io
+  transport: http
+  url: https://influenceflow.io/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: app-investgame-net
+  transport: http
+  url: https://app.investgame.net/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: justfill-app
+  transport: http
+  url: https://justfill.app/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: bitbucket-org/kushki/koda-mcp-access
+  transport: http
+  url: https://bitbucket.org/kushki/koda-mcp-access/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: agents-lightbulbpartners-com
+  transport: http
+  url: https://agents.lightbulbpartners.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: linkguard-ai/mcp
+  transport: http
+  url: https://linkguard.ai/mcp/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: linkguard-ai
+  transport: http
+  url: https://linkguard.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: linkguard-ai/dashboard/api-keys
+  transport: http
+  url: https://linkguard.ai/dashboard/api-keys/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: raw-githubusercontent-com/aos-standard/mcp-blast
+  transport: http
+  url: https://raw.githubusercontent.com/aos-standard/mcp-blast-radius/main/packaging/agent_card.json/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: mcpscoreboard-com
+  transport: http
+  url: https://mcpscoreboard.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-inflectra-com/Ideas/Entry/using-the-spira-mc
+  transport: http
+  url: https://www.inflectra.com/Ideas/Entry/using-the-spira-mcp-server-in-vs-code-part-1-1902.aspx/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-akamai-com/products/trafficpeak
+  transport: http
+  url: https://www.akamai.com/products/trafficpeak/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: mcp-mirror-glasslane-io
+  transport: http
+  url: https://mcp.mirror.glasslane.io/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: developers-moengage-com
+  transport: http
+  url: https://developers.moengage.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: nanoeasm-com
+  transport: http
+  url: https://nanoeasm.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: gitee-com/thirsd/pymcp_auth_server/issues
+  transport: http
+  url: https://gitee.com/thirsd/pymcp_auth_server/issues/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: buy-stripe-com/5kQfZh5V30oabyO6ncb7y0i
+  transport: http
+  url: https://buy.stripe.com/5kQfZh5V30oabyO6ncb7y0i/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: rdp-ucc-ie
+  transport: http
+  url: https://rdp.ucc.ie/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: gitee-com/frankjin/mcp-server/issues
+  transport: http
+  url: https://gitee.com/frankjin/mcp-server/issues/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: rocketride-ai
+  transport: http
+  url: https://rocketride.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: rustchain-org/docs
+  transport: http
+  url: https://rustchain.org/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-scrumdo-com
+  transport: http
+  url: https://www.scrumdo.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: slideruleearth-io
+  transport: http
+  url: https://slideruleearth.io/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: stt-ai
+  transport: http
+  url: https://stt.ai/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-synology-com/products/ActiveProtectAppliance
+  transport: http
+  url: https://www.synology.com/products/ActiveProtectAppliance/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: ticktest-cn/docs
+  transport: http
+  url: https://ticktest.cn/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: todo-sr-ht/~thorbjorn/tmw-mcp
+  transport: http
+  url: https://todo.sr.ht/~thorbjorn/tmw-mcp/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: ticktest-cn
+  transport: http
+  url: https://ticktest.cn/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: raw-githubusercontent-com/GautamVhavle/universal
+  transport: http
+  url: https://raw.githubusercontent.com/GautamVhavle/universal-json-agent/main/assets/logo.png/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: admin-vps-org/api/v1/docs
+  transport: http
+  url: https://admin.vps.org/api/v1/docs/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: webvoice-easytaskflow-app
+  transport: http
+  url: https://webvoice.easytaskflow.app/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: webvoice-easytaskflow-app/api/documentation
+  transport: http
+  url: https://webvoice.easytaskflow.app/api/documentation/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: wevitos-com
+  transport: http
+  url: https://wevitos.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: whipscribe-com
+  transport: http
+  url: https://whipscribe.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: www-wheel-size-com
+  transport: http
+  url: https://www.wheel-size.com/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: zenable-io
+  transport: http
+  url: https://zenable.io/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: zenable-io/feedback
+  transport: http
+  url: https://zenable.io/feedback/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0
+- name: app-zyng-work
+  transport: http
+  url: https://app.zyng.work/mcp
+  tags:
+  - petrel-info
+  risk_tier: INFO
+  priority_score: 0

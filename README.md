@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-63 security advisories filed across 18 case studies — 9 published, 54 in active coordinated disclosure (90-day window).
+68 security advisories filed across 18 case studies — 19 published, 49 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -412,10 +412,20 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-prc4-649r-564g](https://github.com/advisories/GHSA-prc4-649r-564g) | localparse-mcp | HIGH | SSRF confirmed in parse_url — timing and timeout signals confirmed (CWE-918) |
 | [GHSA-32vx-mq6h-p8f3](https://github.com/advisories/GHSA-32vx-mq6h-p8f3) | emilia-protocol | HIGH | Prompt template injection via trust_decision/receipt_quality_check + forced compliance gate (EXT03/EXT12) |
 | [GHSA-wx78-8jx3-wcv9](https://github.com/advisories/GHSA-wx78-8jx3-wcv9) | @tensorfeed/mcp-server | HIGH | XSS reflection cluster across 6 tools — unsanitized payloads echoed verbatim (MCP05) |
-| [GHSA-qwwj-38wj-ffvw](https://github.com/advisories/GHSA-qwwj-38wj-ffvw) | myclaw-toolkit | HIGH | SSRF + credential exposure via court filing tools — unauthenticated internal endpoint access |
-| [GHSA-7763-c5gf-v5fj](https://github.com/advisories/GHSA-7763-c5gf-v5fj) | mcp-shell-server | HIGH | Arbitrary shell command execution via unauthenticated MCP tool call — no access control |
+| [GHSA-qwwj-38wj-ffvw](https://github.com/advisories/GHSA-qwwj-38wj-ffvw) | myclaw-toolkit | CRITICAL | SSRF + LFI via unvalidated URL scheme in rss_feed and read_page MCP tools |
+| [GHSA-7763-c5gf-v5fj](https://github.com/advisories/GHSA-7763-c5gf-v5fj) | mcp-shell-server | HIGH | Injection via unsanitized working_directory and entry_id parameters in shell tools |
+| [GHSA-2g9w-p2x3-97pp](https://github.com/advisories/GHSA-2g9w-p2x3-97pp) | mcp-devutils | CRITICAL | RSA private key returned in plaintext by rsa_keygen; tool descriptions mutate mid-session |
+| [GHSA-w5c8-hjv7-p95r](https://github.com/advisories/GHSA-w5c8-hjv7-p95r) | @aryanbv/pdf-toolkit-mcp | MEDIUM | Prompt injection via unescaped argument interpolation in 5 MCP prompts |
+| [GHSA-6j6r-pf9m-gqxf](https://github.com/advisories/GHSA-6j6r-pf9m-gqxf) | @benborla29/mcp-server-mysql | MEDIUM | Race-condition DoS via MCP request cancellation |
+| [GHSA-q974-p8xv-f7c7](https://github.com/advisories/GHSA-q974-p8xv-f7c7) | @jpisnice/shadcn-ui-mcp-server | HIGH | Prompt template injection in three MCP prompt handlers |
+| [GHSA-m6h2-xr6q-9m7p](https://github.com/advisories/GHSA-m6h2-xr6q-9m7p) | @idachev/mcp-javadc | HIGH | Injection via unsanitized classFilePath and packageName in Java decompilation tools |
+| [GHSA-m2x9-5c27-vvc3](https://github.com/advisories/GHSA-m2x9-5c27-vvc3) | @cyanheads/pubmed-mcp-server | HIGH | Injection in pubmed_search_articles parameters allows query manipulation |
+| [GHSA-rqqc-2cx5-vp44](https://github.com/advisories/GHSA-rqqc-2cx5-vp44) | mcp-server-nationalparks | HIGH | Injection via unvalidated stateCode parameter in findParks MCP tool |
+| [GHSA-3734-qff5-qvrr](https://github.com/advisories/GHSA-3734-qff5-qvrr) | llama_index | HIGH | Sandbox bypass via operator.attrgetter() string-literal dunder access in EvaporateExtractor |
+| [GHSA-2vg9-w9p2-56m2](https://github.com/advisories/GHSA-2vg9-w9p2-56m2) | superagi | CRITICAL | RCE via unsafe eval() on LLM output in task queue handler |
+| [GHSA-526j-x7rf-h576](https://github.com/advisories/GHSA-526j-x7rf-h576) | cheshire-cat-ai | CRITICAL | Auth bypass via unauthenticated OAuth callback — admin JWT without credentials |
 
-**Active coordinated disclosure (54 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (49 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
