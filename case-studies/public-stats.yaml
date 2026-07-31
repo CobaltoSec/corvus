@@ -236,8 +236,8 @@ key_findings:
 # Counts below are updated by the script; descriptions are kept here for non-API context
 ghsas:
   total: 68
-  published: 19
-  draft: 49
+  published: 21
+  draft: 51
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}

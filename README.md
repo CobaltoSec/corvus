@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-68 security advisories filed across 18 case studies — 19 published, 49 in active coordinated disclosure (90-day window).
+68 security advisories filed across 18 case studies — 21 published, 51 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -425,7 +425,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-2vg9-w9p2-56m2](https://github.com/advisories/GHSA-2vg9-w9p2-56m2) | superagi | CRITICAL | RCE via unsafe eval() on LLM output in task queue handler |
 | [GHSA-526j-x7rf-h576](https://github.com/advisories/GHSA-526j-x7rf-h576) | cheshire-cat-ai | CRITICAL | Auth bypass via unauthenticated OAuth callback — admin JWT without credentials |
 
-**Active coordinated disclosure (49 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
+**Active coordinated disclosure (51 advisories):** packages include @playwright/mcp, mcp-server-sqlite, mcp-shell-server, myclaw-toolkit (CRITICAL), @sap-ux/fiori-mcp-server, and others — 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
