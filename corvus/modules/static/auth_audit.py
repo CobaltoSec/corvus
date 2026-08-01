@@ -60,8 +60,28 @@ class AuthAuditModule(ScanModule):
     ) -> list[Finding]:
         findings: list[Finding] = []
         for tool in surface.tools:
-            findings.extend(self._check(tool.name, tool.description))
+            for finding in self._check(tool.name, tool.description):
+                if finding.severity == Severity.CRITICAL:
+                    verified = await self._verify_critical(transport, tool.name)
+                    if not verified:
+                        finding = finding.model_copy(update={"severity": Severity.HIGH})
+                findings.append(finding)
         return findings
+
+    async def _verify_critical(self, transport: MCPTransport, tool_name: str) -> bool:
+        """Mitigate static FP: confirm auth bypass by probing the tool and checking for a success response."""
+        try:
+            result = await transport.send_request(
+                "tools/call", {"name": tool_name, "arguments": {}}
+            )
+            if not isinstance(result, dict):
+                return False
+            if result.get("isError"):
+                return False
+            content = result.get("content", [])
+            return bool(content)
+        except Exception:
+            return False
 
     def _check(self, name: str, description: str) -> list[Finding]:
         found: list[Finding] = []

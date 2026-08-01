@@ -1175,35 +1175,109 @@ def history(
 
 @app.command()
 def disclose(
-    ghsa_id: str = typer.Argument(..., help="GHSA ID to publish, e.g. GHSA-7763-c5gf-v5fj"),
-    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview without executing"),
+    days: Annotated[int, typer.Option(
+        "--days", help="Include advisories with deadline within N days")] = 7,
+    severity: Annotated[Optional[str], typer.Option(
+        "--severity", help="Filter by severity: critical | high | medium | low")] = None,
+    dry_run: Annotated[bool, typer.Option(
+        "--dry-run", "-n", help="Print table only; omit ibis publish commands")] = False,
 ) -> None:
-    """Publish a GHSA advisory via ibis publish."""
-    import subprocess
+    """List Ibis advisories due soon and print ibis publish commands to run."""
+    import sqlite3
 
-    ibis_candidates = [
-        Path(r"C:\Proyectos\Ibis\.venv\Scripts\ibis.exe"),
-        Path(r"C:\Proyectos\Ibis\.venv\Scripts\ibis"),
-    ]
-    ibis_exe = next((p for p in ibis_candidates if p.exists()), None)
+    _SEV_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
-    if dry_run:
-        typer.echo(f"[dry-run] ibis publish {ghsa_id}")
+    db_path = Path.home() / ".ibis" / "ibis.db"
+    if not db_path.exists():
+        console.print(f"[red]Ibis database not found: {db_path}[/red]")
+        console.print("[dim]Make sure Ibis is installed and has been initialized.[/dim]")
+        raise typer.Exit(1)
+
+    # Validate severity filter
+    if severity:
+        severity = severity.lower()
+        if severity not in _SEV_RANK:
+            console.print(
+                f"[red]Invalid severity: {severity}. "
+                f"Choose from: critical, high, medium, low[/red]"
+            )
+            raise typer.Exit(1)
+
+    today = datetime.date.today()
+    cutoff = (today + datetime.timedelta(days=days)).isoformat()
+
+    try:
+        con = sqlite3.connect(str(db_path))
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        sql = (
+            "SELECT ghsa_id, package, ecosystem, severity, state, publish_by "
+            "FROM advisories "
+            "WHERE state NOT IN ('published', 'closed') "
+            "  AND publish_by IS NOT NULL "
+            "  AND publish_by <= ?"
+        )
+        params: list = [cutoff]
+        if severity:
+            sql += "  AND LOWER(severity) = ?"
+            params.append(severity)
+        rows = list(cur.execute(sql, params).fetchall())
+        con.close()
+    except sqlite3.Error as exc:
+        console.print(f"[red]Failed to query Ibis DB: {exc}[/red]")
+        raise typer.Exit(1)
+
+    if not rows:
+        sev_note = f" with severity={severity}" if severity else ""
+        console.print(f"[green]No advisories due within {days} day(s){sev_note}.[/green]")
         return
 
-    if not ibis_exe:
-        typer.echo("✗ ibis executable not found at C:\\Proyectos\\Ibis\\.venv\\Scripts\\", err=True)
-        raise typer.Exit(code=1)
+    # Sort: severity rank ASC, then publish_by ASC
+    rows.sort(key=lambda r: (_SEV_RANK.get(r["severity"].lower(), 99), r["publish_by"] or ""))
 
-    typer.echo(f"Publishing {ghsa_id}...")
-    result = subprocess.run([str(ibis_exe), "publish", ghsa_id], capture_output=True, text=True)
-    if result.returncode == 0:
-        typer.echo(f"✓ {ghsa_id} published successfully")
-        if result.stdout.strip():
-            typer.echo(result.stdout.strip())
-    else:
-        typer.echo(f"✗ ibis publish failed: {result.stderr.strip()}", err=True)
-        raise typer.Exit(code=1)
+    title_sev = f" [{severity.upper()}]" if severity else ""
+    table = Table(
+        title=f"Ibis Advisories — due within {days} day(s){title_sev}",
+        show_header=True,
+    )
+    table.add_column("GHSA ID", no_wrap=True)
+    table.add_column("Package")
+    table.add_column("Severity", justify="center")
+    table.add_column("State", justify="center")
+    table.add_column("Deadline", justify="center")
+    table.add_column("Days left", justify="right")
+
+    for row in rows:
+        sev = row["severity"].lower()
+        color = _SEV_COLOR.get(sev, "white")
+        try:
+            pub_date = datetime.date.fromisoformat(row["publish_by"])
+            delta = (pub_date - today).days
+            if delta < 0:
+                days_str = f"[bold red]{delta}[/bold red]"
+            elif delta == 0:
+                days_str = "[bold red]TODAY[/bold red]"
+            else:
+                days_str = str(delta)
+        except (TypeError, ValueError):
+            days_str = "[dim]?[/dim]"
+
+        table.add_row(
+            row["ghsa_id"],
+            row["package"],
+            f"[{color}]{sev.upper()}[/{color}]",
+            row["state"],
+            row["publish_by"] or "—",
+            days_str,
+        )
+
+    console.print(table)
+
+    if not dry_run:
+        console.print()
+        console.print(f"[bold]Commands ({len(rows)}):[/bold]")
+        for row in rows:
+            console.print(f"  ibis publish {row['ghsa_id']}")
 
 
 @app.command("sync-ibis")

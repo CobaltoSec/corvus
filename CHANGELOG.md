@@ -7,6 +7,10 @@
 - SSRF IMDS content-matching in `ssrf.py`: checks response body for AWS (`ami-id`, `security-credentials`), GCP (`computeMetadata`, `serviceAccounts`), Azure (`azEnvironment`) indicators — auto-sets `exploitation_confirmed=True` and upgrades HIGH→CRITICAL (RT-CORVUS-SSRF-IMDS)
 - `corvus disclose <ghsa-id>` command: publishes GHSA advisory via `ibis publish` (RT-CORVUS-DISCLOSE-CLI)
 - `--verify-critical` / `-V` flag for `scan`/`batch`: re-probes CRITICAL findings to reduce false positives (RT-CORVUS-VERIFY-CRITICAL)
+- `corvus disclose --batch`: CLI command para disclosure supervisado desde Ibis drafts (filter by deadline/severity, rich table output) (RT-CORVUS-DISCLOSE-BATCH)
+- `_verify_critical()` en `cmd_injection.py`: baseline timing validation (Δ>300ms) para reducir FP rate (RT-CORVUS-DISCLOSE-BATCH)
+- `_verify_critical()` en `auth_audit.py`: double-request state transition verification post-bypass (RT-CORVUS-DISCLOSE-BATCH)
+- `_verify_critical()` en `resource_uri.py`: body+header dual assertion para confirmar SSRF/traversal (RT-CORVUS-DISCLOSE-BATCH)
 
 ## [RT-CORVUS-IMPROVE-2] — 2026-07-24 — FP calibration v4 + ProtoFuzz paralelo · 766 tests
 

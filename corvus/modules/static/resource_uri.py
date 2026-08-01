@@ -41,6 +41,17 @@ _PLACEHOLDER_URI_RE = re.compile(
 # Servers exposing more than this many resources → MEDIUM (attack surface signal)
 _LARGE_SURFACE_THRESHOLD = 20
 
+# Content signatures for verifying sensitive file exposure in resource bodies
+_SENSITIVE_CONTENT_SIGNATURES = (
+    "root:x:0:0", "daemon:x:", "nobody:x:",       # /etc/passwd
+    "BEGIN PRIVATE KEY", "BEGIN RSA PRIVATE KEY",  # PEM private keys
+    "[default]", "aws_access_key_id",              # AWS credentials
+    "password =", "secret_key =",                  # config files with credentials
+)
+
+# MIME types that indicate documentation or API responses rather than raw file content
+_DOC_MIME_TYPES = ("text/html", "application/json", "text/javascript")
+
 
 class ResourceUriModule(ScanModule):
     owasp_id = "EXT05"
@@ -51,6 +62,26 @@ class ResourceUriModule(ScanModule):
         "file:// scheme abuse, credential query parameters, and oversized resource surfaces"
     )
     is_static = True
+
+    async def _verify_critical(self, transport: MCPTransport, uri: str) -> bool:
+        """Mitigate body-only FP: require both response body content and a non-doc MIME type to confirm exposure."""
+        try:
+            result = await transport.send_request("resources/read", {"uri": uri})
+            if not isinstance(result, dict):
+                return False
+            contents = result.get("contents", [])
+            if not contents or not isinstance(contents, list):
+                return False
+            item = contents[0]
+            if not isinstance(item, dict):
+                return False
+            body = item.get("text", "") or ""
+            mime_type = item.get("mimeType", "")
+            body_confirmed = any(sig in body for sig in _SENSITIVE_CONTENT_SIGNATURES)
+            content_type_ok = not any(t in mime_type for t in _DOC_MIME_TYPES)
+            return body_confirmed and content_type_ok
+        except Exception:
+            return False
 
     async def run(
         self,
@@ -69,9 +100,10 @@ class ResourceUriModule(ScanModule):
             # CRITICAL: URI points to sensitive system file (skip web-scheme URIs — educational FP)
             for pattern in _CRITICAL_URI_PATTERNS:
                 if pattern.search(uri) and not _WEB_URI_RE.match(uri):
+                    verified = await self._verify_critical(transport, uri)
                     findings.append(Finding(
                         owasp_category=OWASPCategory.EXT05_RESOURCE_URI,
-                        severity=Severity.CRITICAL,
+                        severity=Severity.CRITICAL if verified else Severity.HIGH,
                         title=f"Resource URI — sensitive path exposed: '{uri}'",
                         description=(
                             f"Resource URI '{uri}' matches a pattern associated with sensitive "

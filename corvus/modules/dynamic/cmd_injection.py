@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Any
 
 from ..base import ScanModule
@@ -117,9 +118,12 @@ class CmdInjectionModule(ScanModule):
                                 continue
                             text = _extract_text(result)
                             if _sql_error_confirmed(text):
+                                _verified = await self._verify_critical(
+                                    transport, tool.name, properties, required, param, str(payload)
+                                )
                                 findings.append(Finding(
                                     owasp_category=OWASPCategory.MCP05_CMD_INJECTION,
-                                    severity=Severity.CRITICAL,
+                                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                                     title=f"SQL Injection (integer param) — '{tool.name}.{param}'",
                                     description="SQL error keywords in response to integer-typed payload — error-based SQLi confirmed.",
                                     tool_name=tool.name,
@@ -190,7 +194,10 @@ class CmdInjectionModule(ScanModule):
                         # file content signatures in the response are a stronger signal
                         # than the payload appearing verbatim.
                         if _traversal_confirmed(payload, text):
-                            severity = Severity.CRITICAL
+                            _verified = await self._verify_critical(
+                                transport, tool.name, properties, required, param, payload
+                            )
+                            severity = Severity.CRITICAL if _verified else Severity.HIGH
                             confirmed = True
                             confidence = 95
                             desc = (
@@ -209,7 +216,10 @@ class CmdInjectionModule(ScanModule):
                         # M1: error-based SQLi — skip for search/echo fields whose responses
                         # can contain DB error strings as documentation content (CS03 aws-docs FP).
                         elif param.lower() not in _ECHO_FIELD_NAMES and _sql_error_confirmed(text):
-                            severity = Severity.CRITICAL
+                            _verified = await self._verify_critical(
+                                transport, tool.name, properties, required, param, payload
+                            )
+                            severity = Severity.CRITICAL if _verified else Severity.HIGH
                             confirmed = True
                             confidence = 92
                             desc = (
@@ -279,6 +289,42 @@ class CmdInjectionModule(ScanModule):
                         pass  # transport/server errors are not injection signals
 
         return findings
+
+    async def _verify_critical(
+        self,
+        transport: MCPTransport,
+        tool_name: str,
+        properties: dict[str, Any],
+        required: list[str],
+        param: str,
+        payload: str,
+    ) -> bool:
+        """Mitigate timing FP: require >300ms gap or deterministic output change over benign baseline."""
+        try:
+            benign = "test"
+            baseline_args = self.engine.build_args(properties, required, param, benign)
+            t0 = time.monotonic()
+            baseline_result = await transport.send_request(
+                "tools/call", {"name": tool_name, "arguments": baseline_args}
+            )
+            baseline_elapsed = time.monotonic() - t0
+            baseline_text = _extract_text(baseline_result)
+
+            inject_args = self.engine.build_args(properties, required, param, payload)
+            t1 = time.monotonic()
+            inject_result = await transport.send_request(
+                "tools/call", {"name": tool_name, "arguments": inject_args}
+            )
+            inject_elapsed = time.monotonic() - t1
+            inject_text = _extract_text(inject_result)
+
+            if inject_elapsed - baseline_elapsed > 0.300:
+                return True
+            if inject_text and inject_text != baseline_text:
+                return True
+            return False
+        except Exception:
+            return False
 
 
 def _extract_text(result: Any) -> str:
