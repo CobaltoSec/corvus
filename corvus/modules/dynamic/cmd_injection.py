@@ -310,6 +310,11 @@ class CmdInjectionModule(ScanModule):
             baseline_elapsed = time.monotonic() - t0
             baseline_text = _extract_text(baseline_result)
 
+            # If baseline (benign payload) already contains file content signatures,
+            # the server trivially leaks → finding is confirmed regardless of diff.
+            if any(sig in baseline_text for sig in _TRAVERSAL_SIGNATURES):
+                return True
+
             inject_args = self.engine.build_args(properties, required, param, payload)
             t1 = time.monotonic()
             inject_result = await transport.send_request(
@@ -324,7 +329,8 @@ class CmdInjectionModule(ScanModule):
                 return True
             return False
         except Exception:
-            return False
+            # Verification probe failed (connection error, timeout) — fail open, keep CRITICAL
+            return True
 
 
 def _extract_text(result: Any) -> str:
