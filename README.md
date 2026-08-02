@@ -399,7 +399,7 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 ### Responsible Disclosure
 
 <!-- CORVUS_DISCLOSURE_START -->
-70 security advisories filed across 18 case studies — 21 published, 49 in active coordinated disclosure (90-day window).
+197 security advisories filed across 18 case studies — 31 published, 166 in active coordinated disclosure (90-day window).
 
 **Published:**
 
@@ -425,9 +425,9 @@ Full datasets, curated findings, and methodology in [`case-studies/`](case-studi
 | [GHSA-2vg9-w9p2-56m2](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-2vg9-w9p2-56m2) | superagi | CRITICAL | RCE via unsafe eval() on LLM output in task queue handler |
 | [GHSA-526j-x7rf-h576](https://github.com/CobaltoSec/advisories/security/advisories/GHSA-526j-x7rf-h576) | cheshire-cat-ai | CRITICAL | Auth bypass via unauthenticated OAuth callback — admin JWT without credentials |
 
-> Listing 19 of 21 published advisories — the remaining 2 are public on the GitHub Advisory Database and pending a curated description here.
+> Listing 19 of 31 published advisories — the remaining 12 are public on the GitHub Advisory Database and pending a curated description here.
 
-**Active coordinated disclosure (49 advisories):** 90-day embargo window in progress.
+**Active coordinated disclosure (166 advisories):** 90-day embargo window in progress.
 
 Full advisory index: [`case-studies/DISCLOSURE-PROCESS.md`](case-studies/DISCLOSURE-PROCESS.md)
 <!-- CORVUS_DISCLOSURE_END -->
