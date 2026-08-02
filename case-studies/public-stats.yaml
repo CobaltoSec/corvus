@@ -240,9 +240,9 @@ key_findings:
 # escrito a mano contra los 47 reales de la API. El comentario anterior afirmaba que el
 # script los actualizaba, pero su fetch descartaba la respuesta. Ahora es cierto.
 ghsas:
-  total: 70
-  published: 21
-  draft: 49
+  total: 62
+  published: 31
+  draft: 31
   published_list:
     - {ghsa: "GHSA-43j9-hmpq-cgv7", pkg: "remnux-mcp-server",                    sev: "MEDIUM", finding: "Unauthenticated RCE via HTTP transport on non-loopback deployments"}
     - {ghsa: "GHSA-hv3x-m9fv-4vhf", pkg: "mcp-server-git",                       sev: "HIGH",   finding: "DoS via spec-compliant JSON-RPC batch arrays and oversized method names"}
