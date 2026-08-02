@@ -550,7 +550,7 @@ async def _scan(
         tier = risk_tier(sc)
         _TIER_COLOR = {"CRITICAL": "bold red", "HIGH": "red", "MEDIUM": "yellow", "LOW": "blue", "CLEAR": "green"}
         tc = _TIER_COLOR.get(tier, "white")
-        console.print(f"Risk Score : [{tc}]{sc}/100 — {tier}[/{tc}]")
+        typer.echo(f"Risk Score : {sc}/100 — {tier}")
 
     n_findings = len(result.findings)
     console.print(
