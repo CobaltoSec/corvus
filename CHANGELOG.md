@@ -11,6 +11,12 @@
 - `_verify_critical()` en `cmd_injection.py`: baseline timing validation (Δ>300ms) para reducir FP rate (RT-CORVUS-DISCLOSE-BATCH)
 - `_verify_critical()` en `auth_audit.py`: double-request state transition verification post-bypass (RT-CORVUS-DISCLOSE-BATCH)
 - `_verify_critical()` en `resource_uri.py`: body+header dual assertion para confirmar SSRF/traversal (RT-CORVUS-DISCLOSE-BATCH)
+- `_verify_critical()` en `ssrf.py`: baseline benign-URL probe antes de elevar a CRITICAL en content-based paths (`real_sigs` e `imds_hit`); CRITICAL si confirmado, HIGH si no (RT-CORVUS-VERIFY-V2)
+- `_verify_critical()` en `token_exposure.py`: segundo probe con los mismos argumentos antes de elevar CRITICAL; baja a HIGH si no se confirma la señal (RT-CORVUS-VERIFY-V2)
+- `_verify_timing()` en `ssrf.py`: renombrado desde el método anterior `_verify_critical()` de timing; mismo cuerpo 3-probe majority pattern, usado en timeout/timing branches (RT-CORVUS-VERIFY-V2)
+
+### Fixed
+- `discover.py`: dedup scope-part cambiado a `(org, pkg_part)` tuples — evita descartar org enteras cuando el bare package-part colisiona con un entry existente (e.g., `@browserbasehq/mcp` vs `@another-org/mcp`) (RT-CORVUS-VERIFY-V2)
 
 ## [RT-CORVUS-IMPROVE-2] — 2026-07-24 — FP calibration v4 + ProtoFuzz paralelo · 766 tests
 

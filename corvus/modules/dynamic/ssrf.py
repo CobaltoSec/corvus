@@ -74,6 +74,88 @@ class SSRFModule(ScanModule):
     def __init__(self) -> None:
         self.engine = PayloadEngine()
 
+    async def _verify_critical(
+        self,
+        transport: MCPTransport,
+        tool_name: str,
+        properties: dict[str, Any],
+        required: list[str],
+        param: str,
+        payload: str,
+    ) -> bool:
+        """Confirm content-based SSRF finding before elevating to CRITICAL severity.
+
+        Interface matches cmd_injection._verify_critical().
+
+        - Sends a benign URL as baseline; if metadata signatures already appear, the server
+          leaks trivially regardless of payload — confirmed.
+        - Re-probes with the original SSRF payload; confirmed if signatures still appear in
+          the response, indicating the outbound request was actually made.
+        - On any exception (connection error, timeout) — fail open, keep CRITICAL.
+        """
+        try:
+            benign = "http://example.com/"
+            baseline_args = self.engine.build_args(properties, required, param, benign)
+            baseline_result = await asyncio.wait_for(
+                transport.send_request("tools/call", {"name": tool_name, "arguments": baseline_args}),
+                timeout=5.0,
+            )
+            baseline_text = _extract_text(baseline_result)
+
+            # If benign probe already returns metadata signatures → trivial leak → confirmed
+            if any(sig in baseline_text for sig in _METADATA_SIGNATURES):
+                return True
+
+            # Re-probe with the actual SSRF payload to confirm reproducibility
+            inject_args = self.engine.build_args(properties, required, param, payload)
+            inject_result = await asyncio.wait_for(
+                transport.send_request("tools/call", {"name": tool_name, "arguments": inject_args}),
+                timeout=8.0,
+            )
+            inject_text = _extract_text(inject_result)
+            return any(sig in inject_text for sig in _METADATA_SIGNATURES)
+        except Exception:
+            # Verification probe failed (connection error, timeout) — fail open, keep CRITICAL
+            return True
+
+    async def _verify_timing(
+        self,
+        transport: MCPTransport,
+        tool_name: str,
+        param: str,
+        payload: str,
+        properties: dict[str, Any],
+        required: list[str],
+        baseline_elapsed: float | None,
+    ) -> bool:
+        """Mitigate timing FP: re-probe 3× — HIGH only if ≥2/3 exceed threshold.
+
+        Cold-start servers are slow on the first call but fast on subsequent ones.
+        A real SSRF target will consistently delay on every outbound network request.
+        If fewer than 2 of the 3 re-probes also exceed the timing threshold, we treat
+        the original hit as a cold-start false positive and suppress the finding.
+        """
+        hits = 0
+        for _ in range(3):
+            args = self.engine.build_args(properties, required, param, payload)
+            t0 = time.monotonic()
+            try:
+                await asyncio.wait_for(
+                    transport.send_request("tools/call", {"name": tool_name, "arguments": args}),
+                    timeout=10.0,
+                )
+                elapsed = time.monotonic() - t0
+                if elapsed >= _MIN_TIMEOUT_SIGNAL and (
+                    baseline_elapsed is None or elapsed > baseline_elapsed * _TIMEOUT_FACTOR
+                ):
+                    hits += 1
+            except asyncio.TimeoutError:
+                # Full timeout also counts as a confirmed timing hit
+                hits += 1
+            except Exception:
+                pass
+        return hits >= 2
+
     async def run(
         self,
         surface: MCPSurface,
@@ -117,9 +199,13 @@ class SSRFModule(ScanModule):
                         # Exclude signatures that are contained in the payload itself (URL reflection FP)
                         real_sigs = [sig for sig in _METADATA_SIGNATURES if sig in text and sig not in payload]
                         if real_sigs:
+                            # Verify before elevating to CRITICAL; downgrade to HIGH if unconfirmed
+                            _verified = await self._verify_critical(
+                                transport, tool.name, properties, required, param, payload
+                            )
                             findings.append(Finding(
                                 owasp_category=OWASPCategory.EXT04_SSRF,
-                                severity=Severity.CRITICAL,
+                                severity=Severity.CRITICAL if _verified else Severity.HIGH,
                                 title=f"SSRF — '{tool.name}.{param}' fetched internal metadata",
                                 description=(
                                     f"Response to SSRF payload '{payload}' contains cloud metadata "
@@ -129,8 +215,8 @@ class SSRFModule(ScanModule):
                                 parameter=param,
                                 payload=payload,
                                 evidence=text[:400],
-                                exploitation_confirmed=True,
-                                confidence=90,
+                                exploitation_confirmed=_verified,
+                                confidence=90 if _verified else 70,
                                 remediation=(
                                     "Block outbound requests to RFC-1918 and link-local ranges. "
                                     "Use an allowlist for permitted URL schemes and hosts."
@@ -142,12 +228,16 @@ class SSRFModule(ScanModule):
                         if elapsed >= _MIN_TIMEOUT_SIGNAL and (
                             baseline_elapsed is None or elapsed > baseline_elapsed * _TIMEOUT_FACTOR
                         ):
-                            # IMDS content check — response body already confirms SSRF
+                            # IMDS content check — response body contains IMDS indicator
                             imds_hit = next((ind for ind in IMDS_INDICATORS if ind in text), None)
                             if imds_hit:
+                                # Verify before elevating to CRITICAL; downgrade to HIGH if unconfirmed
+                                _verified = await self._verify_critical(
+                                    transport, tool.name, properties, required, param, payload
+                                )
                                 findings.append(Finding(
                                     owasp_category=OWASPCategory.EXT04_SSRF,
-                                    severity=Severity.CRITICAL,
+                                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                                     title=f"SSRF — '{tool.name}.{param}' confirmed IMDS access",
                                     description=(
                                         f"Call with payload '{payload}' took {elapsed:.1f}s "
@@ -159,8 +249,8 @@ class SSRFModule(ScanModule):
                                     parameter=param,
                                     payload=payload,
                                     evidence=text[:400],
-                                    exploitation_confirmed=True,
-                                    confidence=90,
+                                    exploitation_confirmed=_verified,
+                                    confidence=90 if _verified else 70,
                                     remediation=(
                                         "Block outbound requests to RFC-1918 and link-local ranges. "
                                         "Use an allowlist for permitted URL schemes and hosts."
@@ -168,12 +258,15 @@ class SSRFModule(ScanModule):
                                 ))
                                 break
                             # Attempt IMDS IAM chain to escalate to CRITICAL
+                            # (_probe_imds_chain is itself a targeted confirmation probe)
                             chain = await _probe_imds_chain(
                                 transport, tool.name, param, self.engine, properties, required
                             )
                             if chain:
                                 findings.append(chain)
-                            else:
+                            elif await self._verify_timing(
+                                transport, tool.name, param, payload, properties, required, baseline_elapsed
+                            ):
                                 findings.append(Finding(
                                     owasp_category=OWASPCategory.EXT04_SSRF,
                                     severity=Severity.HIGH,
@@ -182,6 +275,7 @@ class SSRFModule(ScanModule):
                                         f"Call with payload '{payload}' took {elapsed:.1f}s "
                                         + (f"vs baseline {baseline_elapsed:.1f}s" if baseline_elapsed else "(no baseline)")
                                         + " — server likely attempted the outbound request before timing out."
+                                        + " Confirmed by ≥2/3 re-probes."
                                     ),
                                     tool_name=tool.name,
                                     parameter=param,
@@ -200,23 +294,29 @@ class SSRFModule(ScanModule):
                         chain = await _probe_imds_chain(
                             transport, tool.name, param, self.engine, properties, required
                         )
-                        findings.append(chain or Finding(
-                            owasp_category=OWASPCategory.EXT04_SSRF,
-                            severity=Severity.HIGH,
-                            title=f"SSRF (timeout) — '{tool.name}.{param}' hung on SSRF payload",
-                            description=(
-                                f"Call with SSRF payload '{payload}' timed out after {elapsed:.1f}s, "
-                                "suggesting the server is attempting the network request."
-                            ),
-                            tool_name=tool.name,
-                            parameter=param,
-                            payload=payload,
-                            confidence=65,
-                            remediation=(
-                                "Block outbound requests to RFC-1918 and link-local ranges. "
-                                "Use an allowlist for permitted URL schemes and hosts."
-                            ),
-                        ))
+                        if chain:
+                            findings.append(chain)
+                        elif await self._verify_timing(
+                            transport, tool.name, param, payload, properties, required, baseline_elapsed
+                        ):
+                            findings.append(Finding(
+                                owasp_category=OWASPCategory.EXT04_SSRF,
+                                severity=Severity.HIGH,
+                                title=f"SSRF (timeout) — '{tool.name}.{param}' hung on SSRF payload",
+                                description=(
+                                    f"Call with SSRF payload '{payload}' timed out after {elapsed:.1f}s, "
+                                    "suggesting the server is attempting the network request. "
+                                    "Confirmed by ≥2/3 re-probes."
+                                ),
+                                tool_name=tool.name,
+                                parameter=param,
+                                payload=payload,
+                                confidence=65,
+                                remediation=(
+                                    "Block outbound requests to RFC-1918 and link-local ranges. "
+                                    "Use an allowlist for permitted URL schemes and hosts."
+                                ),
+                            ))
                         break
                     except Exception:
                         pass

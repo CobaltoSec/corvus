@@ -88,6 +88,35 @@ class TokenExposureModule(ScanModule):
     def __init__(self):
         self.engine = PayloadEngine()
 
+    async def _verify_critical(
+        self,
+        transport: MCPTransport,
+        tool_name: str,
+        arguments: dict[str, Any],
+        pattern: re.Pattern[str],
+    ) -> bool:
+        """Confirm CRITICAL token exposure with a second probe using the same arguments.
+
+        Re-sends the triggering call and checks whether the CRITICAL signal is still
+        present in the response.  A consistent match across two independent probes
+        confirms genuine leakage rather than a transient anomaly.
+
+        Fails open on exceptions (connection error, timeout) — the first probe already
+        observed the secret, so keeping CRITICAL is the safer choice.
+        """
+        try:
+            result = await transport.send_request(
+                "tools/call", {"name": tool_name, "arguments": arguments}
+            )
+            text = _extract_text(result)
+            if not text or _is_html_catch_all(text):
+                return False
+            text = _strip_code_blocks(text)
+            return bool(pattern.search(text))
+        except Exception:
+            # Verification probe failed (connection error, timeout) — fail open, keep CRITICAL
+            return True
+
     async def run(
         self,
         surface: MCPSurface,
@@ -101,8 +130,10 @@ class TokenExposureModule(ScanModule):
             properties: dict[str, Any] = schema.get("properties", {})
             required: list[str] = schema.get("required", [])
 
-            # Collect responses to analyse: benign call + error-provoking calls (A4)
-            texts_to_check: list[str] = []
+            # Collect responses to analyse: benign call + error-provoking calls (A4).
+            # Each entry is (response_text, arguments_used) so _verify_critical can
+            # replay the exact call that produced the suspicious text.
+            texts_to_check: list[tuple[str, dict[str, Any]]] = []
 
             # Standard benign call
             benign_args = {
@@ -114,7 +145,7 @@ class TokenExposureModule(ScanModule):
                 result = await transport.send_request(
                     "tools/call", {"name": tool.name, "arguments": benign_args}
                 )
-                texts_to_check.append(_extract_text(result))
+                texts_to_check.append((_extract_text(result), benign_args))
             except Exception:
                 pass
 
@@ -124,7 +155,7 @@ class TokenExposureModule(ScanModule):
                     result = await transport.send_request(
                         "tools/call", {"name": tool.name, "arguments": {}}
                     )
-                    texts_to_check.append(_extract_text(result))
+                    texts_to_check.append((_extract_text(result), {}))
                 except Exception:
                     pass
 
@@ -140,11 +171,11 @@ class TokenExposureModule(ScanModule):
                     result = await transport.send_request(
                         "tools/call", {"name": tool.name, "arguments": oversized_args}
                     )
-                    texts_to_check.append(_extract_text(result))
+                    texts_to_check.append((_extract_text(result), oversized_args))
                 except Exception:
                     pass
 
-            for text in texts_to_check:
+            for text, args_used in texts_to_check:
                 if _is_html_catch_all(text):  # A6: skip SPA catch-all HTML responses
                     continue
                 text = _strip_code_blocks(text)
@@ -164,9 +195,20 @@ class TokenExposureModule(ScanModule):
                         if label in seen_signals:
                             break  # already reported this signal for this tool (A1: dedup across response texts)
                         seen_signals.add(label)
+
+                        # For CRITICAL findings, require a second probe to confirm the
+                        # signal is consistently present before elevating severity.
+                        effective_severity = severity
+                        if severity == Severity.CRITICAL:
+                            confirmed = await self._verify_critical(
+                                transport, tool.name, args_used, pattern
+                            )
+                            if not confirmed:
+                                effective_severity = Severity.HIGH
+
                         findings.append(Finding(
                             owasp_category=OWASPCategory.MCP01_TOKEN_EXPOSURE,
-                            severity=severity,
+                            severity=effective_severity,
                             title=f"Token Exposure — {label} in '{tool.name}'",
                             description=f"Tool response contains {label}.",
                             tool_name=tool.name,
