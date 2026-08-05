@@ -117,9 +117,10 @@ class OAuthBypassModule(ScanModule):
         stripped = {k: v for k, v in transport._extra_headers.items()
                     if k.lower() not in _AUTH_HEADER_KEYS}
         if await _try_tools_list(url, timeout, stripped):
+            _verified = await self._verify_critical(url, timeout, stripped)
             findings.append(Finding(
                 owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
-                severity=Severity.CRITICAL,
+                severity=Severity.CRITICAL if _verified else Severity.HIGH,
                 title="Auth bypass — server accepts requests without credentials",
                 description=(
                     "The MCP server accepted a tools/list request with all authentication "
@@ -143,9 +144,10 @@ class OAuthBypassModule(ScanModule):
         if auth_key:
             invalid_headers = {**transport._extra_headers, auth_key: _INVALID_BEARER}
             if await _try_tools_list(url, timeout, invalid_headers):
+                _verified = await self._verify_critical(url, timeout, invalid_headers)
                 findings.append(Finding(
                     owasp_category=OWASPCategory.MCP07_AUTH_AUDIT,
-                    severity=Severity.CRITICAL,
+                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                     title="Auth bypass — server accepts invalid Bearer token",
                     description=(
                         "The MCP server accepted tools/list with a deliberately invalid "
@@ -163,3 +165,14 @@ class OAuthBypassModule(ScanModule):
                 ))
 
         return findings
+
+    async def _verify_critical(self, url: str, timeout: float, headers: dict[str, str]) -> bool:
+        """Re-probe the server to confirm auth bypass is reproducible.
+
+        Returns True → keep CRITICAL; False → downgrade to HIGH.
+        On any exception → fail open, keep CRITICAL.
+        """
+        try:
+            return await _try_tools_list(url, timeout, headers)
+        except Exception:
+            return True  # fail open

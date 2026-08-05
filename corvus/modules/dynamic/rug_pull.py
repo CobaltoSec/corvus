@@ -66,9 +66,10 @@ class RugPullModule(ScanModule):
 
         # Tools that appeared after the session started
         for name in sorted(new_names - orig_names):
+            _verified = await self._verify_critical(transport, "tools", name, "appeared")
             findings.append(Finding(
                 owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                severity=Severity.CRITICAL,
+                severity=Severity.CRITICAL if _verified else Severity.HIGH,
                 title=f"Rug Pull — tool '{name}' appeared mid-session",
                 description=(
                     f"Tool '{name}' was not present during initial enumeration but appeared "
@@ -108,9 +109,10 @@ class RugPullModule(ScanModule):
             new_t = new_map[name]
 
             if orig_t.description != new_t.description:
+                _verified = await self._verify_critical(transport, "tools", name, "desc_changed", orig_val=orig_t.description)
                 findings.append(Finding(
                     owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                    severity=Severity.CRITICAL,
+                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                     title=f"Rug Pull — description of '{name}' changed mid-session",
                     description=(
                         f"Tool '{name}' description was mutated after the session started. "
@@ -163,9 +165,10 @@ class RugPullModule(ScanModule):
                     remediation="Sanitize resource URIs; reject traversal and arbitrary user input in resource identifiers.",
                 ))
             else:
+                _verified = await self._verify_critical(transport, "resources", uri, "appeared")
                 findings.append(Finding(
                     owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                    severity=Severity.CRITICAL,
+                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                     title=f"Rug Pull — resource '{uri}' appeared mid-session",
                     description=(
                         f"Resource '{uri}' was not present during initial enumeration but appeared "
@@ -194,9 +197,10 @@ class RugPullModule(ScanModule):
 
         for uri in sorted(set(orig_res_map) & set(new_res_map)):
             if orig_res_map[uri].description != new_res_map[uri].description:
+                _verified = await self._verify_critical(transport, "resources", uri, "desc_changed", orig_val=orig_res_map[uri].description)
                 findings.append(Finding(
                     owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                    severity=Severity.CRITICAL,
+                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                     title=f"Rug Pull — description of resource '{uri}' changed mid-session",
                     description=(
                         f"Resource '{uri}' description was mutated after the session started. "
@@ -217,9 +221,10 @@ class RugPullModule(ScanModule):
         new_pr_map = {p.name: p for p in new_prompts}
 
         for name in sorted(set(new_pr_map) - set(orig_pr_map)):
+            _verified = await self._verify_critical(transport, "prompts", name, "appeared")
             findings.append(Finding(
                 owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                severity=Severity.CRITICAL,
+                severity=Severity.CRITICAL if _verified else Severity.HIGH,
                 title=f"Rug Pull — prompt '{name}' appeared mid-session",
                 description=(
                     f"Prompt '{name}' was not present during initial enumeration but appeared "
@@ -248,9 +253,10 @@ class RugPullModule(ScanModule):
 
         for name in sorted(set(orig_pr_map) & set(new_pr_map)):
             if orig_pr_map[name].description != new_pr_map[name].description:
+                _verified = await self._verify_critical(transport, "prompts", name, "desc_changed", orig_val=orig_pr_map[name].description)
                 findings.append(Finding(
                     owasp_category=OWASPCategory.MCP06_RUG_PULL,
-                    severity=Severity.CRITICAL,
+                    severity=Severity.CRITICAL if _verified else Severity.HIGH,
                     title=f"Rug Pull — description of prompt '{name}' changed mid-session",
                     description=(
                         f"Prompt '{name}' description was mutated after the session started. "
@@ -266,6 +272,45 @@ class RugPullModule(ScanModule):
                 ))
 
         return findings
+
+    async def _verify_critical(
+        self,
+        transport: MCPTransport,
+        entity: str,
+        name: str,
+        check: str,
+        orig_val: str | None = None,
+    ) -> bool:
+        """Re-probe the server to confirm a rug-pull change is persistent.
+
+        entity: "tools" | "resources" | "prompts"
+        name: tool name / resource URI / prompt name
+        check: "appeared" | "desc_changed"
+        orig_val: original description for the "desc_changed" check.
+        Returns True → keep CRITICAL; False → downgrade to HIGH.
+        On any exception → fail open, keep CRITICAL.
+        """
+        try:
+            if entity == "tools":
+                items = await _list_tools(transport)
+                item_map = {t.name: t for t in items}
+            elif entity == "resources":
+                items = await _list_resources(transport)
+                item_map = {r.uri: r for r in items}
+            elif entity == "prompts":
+                items = await _list_prompts(transport)
+                item_map = {p.name: p for p in items}
+            else:
+                return True  # unknown entity → fail open
+
+            if check == "appeared":
+                return name in item_map
+            elif check == "desc_changed":
+                entry = item_map.get(name)
+                return entry is not None and entry.description != orig_val
+            return True  # unknown check → fail open
+        except Exception:
+            return True  # fail open, keep CRITICAL
 
 
 async def _list_tools(transport: MCPTransport) -> list[ToolSpec]:

@@ -716,9 +716,13 @@ def batch(
         "--case-study", help="Tag results with a case study label (e.g. CS16)")] = None,
     verify_critical: Annotated[bool, typer.Option(
         "--verify-critical", "-V", help="Re-probe CRITICAL findings to reduce false positives")] = False,
+    from_petrel: Annotated[Optional[str], typer.Option(
+        "--from-petrel",
+        help="Load targets from Petrel runs.db. Provide run-id or 'latest' (default) for the most recent run."
+    )] = None,
 ):
     """Scan multiple MCP servers from a targets YAML file or inline --stdio/--http flags."""
-    asyncio.run(_batch(config, stdio, http, concurrency, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module, skip_existing, case_study, verify_critical))
+    asyncio.run(_batch(config, stdio, http, concurrency, output_dir, fail_on, timeout, target_timeout, sarif, min_confidence, module, skip_existing, case_study, verify_critical, from_petrel))
 
 
 async def _batch(
@@ -736,17 +740,53 @@ async def _batch(
     skip_existing: bool = False,
     case_study: str | None = None,
     verify_critical: bool = False,
+    from_petrel: str | None = None,
 ) -> None:
     from .batch import load_batch_targets, run_batch
 
     # --- Resolve targets ---
     has_inline = bool(stdio_cmds or http_urls)
-    if config_path and has_inline:
-        console.print("[red]Use a YAML config file or --stdio/--http flags, not both.[/red]")
+    has_petrel = from_petrel is not None
+
+    sources = [bool(config_path), has_inline, has_petrel]
+    if sum(sources) > 1:
+        console.print("[red]Use only one of: YAML config file, --stdio/--http flags, or --from-petrel.[/red]")
         raise typer.Exit(1)
-    if not config_path and not has_inline:
-        console.print("[red]Provide a targets YAML file or at least one --stdio/--http target.[/red]")
+    if not any(sources):
+        console.print("[red]Provide a targets YAML file, at least one --stdio/--http target, or --from-petrel.[/red]")
         raise typer.Exit(1)
+
+    if has_petrel:
+        # Load targets from Petrel runs.db and generate a temporary YAML
+        import tempfile
+        from .integrations.petrel import load_petrel_run
+        run_id_arg = None if from_petrel.strip().lower() in ("latest", "") else from_petrel
+        try:
+            petrel_targets = load_petrel_run(run_id_arg)
+        except FileNotFoundError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(1)
+        except ValueError as exc:
+            console.print(f"[red]Petrel error: {exc}[/red]")
+            raise typer.Exit(1)
+
+        if not petrel_targets:
+            console.print("[yellow]No new CRITICAL/HIGH unauthenticated targets from Petrel run.[/yellow]")
+            raise typer.Exit(0)
+
+        console.print(
+            f"[dim]Petrel: {len(petrel_targets)} new target(s) loaded "
+            f"(CRITICAL/HIGH, no-auth, not Cloudflare, deduped)[/dim]"
+        )
+
+        yaml_lines = ["targets:"]
+        for t in petrel_targets:
+            yaml_lines.append(f"  - name: {t['name']}")
+            yaml_lines.append(f"    transport: http")
+            yaml_lines.append(f"    url: {t['url']}")
+        tmp_yaml = Path(tempfile.gettempdir()) / "targets-petrel.yaml"
+        tmp_yaml.write_text("\n".join(yaml_lines) + "\n", encoding="utf-8")
+        config_path = tmp_yaml
 
     if config_path:
         try:
@@ -1320,6 +1360,76 @@ def sync_ibis(
         status_counts[s] = status_counts.get(s, 0) + 1
     for s, n in sorted(status_counts.items()):
         console.print(f"  {s}: {n}")
+
+
+@app.command()
+def triage(
+    report_json: Annotated[Path, typer.Argument(help="Path to report.json from a corvus scan")],
+) -> None:
+    """Triage Corvus findings: prioritized list with recommended action (draft/review/reject/skip)."""
+    import json as _json
+
+    if not report_json.exists():
+        console.print(f"[red]File not found: {report_json}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        data = _json.loads(report_json.read_text(encoding="utf-8"))
+    except Exception as exc:
+        console.print(f"[red]Failed to read report: {exc}[/red]")
+        raise typer.Exit(1)
+
+    findings = data.get("findings", [])
+    if not findings:
+        console.print("[yellow]No findings in report.[/yellow]")
+        raise typer.Exit(0)
+
+    target = data.get("target", "?")
+
+    _sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    sorted_findings = sorted(
+        findings,
+        key=lambda f: (
+            _sev_order.get(str(f.get("severity", "low")).lower(), 9),
+            -int(f.get("confidence", 0)),
+        ),
+    )
+
+    _action_color = {"draft": "green", "review": "yellow", "reject": "dim", "skip": "blue"}
+
+    table = Table(title=f"Triage — {target}", show_header=True)
+    table.add_column("SEV", width=8)
+    table.add_column("CONF", justify="right", width=5)
+    table.add_column("ACTION", width=7)
+    table.add_column("Title")
+
+    for f in sorted_findings:
+        sev = str(f.get("severity", "?")).lower()
+        conf = int(f.get("confidence", 0))
+        ghsa_status = str(f.get("ghsa_status", "")).lower()
+        title = str(f.get("title", "?"))[:80]
+
+        if ghsa_status == "published":
+            action = "skip"
+        elif ghsa_status == "draft":
+            action = "review"
+        elif conf >= 75 and sev in ("critical", "high"):
+            action = "draft"
+        elif conf >= 40:
+            action = "review"
+        else:
+            action = "reject"
+
+        sev_color = _SEV_COLOR.get(sev, "white")
+        ac = _action_color.get(action, "white")
+        table.add_row(
+            f"[{sev_color}]{sev.upper()}[/{sev_color}]",
+            str(conf),
+            f"[{ac}]{action}[/{ac}]",
+            title,
+        )
+
+    console.print(table)
 
 
 @app.command()
