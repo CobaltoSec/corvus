@@ -1,11 +1,40 @@
 # CFP — Ekoparty Security Conference 2026
 
 **Plataforma:** [Sessionize](https://sessionize.com/ekoparty-security-conference-2026-buenos-aires/)  
-**Deadline:** 2026-08-14  
+**Deadline edición:** 2026-08-14  
 **Idioma del talk:** Español  
-**Duración:** 30 min  
+**Duración:** 30 min (outline) — ⚠️ submiteado como "Lightning talk", verificar formato correcto  
 **Track sugerido:** AI Security  
-**Estado:** LISTO PARA SUBMITEAR
+**Village:** Red Team Space  
+**Level:** Intermediate  
+**Submiteado:** 6 Jul 2026  
+**Estado:** ✅ In Evaluation
+
+---
+
+## Estado actual en Sessionize (snapshot 2026-08-05)
+
+Lo que está live ahora:
+- "dos meses / 300 servidores / 15 case studies / 4.002 findings / ~1.298 TPs / 44 advisories"
+- Paper link: https://cobalto-sec.tech/blog/2026-07-04-corvus-mcp-audit-ekoparty (blog, no arXiv)
+- Slides: `corvus-ekoparty-2026-slides (1).pdf`
+- "3 publicados, 41 en ventanas activas"
+
+## Edits pendientes para Sessionize (antes 14 Aug)
+
+| Campo | Dice ahora | Cambiar a |
+|-------|-----------|-----------|
+| "dos meses" | dos meses | tres meses |
+| servers | 300 | 414 |
+| case studies | 15 | 18 |
+| raw findings | 4.002 | 5.856 |
+| TPs | ~1.298 | ~1.350 |
+| advisories (description) | 44 | 174 |
+| advisories (outline) | 44 GHSAs | 174 GHSAs |
+| pub/draft (outline) | 3 publicados, 41 draft | 37 publicados, 137 draft |
+| FP evolution (outline) | 300 servidores | 414 servidores |
+| Paper link | blog post | arXiv:2608.00150 |
+| Session format | Lightning talk | ⚠️ verificar |
 
 ---
 
@@ -19,7 +48,7 @@
 
 El Model Context Protocol (MCP) es el estándar que conecta agentes de IA con herramientas del mundo real: desde Claude y Copilot hasta n8n y Cursor. En npm hay más de 2.000 paquetes `mcp-*`. Nadie los auditó sistemáticamente.
 
-Presentamos **Corvus**, un framework open source de 34 módulos que mapea al OWASP MCP Top 10 y permite auditar servidores MCP a escala. En dos meses escaneamos **300 servidores reales** en quince case studies: 4.002 findings brutos, **~1.298 verdaderos positivos**, y **44 security advisories** coordinados con Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase.
+Presentamos **Corvus**, un framework open source de 34 módulos que mapea al OWASP MCP Top 10 y permite auditar servidores MCP a escala. En tres meses escaneamos **414 servidores reales** en 18 case studies: 5.856 findings brutos, **~1.350 verdaderos positivos**, y **174 security advisories** coordinados con Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase.
 
 Los hallazgos revelan problemas sistémicos, no bugs puntuales:
 
@@ -40,7 +69,7 @@ Los asistentes entienden vectores de ataque nuevos específicos de la capa agén
 
 El Model Context Protocol (MCP) se convirtió en el estándar de facto para conectar agentes de IA con herramientas y servicios externos. Está presente en todos los frameworks agénticos relevantes del ecosistema actual, pero la seguridad de este ecosistema nunca fue evaluada sistemáticamente a escala.
 
-Presentamos **Corvus**, un framework de testing de seguridad open source que mapea al **OWASP MCP Top 10**. En dos meses, realizamos la primera auditoría de seguridad a escala del ecosistema MCP público: **300 servidores reales** en quince case studies (CS01–CS15), con **4.002 findings brutos** y **~1.298 verdaderos positivos confirmados** usando **34 módulos de detección** (13 estáticos, 21 dinámicos). El pipeline de auto-discovery cubre npm, PyPI, GitHub topics y la API de Smithery, permitiendo escalar sin intervención manual.
+Presentamos **Corvus**, un framework de testing de seguridad open source que mapea al **OWASP MCP Top 10**. En tres meses, realizamos la primera auditoría de seguridad a escala del ecosistema MCP público: **414 servidores reales** en 18 case studies (CS01–CS18), con **5.856 findings brutos** y **~1.350 verdaderos positivos confirmados** usando **34 módulos de detección** (13 estáticos, 21 dinámicos). Esta investigación forma la base del paper "Exposed by Design" (arXiv:2608.00150, cs.CR). El pipeline de auto-discovery cubre npm, PyPI, GitHub topics y la API de Smithery, permitiendo escalar sin intervención manual.
 
 ### Hallazgos principales
 
@@ -80,7 +109,7 @@ Un único advisory de SDK (`@modelcontextprotocol/sdk ≤1.25.1`) se propaga a l
 **Evolución del FP rate.**
 A través de iteraciones de calibración, redujimos la tasa de falsos positivos de ~42% (v0.5.0) a ~7% (CS03), estableciendo una metodología replicable para investigación de seguridad de protocolos AI. Cada case study reveló nuevos patrones FP que se incorporan como filtros globales.
 
-Coordinamos el responsible disclosure de **44 security advisories (GHSAs)** con maintainers incluyendo Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase. Tres advisories están publicados; 41 están en disclosure coordinado activo (ventanas de 90 días). Corvus es open source (`pip install cobaltosec-corvus`).
+Coordinamos el responsible disclosure de **174 security advisories (GHSAs — 37 publicados, 137 en disclosure coordinado activo)** con maintainers incluyendo Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase. Corvus es open source (`pip install cobaltosec-corvus`).
 
 Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos específicos de arquitecturas agénticas, y se irán con una herramienta para auditar sus propios deployments de MCP.
 
@@ -107,7 +136,7 @@ Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos es
 5. **Supply chain cascade** — un advisory, N servidores afectados
 
 ### [25:00 – 28:00] Responsible disclosure
-- 44 GHSAs: timeline, respuestas de vendors, calendario de publicación coordinada
+- 174 GHSAs: timeline, respuestas de vendors, calendario de publicación coordinada
 - Trabajando con grandes vendors (Microsoft, SAP, Notion, Atlassian, ByteDance, Browserbase)
 - Qué hicieron bien y mal los vendors al responder CVEs de protocolos AI
 
@@ -120,17 +149,18 @@ Los asistentes verán demos en vivo, entenderán vectores de ataque novedosos es
 
 ## Bio del Speaker
 
-Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad. Es autor de **Corvus** (framework open source de seguridad para servidores MCP, `pip install cobaltosec-corvus`) y de **llamascope-mcp** (herramienta de auditoría de infraestructura AI). Su investigación se centra en seguridad de sistemas agénticos, descubrimiento automatizado de vulnerabilidades a escala, y las implicancias de seguridad del ecosistema Model Context Protocol. Coordinó el responsible disclosure de **44 security advisories** con organizaciones como Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase.
+Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad. Es autor de **Corvus** (framework open source de seguridad para servidores MCP), **Petrel** (fingerprinter semántico de MCP servers expuestos) y **Condor** (scanner de plataformas agénticas). Su investigación —publicada en arXiv:2608.00150 ("Exposed by Design", cs.CR)— cubre la primera auditoría sistemática a escala del ecosistema MCP público. Coordinó el responsible disclosure de **174 security advisories** (37 publicados) con organizaciones como Microsoft, SAP, Notion, Atlassian, ByteDance y Browserbase.
 
 ---
 
 ## Materiales de Soporte
 
-- [x] Documento técnico: `case-studies/technical-paper-ekoparty-2026.md`
+- [x] Paper académico: **arXiv:2608.00150** — "Exposed by Design: A Dynamic Security Assessment of Internet-Facing MCP Servers at Scale" (cs.CR, 2026-08-04)
+- [x] Documento técnico extendido: `case-studies/technical-paper-ekoparty-2026.md`
 - [x] Repo público Corvus: https://github.com/CobaltoSec/corvus
-- [x] GHSAs publicados: GHSA-43j9, GHSA-hv3x, GHSA-3f55
+- [x] 37 GHSAs publicados (GHSA-43j9, GHSA-hv3x, GHSA-3f55, GHSA-jgxf, GHSA-prc4, GHSA-32vx, GHSA-wx78, GHSA-qwwj, GHSA-7763, y 28 más)
 - [x] PyPI: https://pypi.org/project/cobaltosec-corvus/
-- [x] Slide deck — `Downloads/slides-ekoparty-2026.html` (18 slides, stats actualizados)
+- [x] Slide deck — `case-studies/slides/corvus-ekoparty-2026-slides.html` + `case-studies/slides/corvus-ekoparty-2026-slides.pdf` (18 slides, 16:9, 254KB)
 - [x] **Post publicado:** https://cobalto-sec.tech/blog/2026-07-04-corvus-mcp-audit-ekoparty
 
 ---
@@ -140,7 +170,7 @@ Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad.
 - [x] Elegir título final — "Corvus: Seguridad en el Ecosistema MCP a Escala"
 - [x] Adjuntar technical-paper-ekoparty-2026.md — listo (`Downloads/technical-paper-ekoparty-2026.md`) — requiere actualización de stats a 300 servers
 - [x] Adjuntar link al repo de Corvus — https://github.com/CobaltoSec/corvus
-- [x] Slide deck — `Downloads/slides-ekoparty-2026.html` (18 slides) — requiere actualización de stats
+- [x] Slide deck — `case-studies/slides/corvus-ekoparty-2026-slides.html` (18 slides, stats actualizados) + PDF exportado
 - [ ] Submitir en Sessionize antes del **2026-08-14**
 
 ---
@@ -149,13 +179,14 @@ Nicolás Padilla es fundador de CobaltoSec, empresa argentina de ciberseguridad.
 
 | Métrica | Valor |
 |---------|-------|
-| Servers auditados | 300 (CS01–CS15) |
-| Raw findings | 4.002 |
-| True positives | ~1.298 |
-| GHSAs | 44 (3 publicados, 41 draft) |
+| Servers auditados | 414 (CS01–CS18) |
+| Raw findings | 5.856 |
+| True positives | ~1.350 |
+| GHSAs | 174 (37 publicados, 137 draft) |
 | Módulos | 34 (13 static + 21 dynamic) |
-| Tests | 717+ |
+| Tests | 744+ |
 | Versión actual | v1.3.1 |
 | FP rate evolución | ~42% (v0.5.0) → ~7% (CS03 v1.0.1) |
 | Vendors notificados | Microsoft, SAP, Notion, Atlassian, ByteDance, Browserbase + 30+ maintainers independientes |
 | Discovery pipeline | npm + PyPI + GitHub topics + Smithery API (automatizado) |
+| Paper académico | arXiv:2608.00150 — "Exposed by Design" (cs.CR, 2026-08-04) |
