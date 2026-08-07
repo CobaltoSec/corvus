@@ -91,6 +91,27 @@ async def test_module_static_findings_before_dynamic():
 
 @pytest.mark.asyncio
 async def test_module_detects_template_injection():
+    """Probe 2: server evaluates {{7*7}} → 49 → CRITICAL SSTI (real finding)."""
+    surface = _surface_no_prompts()
+
+    async def side_effect(method, params=None):
+        if method == "prompts/list":
+            return {"prompts": [{"name": "greet", "arguments": [{"name": "name"}]}]}
+        if method == "prompts/get":
+            # Server evaluated the expression: {{7*7}} → 49
+            return {"messages": [{"role": "user", "content": {"type": "text", "text": "CORVUS_INJECTION_TEST_49"}}]}
+        raise Exception("unknown")
+
+    t = _http_transport()
+    t.send_request = side_effect
+    findings = await PromptsInjectionModule().run(surface, t, _session())
+    critical = [f for f in findings if f.severity == Severity.CRITICAL and f.exploitation_confirmed]
+    assert critical
+
+
+@pytest.mark.asyncio
+async def test_module_literal_reflection_is_not_injection():
+    """Probe 2: server reflects the payload literally — expected MCP behaviour, not a finding."""
     surface = _surface_no_prompts()
     inject_payload = "CORVUS_INJECTION_TEST_{{7*7}}"
 
@@ -104,8 +125,8 @@ async def test_module_detects_template_injection():
     t = _http_transport()
     t.send_request = side_effect
     findings = await PromptsInjectionModule().run(surface, t, _session())
-    high = [f for f in findings if f.severity == Severity.HIGH and f.exploitation_confirmed]
-    assert high
+    high_confirmed = [f for f in findings if f.exploitation_confirmed]
+    assert not high_confirmed
 
 
 @pytest.mark.asyncio
@@ -122,7 +143,7 @@ async def test_module_no_injection_when_not_reflected():
     t = _http_transport()
     t.send_request = side_effect
     findings = await PromptsInjectionModule().run(surface, t, _session())
-    high_confirmed = [f for f in findings if f.severity == Severity.HIGH and f.exploitation_confirmed]
+    high_confirmed = [f for f in findings if f.exploitation_confirmed]
     assert not high_confirmed
 
 

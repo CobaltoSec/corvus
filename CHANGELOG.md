@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.3.2] — 2026-08-07 — FP fixes: prompts-injection + ssrf · 746 tests
+
+### Fixed
+- **prompts-injection Probe 2 FP** — `prompts/get` argument reflection is MCP spec-compliant behaviour, not injection. Probe 2 now checks for *evaluated* template output (`CORVUS_INJECTION_TEST_49`) instead of literal reflection (`{{7*7}}`). Real SSTI → CRITICAL; literal reflection → no finding. Eliminates HIGH false positive on every server that correctly implements prompt arguments. (Issue #2 — reported by smeeks-swo)
+- **ssrf timing FP on docs/search tools** — `_URL_DESC` broadening (D4) now excludes params named `query`, `q`, `search`, `term`, `keyword`, `text`, `message`, `input`, `prompt`, `content`, `topic` — these carry search terms, not URLs. Prevents timing false positives on documentation tools that internally fetch from a real upstream. (Issue #1 — reported by smeeks-swo)
+
 ### Added
 - `corvus sync-ibis` subcommand: annotates report.json findings with Ibis GHSA publish status (published/draft/rejected) from `C:/Proyectos/Ibis/state/` (PETREL-CF-WAF)
 - SSRF IMDS content-matching in `ssrf.py`: checks response body for AWS (`ami-id`, `security-credentials`), GCP (`computeMetadata`, `serviceAccounts`), Azure (`azEnvironment`) indicators — auto-sets `exploitation_confirmed=True` and upgrades HIGH→CRITICAL (RT-CORVUS-SSRF-IMDS)

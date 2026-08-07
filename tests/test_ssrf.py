@@ -150,3 +150,34 @@ async def test_ssrf_high_emitted_when_verify_returns_true():
     high = [f for f in findings if f.severity == Severity.HIGH]
     assert high, "Verified timing SSRF (≥2/3 probes) must emit HIGH"
     assert high[0].tool_name == "fetch"
+
+
+@pytest.mark.asyncio
+async def test_ssrf_skips_search_params_despite_url_desc():
+    """Docs-fetch tool: description triggers _URL_DESC, but 'query' param is excluded.
+
+    Regression for issue #1: tools whose description says 'fetch' or 'browse' but
+    whose params are search terms (query, q, term, …) must not be SSRF-probed via
+    those params — timing signals from cache misses would otherwise produce FP HIGHs.
+    """
+    surface = MCPSurface(
+        server_name="test",
+        server_version="0.1",
+        protocol_version="2024-11-05",
+        tools=[ToolSpec(
+            name="get_docs",
+            description="Search and pre-fetch every page from the documentation.",
+            input_schema={
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"],
+            },
+        )],
+    )
+    mock = MagicMock()
+    mock.send_request = AsyncMock(return_value={"content": [{"type": "text", "text": "ok"}]})
+    session = ScanSession("test", "stdio", Path("/tmp/corvus-test"))
+    findings = await SSRFModule().run(surface, mock, session)
+    assert not findings, (
+        "'query' param must not be SSRF-probed even when tool description triggers _URL_DESC"
+    )

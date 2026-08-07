@@ -21,6 +21,14 @@ _URL_DESC = re.compile(
     re.I,
 )
 
+# Params that clearly carry search queries / text content, not URLs.
+# When _URL_DESC broadens candidates (desc_suggests_url), these are excluded to avoid
+# probing a `query` param on a docs-fetch tool with SSRF payloads (timing FP).
+_SEARCH_PARAM = re.compile(
+    r"^(query|q|search|term|keyword|text|message|input|prompt|content|topic|phrase|terms)$",
+    re.I,
+)
+
 # SSRF payloads to probe
 _SSRF_PAYLOADS = [
     "http://169.254.169.254/latest/meta-data/",        # AWS IMDS
@@ -175,7 +183,10 @@ class SSRFModule(ScanModule):
                 (param, pschema)
                 for param, pschema in properties.items()
                 if pschema.get("type", "string") == "string"
-                and (_URL_PARAM.search(param) or desc_suggests_url)
+                and (
+                    _URL_PARAM.search(param)
+                    or (desc_suggests_url and not _SEARCH_PARAM.search(param))
+                )
             ]
             if not url_params:
                 continue

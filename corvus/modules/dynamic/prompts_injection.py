@@ -22,6 +22,9 @@ _STATIC_PATTERNS: list[tuple[re.Pattern, Severity, str]] = [
 _TEMPLATE_LITERAL_RE = re.compile(r"\{\{|\{%")
 
 _INJECT_PAYLOAD = "CORVUS_INJECTION_TEST_{{7*7}}"
+# If the server evaluates the template expression, 7*7 becomes 49 — that is real SSTI.
+# Literal reflection of the payload is expected MCP prompt behaviour, not a finding.
+_INJECT_EVALUATED = "CORVUS_INJECTION_TEST_49"
 _STACK_TRACE_RE = re.compile(r"(Traceback|at line \d+|\.py\", line|stack trace|TypeError|KeyError)", re.I)
 
 
@@ -110,37 +113,31 @@ class PromptsInjectionModule(ScanModule):
                 if get_result is None:
                     continue
                 raw = json.dumps(get_result)
-                # Check if payload is reflected in messages
                 messages = get_result.get("messages", [])
-                reflected = any(
-                    _INJECT_PAYLOAD in json.dumps(msg) for msg in messages
-                )
-                if reflected:
+                messages_text = json.dumps(messages)
+                # Real finding: the server evaluated {{7*7}} → 49 (SSTI via prompt arguments).
+                # Literal reflection of the payload is the spec-conforming behaviour — not a finding.
+                evaluated = _INJECT_EVALUATED in messages_text
+                if evaluated:
                     findings.append(Finding(
                         owasp_category=OWASPCategory.EXT12_PROMPT_INJECTION,
-                        severity=Severity.HIGH,
-                        title=f"Prompt template injection confirmed in '{pname}'",
+                        severity=Severity.CRITICAL,
+                        title=f"Server-side template injection in prompt '{pname}' (expression evaluated)",
                         description=(
-                            f"prompts/get for '{pname}' reflected the injection payload "
-                            f"verbatim in the returned messages, confirming unsanitized argument "
-                            "reflection."
+                            f"prompts/get for '{pname}' evaluated the template expression "
+                            f"'{_INJECT_PAYLOAD}' → '{_INJECT_EVALUATED}', confirming server-side "
+                            "template rendering of caller-supplied argument values."
                         ),
                         tool_name=pname,
                         payload=_INJECT_PAYLOAD,
-                        evidence=f"Payload reflected in messages: {raw[:300]}",
+                        evidence=f"Evaluated payload found in messages: {raw[:300]}",
                         exploitation_confirmed=True,
-                        confidence=88,
-                        remediation="Sanitize prompt arguments before embedding them in message templates.",
-                    ))
-                else:
-                    findings.append(Finding(
-                        owasp_category=OWASPCategory.EXT12_PROMPT_INJECTION,
-                        severity=Severity.INFO,
-                        title=f"prompts/get endpoint functional for '{pname}'",
-                        description="The prompts/get endpoint responded but did not reflect the injection payload.",
-                        tool_name=pname,
-                        confidence=70,
-                        remediation="Verify that prompts/get does not reflect user input without sanitization.",
+                        confidence=95,
+                        remediation=(
+                            "Do not pass prompt arguments through a server-side template engine "
+                            "(Jinja2, Mako, etc.). Use static message templates with safe string "
+                            "interpolation only."
+                        ),
                     ))
             except Exception:
                 continue
