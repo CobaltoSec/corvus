@@ -250,8 +250,8 @@ async def test_module_returns_early_after_no_auth_bypass(monkeypatch):
     monkeypatch.setattr("corvus.modules.dynamic.oauth_bypass._try_tools_list", mock_try)
     t = _http_transport(headers={"Authorization": "Bearer tok"})
     findings = await OAuthBypassModule().run(_surface(), t, _session())
-    # Should return early after probe 1, not run probe 2
-    assert call_count == 1
+    # Probe 1 + _verify_critical each call _try_tools_list once; Probe 2 must not run
+    assert call_count == 2
     assert len(findings) == 1
 
 

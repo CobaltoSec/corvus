@@ -42,7 +42,7 @@ def _check_static_prompt(prompt: PromptSpec) -> list[Finding]:
                     f"Prompt '{prompt.name}' contains a static injection pattern: {label}. "
                     "This may manipulate how the LLM host processes the prompt."
                 ),
-                tool_name=prompt.name,
+                tool_name=None,
                 evidence=f"Pattern '{label}' found in: {text[:200]!r}",
                 confidence=80,
                 remediation="Remove directive language from prompt names and descriptions.",
@@ -56,7 +56,7 @@ def _check_static_prompt(prompt: PromptSpec) -> list[Finding]:
                 f"Prompt '{prompt.name}' description contains template literal syntax "
                 "({{ or {%). This may indicate Jinja2/similar templates leaking into the MCP surface."
             ),
-            tool_name=prompt.name,
+            tool_name=None,
             evidence=f"Template syntax in: {text[:200]!r}",
             confidence=70,
             remediation="Do not expose server-side template syntax in prompt metadata.",
@@ -128,7 +128,7 @@ class PromptsInjectionModule(ScanModule):
                             f"'{_INJECT_PAYLOAD}' → '{_INJECT_EVALUATED}', confirming server-side "
                             "template rendering of caller-supplied argument values."
                         ),
-                        tool_name=pname,
+                        tool_name=None,
                         payload=_INJECT_PAYLOAD,
                         evidence=f"Evaluated payload found in messages: {raw[:300]}",
                         exploitation_confirmed=True,

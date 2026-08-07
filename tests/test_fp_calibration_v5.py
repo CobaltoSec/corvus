@@ -256,9 +256,14 @@ async def test_cmd_injection_real_sql_error_on_non_echo_param_flagged():
     class _SqlErrorTransport:
         async def send_request(self, method: str, params: Any = None) -> dict:
             if method == "tools/call":
-                return {"content": [{"type": "text", "text": (
-                    "sqlite3.OperationalError: near \"OR\": syntax error"
-                )}]}
+                args = (params or {}).get("arguments", {})
+                val = " ".join(str(v) for v in args.values())
+                # Return SQL error for any non-benign input; _verify_critical uses "test" as benign
+                if val != "test":
+                    return {"content": [{"type": "text", "text": (
+                        "sqlite3.OperationalError: near \"OR\": syntax error"
+                    )}]}
+                return {"content": [{"type": "text", "text": "record: {id: 1}"}]}
             return {}
 
     findings = await CmdInjectionModule().run(surface, _SqlErrorTransport(), None)
@@ -282,9 +287,14 @@ async def test_cmd_injection_oracle_specific_error_still_flagged():
     class _OracleErrorTransport:
         async def send_request(self, method: str, params: Any = None) -> dict:
             if method == "tools/call":
-                return {"content": [{"type": "text", "text": (
-                    "ORA-00001: unique constraint violated"
-                )}]}
+                args = (params or {}).get("arguments", {})
+                val = " ".join(str(v) for v in args.values())
+                # Return Oracle error for any non-benign input; _verify_critical uses "test" as benign
+                if val != "test":
+                    return {"content": [{"type": "text", "text": (
+                        "ORA-00001: unique constraint violated"
+                    )}]}
+                return {"content": [{"type": "text", "text": "user: {username: alice}"}]}
             return {}
 
     findings = await CmdInjectionModule().run(surface, _OracleErrorTransport(), None)

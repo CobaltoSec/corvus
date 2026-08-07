@@ -160,12 +160,26 @@ def test_credential_query_re_no_match_benign():
     assert not _CREDENTIAL_QUERY_RE.search("https://api.example.com/data?page=1&limit=10")
 
 
+class _SensitiveResourceTransport:
+    """Returns sensitive content for resources/read so _verify_critical confirms CRITICAL."""
+
+    def __init__(self, body: str, mime_type: str = "text/plain"):
+        self._body = body
+        self._mime_type = mime_type
+
+    async def send_request(self, method: str, params=None) -> dict:
+        if method == "resources/read":
+            return {"contents": [{"text": self._body, "mimeType": self._mime_type}]}
+        return {}
+
+
 @pytest.mark.asyncio
 async def test_resource_uri_flags_ssh_key():
     surface = _resource_surface(
         ("file:///home/deploy/.ssh/id_rsa", "SSH private key"),
     )
-    findings = await ResourceUriModule().run(surface, None, None)
+    transport = _SensitiveResourceTransport("-----BEGIN RSA PRIVATE KEY-----\nMIIE...")
+    findings = await ResourceUriModule().run(surface, transport, None)
     assert findings
     assert findings[0].severity == Severity.CRITICAL
     assert findings[0].owasp_category == OWASPCategory.EXT05_RESOURCE_URI
@@ -176,7 +190,8 @@ async def test_resource_uri_flags_etc_shadow():
     surface = _resource_surface(
         ("file:///etc/shadow", "System shadow file"),
     )
-    findings = await ResourceUriModule().run(surface, None, None)
+    transport = _SensitiveResourceTransport("root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:")
+    findings = await ResourceUriModule().run(surface, transport, None)
     assert findings
     assert findings[0].severity == Severity.CRITICAL
 
