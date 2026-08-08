@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [RT-CORVUS-FP-ISSUES] — 2026-08-08 — FP fixes v1.3.2 + stale tests + prompts secondary
+
+- **prompts-injection Probe 2** — reflexión literal de argumentos es comportamiento correcto del MCP spec. El probe ahora detecta evaluación real de template (`CORVUS_INJECTION_TEST_49`) → CRITICAL (SSTI). Falso positivo HIGH eliminado en todos los servers que implementan prompts correctamente. (Issue #2 — smeeks-swo)
+- **ssrf timing FP** — params `query`, `q`, `search`, `term`, `keyword`, `text`, etc. excluidos del broadening de `_URL_DESC`. Evita FP de timing en tools de docs/búsqueda que internamente fetchean un upstream real. (Issue #1 — smeeks-swo)
+- **5 tests desactualizados** — `test_fp_calibration_v5` (cmd_injection ×2), `test_modules_v7` (resource_uri ×2), `test_oauth_bypass` (×1) — mocks actualizados para acomodar `_verify_critical()` agregado en bloques anteriores.
+- **prompts secondary** — `tool_name=None` en findings de prompts. Prompts ya no aparecen como "tools" en advisories generados.
+- **v1.3.2** — PyPI + GitHub Release + tag.
+
 ## [1.3.2] — 2026-08-07 — FP fixes: prompts-injection + ssrf · 746 tests
 
 ### Fixed
